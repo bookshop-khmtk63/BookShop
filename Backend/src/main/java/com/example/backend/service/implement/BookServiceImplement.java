@@ -44,7 +44,6 @@ public class BookServiceImplement implements BookService {
     }
 
     @Override
-
     public PageResponse<BookResponse> filterBooks(int page, int size, List<String> filters) {
         List<SearchCriteria> criteriaList = new ArrayList<>();
         if (filters != null) {
@@ -75,6 +74,13 @@ public class BookServiceImplement implements BookService {
                 .toList();
 
         return PageResponse.from(sachPage,bookResponses);
+    }
+
+    @Override
+    public PageResponse<BookResponse> advancedSearch(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page,size);
+        Page<Sach> sach = sachRepository.searchByKeyWord(keyword,pageable);
+        return PageResponse.from(sach,bookMapper.toBookResponseList(sach.getContent()));
     }
 
     private SearchOperation mapOperator(String operator) {

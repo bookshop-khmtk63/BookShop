@@ -2,7 +2,7 @@ package com.example.backend;
 
 import com.example.backend.common.EventType;
 import com.example.backend.common.Role;
-import com.example.backend.event.BookSyncEvent;
+//import com.example.backend.event.BookSyncEvent;
 import com.example.backend.mapper.BookMapper;
 import com.example.backend.model.*;
 import com.example.backend.repository.*;
@@ -47,8 +47,8 @@ class BackendApplicationTests {
 
     @Autowired
     private BookMapper bookMapper;
-    @Autowired
-    private BookElasticsearchRepository bookElasticsearchRepository;
+   // @Autowired
+    //private BookElasticsearchRepository bookElasticsearchRepository;
     private final Faker faker = new Faker();
 
     @Test
@@ -136,14 +136,14 @@ class BackendApplicationTests {
 
             // Bước 2: BÂY GIỜ savedSach.getIdSach() đã có giá trị.
             // Sử dụng đối tượng đã được lưu để mapping.
-            BookElasticsearch bookElasticsearch = bookMapper.toBookElasticsearch(savedSach);
-
-            // Bước 3: Gửi sự kiện Kafka với dữ liệu đã đầy đủ.
-            BookSyncEvent bookSyncEvent = BookSyncEvent.builder()
-                    .eventType(EventType.CREATE)
-                    .bookData(bookElasticsearch)
-                    .build();
-            kafkaProducer.sendBookSyncEvent(bookSyncEvent);
+//            BookElasticsearch bookElasticsearch = bookMapper.toBookElasticsearch(savedSach);
+//
+//            // Bước 3: Gửi sự kiện Kafka với dữ liệu đã đầy đủ.
+//            BookSyncEvent bookSyncEvent = BookSyncEvent.builder()
+//                    .eventType(EventType.CREATE)
+//                    .bookData(bookElasticsearch)
+//                    .build();
+//            kafkaProducer.sendBookSyncEvent(bookSyncEvent);
         }
 
         System.out.println("Generated books successfully!");

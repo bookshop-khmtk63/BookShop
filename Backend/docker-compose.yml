@@ -2,24 +2,24 @@
 version: '3.8'
 
 services:
-  # 1. Elasticsearch Service
-  elasticsearch:
-    build:
-      context: .
-      # Docker sẽ tìm file Dockerfile trong cùng thư mục với docker-compose.yml
-      dockerfile: Dockerfile
-    container_name: shopbook-elasticsearch # Đổi tên container
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    volumes:
-      - shopbook_es_data:/usr/share/elasticsearch/data # Đổi tên volume
-    networks:
-      - shopbook_network # Đổi tên network
+#  # 1. Elasticsearch Service
+#  elasticsearch:
+#    build:
+#      context: .
+#      # Docker sẽ tìm file Dockerfile trong cùng thư mục với docker-compose.yml
+#      dockerfile: Dockerfile
+#    container_name: shopbook-elasticsearch # Đổi tên container
+#    environment:
+#      - discovery.type=single-node
+#      - xpack.security.enabled=false
+#      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+#    ports:
+#      - "9200:9200"
+#      - "9300:9300"
+#    volumes:
+#      - shopbook_es_data:/usr/share/elasticsearch/data # Đổi tên volume
+#    networks:
+#      - shopbook_network # Đổi tên network
 
   # 2. Redis Service
   redis:

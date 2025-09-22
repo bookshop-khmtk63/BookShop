@@ -3,7 +3,7 @@ package com.example.backend.mapper;
 import com.example.backend.dto.response.BookDetailResponse;
 import com.example.backend.dto.response.BookResponse;
 import com.example.backend.dto.response.CategoryResponse;
-import com.example.backend.model.BookElasticsearch;
+//import com.example.backend.model.BookElasticsearch;
 import com.example.backend.model.DanhGiaSach;
 import com.example.backend.model.Sach;
 import com.example.backend.model.TheLoai;
@@ -47,23 +47,23 @@ public class BookMapper {
                 .build();
     }
 
-    public BookElasticsearch toBookElasticsearch(Sach book) {
-        if (book == null) return null;
-        Set<String> categoryNames = (book.getDanhSachTheLoai() == null) ? Collections.emptySet() :
-                book.getDanhSachTheLoai().stream()
-                        .map(TheLoai::getTenTheLoai)
-                        .collect(Collectors.toSet());
-            return BookElasticsearch.builder()
-                    .id(book.getIdSach().toString())
-                    .tenSach(book.getTenSach())
-                    .gia(book.getGia())
-                    .moTa(book.getMoTa())
-                    .diemTrungBinh(averageRating(book.getDanhGias()))
-                    .soLuong(book.getSoLuong())
-                    .anhSach(book.getAnhSach())
-                    .danhSachTheLoai(categoryNames)
-                    .build();
-    }
+//    public BookElasticsearch toBookElasticsearch(Sach book) {
+//        if (book == null) return null;
+//        Set<String> categoryNames = (book.getDanhSachTheLoai() == null) ? Collections.emptySet() :
+//                book.getDanhSachTheLoai().stream()
+//                        .map(TheLoai::getTenTheLoai)
+//                        .collect(Collectors.toSet());
+//            return BookElasticsearch.builder()
+//                    .id(book.getIdSach().toString())
+//                    .tenSach(book.getTenSach())
+//                    .gia(book.getGia())
+//                    .moTa(book.getMoTa())
+//                    .diemTrungBinh(averageRating(book.getDanhGias()))
+//                    .soLuong(book.getSoLuong())
+//                    .anhSach(book.getAnhSach())
+//                    .danhSachTheLoai(categoryNames)
+//                    .build();
+//    }
 
     public List<BookResponse> toBookResponseList (List<Sach> books) {
         if (books == null) return Collections.emptyList();
