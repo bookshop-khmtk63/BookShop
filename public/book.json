@@ -1,0 +1,17 @@
+[
+    { "id": 1, "title": "Sách A", "price": "120.000đ" },
+    { "id": 2, "title": "Sách B", "price": "90.000đ" },
+    { "id": 3, "title": "Sách C", "price": "150.000đ" },
+    { "id": 4, "title": "Sách D", "price": "200.000đ" },
+    { "id": 5, "title": "Sách E", "price": "300.000đ" },
+    { "id": 6, "title": "Sách F", "price": "400.000đ" },
+    { "id": 7, "title": "Sách G", "price": "250.000đ" },
+    { "id": 8, "title": "Sách H", "price": "180.000đ" },
+    { "id": 9, "title": "Sách I", "price": "220.000đ" },
+    { "id": 10, "title": "Sách J", "price": "220.000đ" },
+    { "id": 11, "title": "Sách K", "price": "220.000đ" },
+    { "id": 12, "title": "Sách L", "price": "220.000đ" },
+    { "id": 13, "title": "Sách M", "price": "220.000đ" },
+    { "id": 14, "title": "Sách N", "price": "220.000đ" }
+]
+  

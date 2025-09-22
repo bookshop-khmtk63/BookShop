@@ -1,0 +1,95 @@
+.header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 12px 24px;
+    border-bottom: 3px solid #2563eb; /* gạch chân xanh đậm */
+    justify-content: space-between;
+    box-sizing: border-box;
+    background: linear-gradient(90deg, #ffffff, #f9fafb, #f3f4f6); /* nền chuyển nhẹ */
+  }
+  
+  /* Logo */
+  .logo {
+    font-weight: bold;
+    color: #2563eb; /* logo xanh */
+    padding: 5px 10px;
+    transition: 0.3s;
+  }
+  .logo:hover {
+    color: #9333ea; /* hover sang tím */
+  }
+  .logo img {
+    height: 80px;
+    width: auto;
+    object-fit: contain;
+  }
+  
+  /* Thanh tìm kiếm */
+  .search-bar {
+    display: flex;
+    flex: 1;
+    margin: 0 10px;
+    justify-content: center;
+  }
+  .search-bar input {
+    width: 28vw;
+    min-width: 220px;
+    max-width: 400px;
+    flex: 1;
+    padding: 8px;
+    border: 2px solid #2563eb;  /* viền xanh đậm */
+    border-radius: 12px 0 0 12px;
+    outline: none;
+    transition: 0.2s;
+  }
+  .search-bar input:focus {
+    border-color: #10b981; /* khi focus viền xanh ngọc */
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+  }
+  .search-bar button {
+    padding: 8px 12px;
+    border: none;
+    background: #f97316; /* nút tìm kiếm cam */
+    color: white;
+    border-radius: 0 12px 12px 0;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .search-bar button:hover {
+    background: #ea580c; /* cam đậm hơn khi hover */
+  }
+  
+  /* Icon */
+  .icons {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .icons svg {
+    font-size: 22px;
+    cursor: pointer;
+    color: #2563eb; /* icon xanh */
+    transition: 0.2s;
+  }
+  .icons svg:hover {
+    color: #9333ea; /* hover đổi sang tím */
+  }
+  
+  /* Nút đăng nhập */
+  .login-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #f97316, #f59e0b); /* gradient cam */
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .login-btn:hover {
+    background: linear-gradient(90deg, #ea580c, #c2410c); /* gradient cam đậm hơn */
+    transform: scale(1.05);
+  }
+  
