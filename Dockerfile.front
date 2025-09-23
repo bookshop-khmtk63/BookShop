@@ -1,0 +1,28 @@
+# Stage 1: Build Vite app
+FROM node:22 AS build
+WORKDIR /app
+
+# Copy package.json và lock file để install deps
+COPY package*.json ./
+RUN npm install
+
+# Copy toàn bộ source code
+COPY . .
+
+# Build project (output mặc định là /app/dist)
+RUN npm run build
+
+# Stage 2: Serve bằng Nginx
+FROM nginx:alpine
+
+# Xóa content mặc định của nginx
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy từ stage build
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Expose port 80
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
