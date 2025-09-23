@@ -6,10 +6,10 @@ import com.example.backend.common.Role;
 import com.example.backend.mapper.BookMapper;
 import com.example.backend.model.*;
 import com.example.backend.repository.*;
-import com.example.backend.service.KafkaProducerService;
+//import com.example.backend.service.KafkaProducerService;
 import com.github.javafaker.Faker;
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.clients.producer.KafkaProducer;
+//import org.apache.kafka.clients.producer.KafkaProducer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +42,8 @@ class BackendApplicationTests {
 
     @Autowired
     private PasswordEncoder passwordEncoder; // Inject bean để mã hóa mật khẩu
-    @Autowired
-    private KafkaProducerService kafkaProducer;
+   // @Autowired
+    //private KafkaProducerService kafkaProducer;
 
     @Autowired
     private BookMapper bookMapper;
