@@ -1,6 +1,7 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.common.SearchOperation;
+import com.example.backend.dto.response.BookDetailResponse;
 import com.example.backend.dto.response.BookResponse;
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.exception.AppException;
@@ -37,10 +38,10 @@ public class BookServiceImplement implements BookService {
     }
 
     @Override
-    public BookResponse getBookById(int id) {
+    public BookDetailResponse getBookById(int id) {
         Sach sach = sachRepository.findById(id).orElseThrow(()->new AppException(ErrorCode.BOOK_NOT_FOUND));
 
-        return bookMapper.toBookResponse(sach);
+        return bookMapper.toBookDetailResponse(sach);
     }
 
     @Override

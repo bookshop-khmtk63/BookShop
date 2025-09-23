@@ -1,5 +1,6 @@
 package com.example.backend.controller.customer;
 
+import com.example.backend.dto.response.BookDetailResponse;
 import com.example.backend.dto.response.BookResponse;
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.dto.response.ResponseData;
@@ -26,9 +27,9 @@ public class BookController {
         return ResponseEntity.ok(responseData);
     }
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseData<BookResponse>> getBookById(@PathVariable("id") int id) {
-        BookResponse book = bookService.getBookById(id);
-        ResponseData<BookResponse> responseData = new ResponseData<>(200,"success",book);
+    public ResponseEntity<ResponseData<BookDetailResponse>> getBookById(@PathVariable("id") int id) {
+        BookDetailResponse book = bookService.getBookById(id);
+        ResponseData<BookDetailResponse> responseData = new ResponseData<>(200,"success",book);
         return ResponseEntity.ok(responseData);
     }
 //    @GetMapping("/search-es")
