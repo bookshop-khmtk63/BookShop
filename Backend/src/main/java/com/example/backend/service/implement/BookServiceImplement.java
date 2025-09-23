@@ -51,7 +51,8 @@ public class BookServiceImplement implements BookService {
             // SỬA LỖI REGEX TẠI ĐÂY
             Pattern pattern = Pattern.compile("([\\w.]+?)(:|>|<|>=|<=|==)([\\w\\s\\p{L}.-]+)");
             for (String filter : filters) {
-                Matcher matcher = pattern.matcher(filter);
+                Matcher matcher = pattern.matcher(filter.trim());
+
                 if (matcher.find()) {
                     String key = matcher.group(1);
                     String operator = matcher.group(2);

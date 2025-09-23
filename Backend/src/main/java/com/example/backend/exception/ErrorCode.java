@@ -9,7 +9,8 @@ public enum ErrorCode {
     ACCESS_DENIED(1003, "Truy cập bị từ chối", HttpStatus.FORBIDDEN),
     VALIDATION_EXCEPTION(1002, "Dữ liệu không hợp lệ", HttpStatus.BAD_REQUEST),
     UNCATEGORIZED_EXCEPTION(1003,"Lỗi không mong muốn" ,HttpStatus.BAD_REQUEST),
-    BOOK_NOT_FOUND(2001,"Không tìm thấy sách " , HttpStatus.NOT_FOUND ),;
+    BOOK_NOT_FOUND(2001,"Không tìm thấy sách " , HttpStatus.NOT_FOUND ),
+    FILTER_EXCEPTION(2002,"filter không hợp lê" ,HttpStatus.BAD_REQUEST );
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

@@ -47,6 +47,8 @@ class BackendApplicationTests {
 
     @Autowired
     private BookMapper bookMapper;
+    @Autowired
+    private TacGiaRepository tacGiaRepository;
    // @Autowired
     //private BookElasticsearchRepository bookElasticsearchRepository;
     private final Faker faker = new Faker();
@@ -104,10 +106,12 @@ class BackendApplicationTests {
     }
 
     @Test
-    @Order(3) // Chạy thứ ba, sau khi đã có thể loại
+    @Order(4) // Chạy thứ ba, sau khi đã có thể loại
     void generate_fake_sach() {
         System.out.println("Generating books...");
         List<TheLoai> allTheLoai = theLoaiRepository.findAll();
+        List<TacGia> allTacGia = tacGiaRepository.findAll();
+
         if (allTheLoai.isEmpty()) {
             System.out.println("No categories found. Skipping book generation.");
             return;
@@ -120,13 +124,15 @@ class BackendApplicationTests {
             Collections.shuffle(allTheLoai);
             int categoryCount = faker.number().numberBetween(1, 4);
             Set<TheLoai> danhSachTheLoai = new HashSet<>(allTheLoai.subList(0, Math.min(categoryCount, allTheLoai.size())));
-
+            TacGia randomTacGia = allTacGia.get(faker.number().numberBetween(0, allTacGia.size()));
             Sach sachToSave = Sach.builder()
                     .tenSach(tenSach)
-                    .gia(new BigDecimal(faker.commerce().price(10.00, 200.00)))
-                    .soLuong(faker.number().numberBetween(5, 30))
+                    .gia(new BigDecimal(faker.commerce().price(50000, 500000)))
+                    .soLuong(faker.number().numberBetween(0, 30))
+                    .tacGia(randomTacGia)
                     .anhSach("https://placehold.co/600x400?text=" + tenSach.replaceAll("[^a-zA-Z0-9]", "+"))
                     .moTa(faker.lorem().paragraph(5))
+                    .diemTrungBinh(0.0)
                     .danhSachTheLoai(danhSachTheLoai)
                     .build();
 
@@ -148,11 +154,23 @@ class BackendApplicationTests {
 
         System.out.println("Generated books successfully!");
     }
-
     @Test
-    @Order(4) // Chạy cuối cùng, khi đã có khách hàng và sách
-    void generate_fake_danh_gia_sach() {
-        System.out.println("Generating reviews...");
+    @Order(3) // CHẠY ĐẦU TIÊN
+    void generate_fake_tac_gia() {
+        System.out.println("Generating authors...");
+        for (int i = 0; i < 50; i++) {
+            if (tacGiaRepository.count() >= 50) break;
+            TacGia tacGia = new TacGia();
+            tacGia.setTenTacGia(faker.book().author());
+            tacGia.setTieuSu(faker.lorem().paragraph(3));
+            tacGiaRepository.save(tacGia);
+        }
+        System.out.println("Generated authors successfully!");
+    }
+    @Test
+    @Order(5) // Chạy cuối cùng, sau khi mọi thứ đã sẵn sàng
+    void generate_fake_danh_gia_sach_and_update_ratings() {
+        System.out.println("Generating reviews and updating ratings...");
         List<KhachHang> allKhachHang = khachHangRepository.findAll();
         List<Sach> allSach = sachRepository.findAll();
 
@@ -161,20 +179,20 @@ class BackendApplicationTests {
             return;
         }
 
-        Set<String> existingReviews = new HashSet<>(); // Để tránh vi phạm unique constraint
         int reviewsToGenerate = 300;
-        int maxAttempts = reviewsToGenerate * 2; // Giới hạn số lần thử để tránh vòng lặp vô hạn
-        int generatedCount = 0;
+        for (int i = 0; i < reviewsToGenerate; i++) {
+            Sach randomSach;
+            KhachHang randomKhachHang;
+            String reviewKey;
 
-        for (int i = 0; i < maxAttempts && generatedCount < reviewsToGenerate; i++) {
-            KhachHang randomKhachHang = allKhachHang.get(faker.number().numberBetween(0, allKhachHang.size()));
-            Sach randomSach = allSach.get(faker.number().numberBetween(0, allSach.size()));
+            // Vòng lặp để đảm bảo không tạo đánh giá trùng lặp
+            do {
+                randomKhachHang = allKhachHang.get(faker.number().numberBetween(0, allKhachHang.size()));
+                randomSach = allSach.get(faker.number().numberBetween(0, allSach.size()));
+                reviewKey = randomKhachHang.getIdKhachHang() + "-" + randomSach.getIdSach();
+            } while (danhGiaSachRepository.existsByKhachHangAndSach(randomKhachHang, randomSach));
 
-            String reviewKey = randomKhachHang.getIdKhachHang() + "-" + randomSach.getIdSach();
-            if (existingReviews.contains(reviewKey)) {
-                continue; // Bỏ qua nếu cặp này đã tồn tại
-            }
-
+            // Tạo và lưu đánh giá mới
             DanhGiaSach danhGia = DanhGiaSach.builder()
                     .khachHang(randomKhachHang)
                     .sach(randomSach)
@@ -183,10 +201,21 @@ class BackendApplicationTests {
                     .build();
             danhGiaSachRepository.save(danhGia);
 
-            existingReviews.add(reviewKey);
-            generatedCount++;
-        }
-        System.out.println("Generated " + generatedCount + " reviews successfully!");
-    }
+            // CẬP NHẬT ĐIỂM TRUNG BÌNH CHO SÁCH VỪA ĐƯỢC ĐÁNH GIÁ
+            // Lấy tất cả điểm của sách này và tính trung bình
+            List<DanhGiaSach> reviewsForBook = danhGiaSachRepository.findBySach(randomSach);
+            double averageRating = reviewsForBook.stream()
+                    .mapToInt(DanhGiaSach::getDiemXepHang)
+                    .average()
+                    .orElse(0.0);
 
+            // Làm tròn đến 1 chữ số thập phân
+            averageRating = Math.round(averageRating * 10.0) / 10.0;
+
+            randomSach.setDiemTrungBinh(averageRating);
+            sachRepository.save(randomSach); // Lưu lại sách với điểm mới
+        }
+        System.out.println("Generated " + reviewsToGenerate + " reviews and updated ratings successfully!");
+    }
 }
+

@@ -1,6 +1,8 @@
 package com.example.backend.service;
 
 import com.example.backend.common.SearchOperation;
+import com.example.backend.exception.AppException;
+import com.example.backend.exception.ErrorCode;
 import com.example.backend.model.Sach;
 import com.example.backend.model.SearchCriteria;
 import com.example.backend.model.TheLoai;
@@ -73,11 +75,13 @@ public class SachSpecification {
                 } catch (Exception e) {
                     // Ghi log lỗi chi tiết hơn
                     log.error("Bỏ qua bộ lọc cho key '{}'. Lỗi: {}", key, e.getMessage(), e);
+
                 }
             }
 
             if (predicates.isEmpty()) {
-                log.warn("Không có bộ lọc nào được áp dụng. Trả về tất cả kết quả.");
+                log.warn("Không có bộ lọc nào được áp dụng. ");
+                throw new AppException(ErrorCode.FILTER_EXCEPTION);
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
@@ -95,6 +99,8 @@ public class SachSpecification {
         if (fieldType == String.class) return rawValue;
         if (fieldType == Integer.class || fieldType == int.class) return Integer.parseInt(rawValue);
         if (fieldType == BigDecimal.class) return new BigDecimal(rawValue);
+        if (fieldType == LocalDateTime.class) return LocalDateTime.parse(rawValue);
+        if(fieldType== Double.class || fieldType == double.class) return Double.parseDouble(rawValue);
         // ... thêm các kiểu khác nếu cần
         throw new IllegalArgumentException("Kiểu dữ liệu không được hỗ trợ: " + fieldType.getName());
     }

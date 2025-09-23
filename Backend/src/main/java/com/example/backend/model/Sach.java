@@ -39,10 +39,17 @@ public class Sach {
     @Lob
     @Column(name = "mo_ta")
     private String moTa;
-    @OneToMany(mappedBy = "sach", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "sach",  cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true, fetch = FetchType.LAZY)
     @ToString.Exclude
     private Set<DanhGiaSach> danhGias = new HashSet<>() ;
+    @Column(name = "diem_trung_binh", nullable = false)
+    private Double diemTrungBinh = 0.0;
 
+
+    @ManyToOne(fetch = FetchType.LAZY) // LAZY là best practice
+    @JoinColumn(name = "id_tac_gia") // Ánh xạ tới cột khóa ngoại id_tac_gia trong bảng SACH
+    @ToString.Exclude // Tránh vòng lặp vô hạn khi logging
+    private TacGia tacGia;
     @ManyToMany(fetch = FetchType.LAZY,cascade = {CascadeType.MERGE})
     @JoinTable(name = "SACH_THE_LOAI", // Tên bảng trung gian trong CSDL
             joinColumns = @JoinColumn(name = "id_sach"), // Khóa ngoại trỏ về bảng hiện tại (SACH)
