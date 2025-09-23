@@ -1,7 +1,26 @@
-# Dockerfile (Đặt trong cùng thư mục với docker-compose.yml)
+# Stage 1: Build the application
+FROM maven:3.9.3-eclipse-temurin-17 AS build
+WORKDIR /app
 
-# Bắt đầu từ image Elasticsearch chính thức
-#FROM docker.elastic.co/elasticsearch/elasticsearch:8.11.1
-#
-## Cài đặt plugin analysis-icu để hỗ trợ phân tích ngôn ngữ (rất hữu ích cho tiếng Việt)
-#RUN /usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-icu
+# Copy pom.xml và tải dependencies trước (tăng tốc build nhờ cache)
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# Copy toàn bộ source code và build
+COPY src ./src
+RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests -Dfile.encoding=UTF-8
+
+
+# Stage 2: Run the application
+FROM eclipse-temurin:17-jdk-alpine
+WORKDIR /app
+
+# Copy jar từ stage build
+COPY --from=build /app/target/*.jar app.jar
+
+# Expose port (nếu Spring Boot mặc định 8080)
+EXPOSE 8080
+
+# Chạy Spring Boot app
+ENTRYPOINT ["java","-Xmx256m", "-jar", "app.jar"]
