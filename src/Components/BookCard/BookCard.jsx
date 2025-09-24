@@ -10,7 +10,6 @@ export default function BookCard({ id, title, author, price, image, rating }) {
           <img src={image} alt={title} />
         </div>
         <h5>{title}</h5>
-        <p className="author">{author}</p>
         <div className="price">{price}</div>
         <div className="rating">⭐ {rating}</div>
       </Link>

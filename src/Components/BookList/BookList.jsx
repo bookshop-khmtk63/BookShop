@@ -9,14 +9,35 @@ export default function BookList() {
 
   const itemsPerPage = 6;
 
-  // Hàm convert "120.000đ" -> 120000
-  const parsePrice = (p) => Number(p.replace(/[^\d]/g, ""));
+  // Hàm convert price -> number
+  const parsePrice = (p) => {
+    if (typeof p === "number") return p;
+    if (typeof p === "string") return Number(p.replace(/[^\d]/g, "")) || 0;
+    return 0;
+  };
 
-  // Lấy dữ liệu từ file JSON trong public/
+  // Gọi API
   useEffect(() => {
-    fetch("/books.json") // nhớ đổi file thành books.json
+    fetch("/api/books/all")
       .then((res) => res.json())
-      .then((data) => setBooks(data))
+      .then((json) => {
+        const rawBooks = json.data?.data || [];
+
+        // Map sang định dạng BookCard cần
+        const mapped = rawBooks.map((b) => ({
+          id: b.id,
+          title: b.nameBook,
+          author: "Không rõ", // API chưa có tác giả
+          price: b.price.toLocaleString("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          }),
+          image: b.thumbnail,
+          rating: b.averageRating,
+        }));
+
+        setBooks(mapped);
+      })
       .catch((err) => console.error("Lỗi fetch:", err));
   }, []);
 
@@ -42,7 +63,7 @@ export default function BookList() {
           value={sortOrder}
           onChange={(e) => {
             setSortOrder(e.target.value);
-            setCurrentPage(1); // reset về trang 1 khi đổi sort
+            setCurrentPage(1);
           }}
         >
           <option value="asc">Giá thấp → cao</option>

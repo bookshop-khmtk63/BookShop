@@ -13,7 +13,8 @@
     font-size: 16px;
     transition: 0.2s;
     background: #fff;
-    max-width: 280px;   /* card to hơn */
+    width: 220px;
+    height: 400px;  /* card to hơn */
     margin: 0 auto;
   }
   .book-card:hover {

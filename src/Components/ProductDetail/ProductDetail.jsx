@@ -8,42 +8,70 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
-    fetch("/books.json")
+    fetch(`/api/books/${id}`) // lấy 1 sách theo id
       .then((res) => res.json())
-      .then((data) => {
-        const found = data.find((b) => String(b.id) === id);
-        setBook(found);
-      });
+      .then((json) => {
+        const b = json.data;
+        if (b) {
+          setBook({
+            id: b.id,
+            title: b.nameBook,
+            price: b.price,
+            desc: b.describe,
+            stock: b.number,
+            categories: b.category.map((c) => c.name).join(", "),
+            rating: b.averageRating,
+          });
+        }
+      })
+      .catch((err) => console.error("Lỗi fetch:", err));
   }, [id]);
 
-  if (!book) return <div>Không tìm thấy sách hoặc đang tải...</div>;
+  if (!book) return <div></div>;
 
   return (
     <div className="product-detail-page">
       <main className="product-main">
         <div className="product-image">
-          <img src={book.image} alt={book.title} />
+          {/* Nếu API chi tiết có ảnh thì thay vào, tạm thời dùng placeholder */}
+          <img
+            src={`https://placehold.co/400x600?text=${book.title}`}
+            alt={book.title}
+          />
         </div>
 
         <div className="product-info">
           <h2 className="title">{book.title}</h2>
           <p className="desc">{book.desc}</p>
           <div className="price">
-            Giá: {book.price.toLocaleString("vi-VN")}đ
+            Giá:{" "}
+            {book.price.toLocaleString("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            })}
           </div>
           <div className="stock">Tồn kho: {book.stock}</div>
+          <div className="category">Thể loại: {book.categories}</div>
 
           <div className="cart-actions">
             <div className="quantity">
               <button onClick={() => setQuantity((q) => Math.max(1, q - 1))}>
-                -
+                  -
               </button>
-              <input type="text" value={quantity} readOnly />
-              <button onClick={() => setQuantity((q) => q + 1)}>+</button>
-            </div>
+           <input type="text" value={quantity} readOnly />
+              <button
+                 onClick={() =>
+                 setQuantity((q) => Math.min(book.stock, q + 1))
+            }
+              >
+            +
+            </button>
+           </div>
             <button
               className="add-to-cart"
-              onClick={() => console.log("Thêm giỏ hàng:", book.id, quantity)}
+              onClick={() =>
+                console.log("Thêm giỏ hàng:", book.id, quantity)
+              }
             >
               Thêm giỏ hàng
             </button>
@@ -53,7 +81,9 @@ export default function ProductDetail() {
 
       <section className="product-review">
         <h3>Đánh giá sản phẩm</h3>
-        <div className="review-box">Chưa có đánh giá nào</div>
+        <div className="review-box">
+          ⭐ {book.rating} / 5 - Chưa có đánh giá chi tiết
+        </div>
       </section>
     </div>
   );
