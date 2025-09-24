@@ -1,17 +1,30 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import "./BookCard.css";
 
-import sach from'../Assets/sach.png'
-
-export default function BookCard({ title, price }) {
+export default function BookCard({ id, title, author, price, image, rating }) {
   return (
     <div className="book-card">
-      <div className="image">
-        <img src={sach}/>
-      </div>
-      <h5>{title}</h5>
-      <div className="price">{price}</div>
-      <button className="add-to-cart">Thêm vào giỏ hàng</button>
+      <Link to={`/book/${id}`} className="book-link">
+        <div className="image">
+          <img src={image} alt={title} />
+        </div>
+        <h5>{title}</h5>
+        <p className="author">{author}</p>
+        <div className="price">{price}</div>
+        <div className="rating">⭐ {rating}</div>
+      </Link>
+
+      <button
+        className="add-to-cart"
+        onClick={(e) => {
+          e.stopPropagation(); // tránh click vào link
+          e.preventDefault();
+          console.log("Thêm vào giỏ hàng:", id);
+        }}
+      >
+        Thêm vào giỏ hàng
+      </button>
     </div>
   );
 }

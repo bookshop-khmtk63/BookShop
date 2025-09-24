@@ -30,6 +30,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
   }
   .book-card img {
     width: 160px;
@@ -63,4 +64,17 @@
   }
   .add-to-cart:hover {
     background-color: #1e4db7;
+  }
+  .rating {
+    margin: 8px 0;
+    font-size: 16px;
+    color: #f59e0b; /* màu vàng cam */
+  }
+  
+  .star {
+    color: #d1d5db; /* xám nhạt cho sao trống */
+  }
+  
+  .star.filled {
+    color: #f59e0b; /* vàng cam cho sao đầy */
   }

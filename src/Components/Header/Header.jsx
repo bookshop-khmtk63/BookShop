@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FaSearch, FaShoppingCart, FaUser } from "react-icons/fa";
+import { Link } from "react-router-dom";   // thêm
 import "./Header.css";
 
 import logo from "../Assets/logo.png";
@@ -8,14 +9,16 @@ export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const handleLogin = () => {
-    // Ở đây bạn có thể mở modal hoặc gọi API login
     setIsLoggedIn(true);
   };
 
   return (
     <header className="header">
       <div className="logo">
-        <img src={logo} alt="Logo" />
+        {/* Bọc logo trong Link */}
+        <Link to="/">
+          <img src={logo} alt="Logo" />
+        </Link>
       </div>
 
       <div className="search-bar">

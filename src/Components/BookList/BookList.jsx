@@ -6,7 +6,6 @@ export default function BookList() {
   const [books, setBooks] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState("asc");
-  const API_URL = import.meta.env.VITE_API_URL;
 
   const itemsPerPage = 6;
 
@@ -15,7 +14,7 @@ export default function BookList() {
 
   // Lấy dữ liệu từ file JSON trong public/
   useEffect(() => {
-    fetch("/book.json")
+    fetch("/books.json") // nhớ đổi file thành books.json
       .then((res) => res.json())
       .then((data) => setBooks(data))
       .catch((err) => console.error("Lỗi fetch:", err));
@@ -36,6 +35,7 @@ export default function BookList() {
 
   return (
     <main className="book-list">
+      {/* Bộ lọc sắp xếp */}
       <div className="sort">
         <label>Sắp xếp: </label>
         <select
@@ -50,12 +50,22 @@ export default function BookList() {
         </select>
       </div>
 
+      {/* Lưới hiển thị sách */}
       <div className="grid">
         {currentBooks.map((b) => (
-          <BookCard key={b.id} title={b.title} price={b.price} />
+          <BookCard
+            key={b.id}
+            id={b.id}
+            title={b.title}
+            author={b.author}
+            price={b.price}
+            image={b.image}
+            rating={b.rating}
+          />
         ))}
       </div>
 
+      {/* Phân trang */}
       <div className="pagination">
         <button
           disabled={currentPage === 1}
