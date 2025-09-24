@@ -10,7 +10,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 // Cho phép cả domain FE trên Render và localhost để dev
                 .allowedOrigins("http://localhost:3000",
-                        "https://bookshop-jeh4.onrender.com/")
+                        "https://bookshop-jeh4.onrender.com/","http://127.0.0.1:5501/index.html")
                 .allowedMethods("*") // GET, POST, PUT, DELETE...
                 .allowedHeaders("*")
                 .allowCredentials(true); // Cho phép gửi cookie/token
