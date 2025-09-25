@@ -8,11 +8,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                // Cho phép cả domain FE trên Render và localhost để dev
-                .allowedOrigins("http://localhost:3000",
-                        "https://bookshop-jeh4.onrender.com/","http://127.0.0.1:5501/index.html")
-                .allowedMethods("*") // GET, POST, PUT, DELETE...
+                .allowedOriginPatterns("*") // Cho phép tất cả domain
+                .allowedMethods("*")        // GET, POST, PUT, DELETE, OPTIONS
                 .allowedHeaders("*")
-                .allowCredentials(true); // Cho phép gửi cookie/token
+                .allowCredentials(true);
     }
 }
