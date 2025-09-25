@@ -6,10 +6,18 @@ export default function ProductDetail() {
   const { id } = useParams(); // lấy id từ URL
   const [book, setBook] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    fetch(`/api/books/${id}`) // lấy 1 sách theo id
-      .then((res) => res.json())
+    const API_URL = import.meta.env.VITE_API_URL;
+    fetch(`${API_URL}/api/books/${id}`)
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error("API không trả về JSON\n" + text);
+        }
+        return res.json();
+      })
       .then((json) => {
         const b = json.data;
         if (b) {
@@ -26,7 +34,6 @@ export default function ProductDetail() {
       })
       .catch((err) => console.error("Lỗi fetch:", err));
   }, [id]);
-
   if (!book) return <div></div>;
 
   return (
@@ -56,17 +63,17 @@ export default function ProductDetail() {
           <div className="cart-actions">
             <div className="quantity">
               <button onClick={() => setQuantity((q) => Math.max(1, q - 1))}>
-                  -
+                -
               </button>
-           <input type="text" value={quantity} readOnly />
+              <input type="text" value={quantity} readOnly />
               <button
-                 onClick={() =>
-                 setQuantity((q) => Math.min(book.stock, q + 1))
-            }
+                onClick={() =>
+                  setQuantity((q) => Math.min(book.stock, q + 1))
+                }
               >
-            +
-            </button>
-           </div>
+                +
+              </button>
+            </div>
             <button
               className="add-to-cart"
               onClick={() =>
