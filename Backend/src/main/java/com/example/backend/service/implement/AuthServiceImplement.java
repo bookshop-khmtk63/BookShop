@@ -246,7 +246,7 @@ public class AuthServiceImplement implements AuthService {
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge(0);
         refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(false);
+        refreshTokenCookie.setSecure(true);
         response.addCookie(refreshTokenCookie);
     }
 
@@ -265,7 +265,7 @@ public class AuthServiceImplement implements AuthService {
     private void addRefreshTokenCookie(HttpServletResponse response, String token) {
         Cookie refreshTokenCookie = new Cookie(refreshTokenCookieName, token);
         refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(false);
+        refreshTokenCookie.setSecure(true);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge((int) (refreshTokenExpiration / 1000));
         response.addCookie(refreshTokenCookie);
