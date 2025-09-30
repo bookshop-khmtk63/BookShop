@@ -55,6 +55,7 @@ public class GlobalHandlingException {
                 .error(errorCode.getHttpStatus().getReasonPhrase())
                 .message(errorCode.getMessage())
                 .path(path)
+                .validationErrors(validationException)
                 .build();
         return ResponseEntity.status(errorCode.getHttpStatus()).body(errorResponse);
     }

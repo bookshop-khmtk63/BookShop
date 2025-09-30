@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -33,13 +34,13 @@ public class KhachHang {
     @Column(name = "mat_khau", nullable = false)
     private String matKhau;
     @Column(name = "dia_chi", nullable = false)
-    private String diaChi;
+    private String diaChi = "Chưa cập nhật ";
 
     @Column(name = "so_dien_thoai")
     private String soDienThoai;
 
     @Column(name = "ngay_dang_ky", insertable = false, updatable = false)
-    private Timestamp ngayDangKy;
+    private Instant ngayDangKy;
 
     @Column(name = "active")
     private boolean active = true;

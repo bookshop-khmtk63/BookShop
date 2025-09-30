@@ -9,6 +9,7 @@ import com.example.backend.dto.response.ResponseData;
 import com.example.backend.service.BookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -62,4 +63,5 @@ public class BookController {
         ResponseData<PageResponse<BookResponse>> responseData =new ResponseData<>(200,"Success", searchFilter);
         return ResponseEntity.ok(responseData);
     }
+
 }

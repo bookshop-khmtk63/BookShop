@@ -2,9 +2,13 @@ package com.example.backend.mapper;
 
 import com.example.backend.dto.response.CategoryResponse;
 import com.example.backend.dto.response.CustomerResponse;
+import com.example.backend.dto.response.UserResponse;
 import com.example.backend.model.KhachHang;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,5 +31,17 @@ public class CustomerMapper {
             return null;
         }
         return customers.stream().map(this::toCustomerResponse).collect(Collectors.toList());
+    }
+    public UserResponse toUserResponse(KhachHang customer) {
+        if (customer == null) {
+            return null;
+        }
+        return UserResponse.builder()
+                .id(customer.getIdKhachHang())
+                .active(customer.isActive())
+                .username(customer.getEmail())
+                .email(customer.getEmail())
+                .expiration(LocalDateTime.ofInstant(customer.getNgayDangKy(), ZoneId.systemDefault()))
+                .build();
     }
 }

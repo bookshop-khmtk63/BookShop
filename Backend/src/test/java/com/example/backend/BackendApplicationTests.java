@@ -93,7 +93,7 @@ class BackendApplicationTests {
             KhachHang khachHang = KhachHang.builder()
                     .hoTen(faker.name().fullName())
                     .email(email)
-                    .matKhau(passwordEncoder.encode("123456")) // Mật khẩu mặc định, đã mã hóa
+                    .matKhau(passwordEncoder.encode("Quang123@")) // Mật khẩu mặc định, đã mã hóa
                     .diaChi(faker.address().fullAddress())
                     .soDienThoai(soDienThoai)
                     .active(true)

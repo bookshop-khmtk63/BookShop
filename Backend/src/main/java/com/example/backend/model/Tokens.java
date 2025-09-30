@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -35,13 +36,13 @@ public class Tokens {
     private TokenType type;
 
     @Column(name = "expiry_date", nullable = false)
-    private Timestamp expiryDate;
+    private Instant expiryDate;
 
     @Column(name = "used")
     private boolean used = false;
 
     @Column(name = "created_at", insertable = false, updatable = false)
-    private Timestamp createdAt;
+    private Instant createdAt;
 
     @Override
     public final boolean equals(Object o) {
