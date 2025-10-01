@@ -19,7 +19,7 @@
   .logo:hover {
     color: #9333ea; /* hover sang tím */
   }
-  .logo img {
+  .header .logo img {
     height: 80px;
     width: auto;
     object-fit: contain;
@@ -91,5 +91,72 @@
   .login-btn:hover {
     background: linear-gradient(90deg, #ea580c, #c2410c); /* gradient cam đậm hơn */
     transform: scale(1.05);
+  }
+  /* Khung menu user */
+  .user-menu-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .user-icon {
+    font-size: 22px;
+    cursor: pointer;
+    color: #333;
+    transition: color 0.2s ease;
+  }
+  
+  .user-icon:hover {
+    color: #007bff;
+  }
+  
+  .user-menu {
+    position: absolute;
+    top: 40px;              /* nằm ngay dưới icon user */
+    right: 0;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    min-width: 180px;
+    z-index: 1000;
+    padding: 8px 0;
+    animation: dropdownFade 0.25s ease;
+  }
+  
+  .user-menu a,
+  .user-menu button {
+    display: block;
+    width: 100%;
+    padding: 10px 15px;
+    text-align: left;
+    text-decoration: none;
+    background: none;
+    border: none;
+    outline: none;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  
+  .user-menu a:hover,
+  .user-menu button:hover {
+    background: #f5f5f5;
+    color: #007bff;
+  }
+  
+  .user-menu button {
+    text-align: left;
+  }
+  
+  @keyframes dropdownFade {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   

@@ -1,41 +1,70 @@
+// src/components/Header/Header.js
 import React, { useState } from "react";
 import { FaSearch, FaShoppingCart, FaUser } from "react-icons/fa";
-import { Link } from "react-router-dom";   // thêm
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../Context/Context";
+import logo from "../Assets/logo.png";
 import "./Header.css";
 
-import logo from "../Assets/logo.png";
-
 export default function Header() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn, logout } = useAuth();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showMenu, setShowMenu] = useState(false);
+  const navigate = useNavigate();
 
-  const handleLogin = () => {
-    setIsLoggedIn(true);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/search?keyword=${encodeURIComponent(searchTerm.trim())}`);
+      setSearchTerm(""); // reset input
+    }
   };
 
   return (
     <header className="header">
+      {/* Logo */}
       <div className="logo">
-        {/* Bọc logo trong Link */}
         <Link to="/">
           <img src={logo} alt="Logo" />
         </Link>
       </div>
 
-      <div className="search-bar">
-        <input type="text" placeholder="Tìm kiếm" />
-        <button>
+      {/* Search */}
+      <form className="search-bar" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Tìm kiếm sách..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <button type="submit">
           <FaSearch />
         </button>
-      </div>
+      </form>
 
+      {/* Icons */}
       <div className="icons">
-        <FaShoppingCart />
+        <FaShoppingCart className="cart-icon" />
+
         {isLoggedIn ? (
-          <FaUser />
+          <div className="user-menu-wrapper">
+            <FaUser
+              className="user-icon"
+              onClick={() => setShowMenu((prev) => !prev)}
+            />
+            {showMenu && (
+              <div className="user-menu">
+                <Link to="/profile">Thông tin cá nhân</Link>
+                <Link to="/orders">Đơn hàng</Link>
+                <Link to="/order-history">Lịch sử đơn hàng</Link>
+                <button onClick={logout}>Đăng xuất</button>
+              </div>
+            )}
+          </div>
         ) : (
-          <button className="login-btn" onClick={handleLogin}>
+          <Link to="/login" className="login-btn">
             Đăng nhập
-          </button>
+          </Link>
         )}
       </div>
     </header>

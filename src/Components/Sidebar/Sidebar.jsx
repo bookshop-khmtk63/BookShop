@@ -1,132 +1,99 @@
-import React from "react";
+import React, { useState } from "react";
 import "./Sidebar.css";
 
-export default function Sidebar() {
-  // Hàm chỉ cho chọn 1 checkbox trong cùng nhóm
-  const handleSingleCheck = (e, groupName) => {
-    const checkboxes = document.getElementsByName(groupName);
-    checkboxes.forEach((box) => {
-      if (box !== e.target) box.checked = false;
+export default function Sidebar({ onFilter }) {
+  const [filters, setFilters] = useState({
+    category: "",
+    price: "",
+    status: "",
+    rating: "",
+  });
+
+  // cấu hình filter groups
+  const filterGroups = [
+    {
+      key: "category",
+      label: "Thể loại",
+      options: ["Thể loại 1", "Thể loại 2", "Thể loại 3"].map((c) => ({
+        value: c,
+        label: c,
+      })),
+    },
+    {
+      key: "price",
+      label: "Giá",
+      options: [
+        { value: "under100", label: "Dưới 100k" },
+        { value: "100-500", label: "100k - 500k" },
+      ],
+    },
+    {
+      key: "status",
+      label: "Tình trạng",
+      options: [
+        { value: "available", label: "Còn hàng" },
+        { value: "out", label: "Hết hàng" },
+      ],
+    },
+    {
+      key: "rating",
+      label: "Đánh giá",
+      options: [5, 4, 3, 2, 1].map((star) => ({
+        value: String(star),
+        label: "⭐".repeat(star),
+      })),
+    },
+  ];
+
+  // chỉ cho chọn 1 option trong nhóm (toggle on/off)
+  const handleSingleCheck = (value, groupName) => {
+    setFilters((prev) => {
+      const updated = {
+        ...prev,
+        [groupName]: prev[groupName] === value ? "" : value,
+      };
+      return updated;
     });
   };
 
-  // Hàm bỏ lọc: bỏ chọn toàn bộ checkbox
+  // reset toàn bộ filter
   const handleReset = () => {
-    const allCheckboxes = document.querySelectorAll("input[type='checkbox']");
-    allCheckboxes.forEach((box) => (box.checked = false));
+    const cleared = { category: "", price: "", status: "", rating: "" };
+    setFilters(cleared);
+    onFilter({}); // báo cho cha: clear filter
+  };
+
+  // áp dụng filter hiện tại
+  const handleApply = () => {
+    onFilter(filters);
   };
 
   return (
     <aside className="sidebar">
-      <h4>Thể loại</h4>
-      <label>
-        <input
-          type="checkbox"
-          name="category"
-          onChange={(e) => handleSingleCheck(e, "category")}
-        />{" "}
-        Thể loại 1
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          name="category"
-          onChange={(e) => handleSingleCheck(e, "category")}
-        />{" "}
-        Thể loại 2
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          name="category"
-          onChange={(e) => handleSingleCheck(e, "category")}
-        />{" "}
-        Thể loại 3
-      </label>
+      {filterGroups.map((group) => (
+        <div key={group.key} className="filter-group">
+          <h4>{group.label}</h4>
+          {group.options.map((opt) => (
+            <label key={opt.value}>
+              <input
+                type="checkbox"
+                checked={filters[group.key] === opt.value}
+                onChange={() => handleSingleCheck(opt.value, group.key)}
+              />
+              {opt.label}
+            </label>
+          ))}
+        </div>
+      ))}
 
-      <h4>Giá</h4>
-      <label>
-        <input
-          type="checkbox"
-          name="price"
-          onChange={(e) => handleSingleCheck(e, "price")}
-        />{" "}
-        Dưới 100k
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          name="price"
-          onChange={(e) => handleSingleCheck(e, "price")}
-        />{" "}
-        100k - 500k
-      </label>
-
-      <h4>Tình trạng</h4>
-      <label>
-        <input
-          type="checkbox"
-          name="status"
-          onChange={(e) => handleSingleCheck(e, "status")}
-        />{" "}
-        Còn hàng
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          name="status"
-          onChange={(e) => handleSingleCheck(e, "status")}
-        />{" "}
-        Hết hàng
-      </label>
-
-      <h4>Đánh giá</h4>
-      <label>
-        <input
-          type="checkbox"
-          name="rating"
-          onChange={(e) => handleSingleCheck(e, "rating")}
-        />{" "}
-        ⭐⭐⭐⭐⭐ 
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          name="rating"
-          onChange={(e) => handleSingleCheck(e, "rating")}
-        />{" "}
-        ⭐⭐⭐⭐ 
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          name="rating"
-          onChange={(e) => handleSingleCheck(e, "rating")}
-        />{" "}
-        ⭐⭐⭐ 
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          name="rating"
-          onChange={(e) => handleSingleCheck(e, "rating")}
-        />{" "}
-        ⭐⭐ 
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          name="rating"
-          onChange={(e) => handleSingleCheck(e, "rating")}
-        />{" "}
-        ⭐
-      </label>
-
+      {/* Buttons */}
       <div className="filter-btns">
         <button className="reset" onClick={handleReset}>
           Bỏ lọc
         </button>
-        <button className="apply">Lọc</button>
+        <button className="apply" onClick={handleApply}>
+          Lọc
+        </button>
       </div>
     </aside>
   );
