@@ -82,10 +82,12 @@ public class EmailNotificationService {
             gmail.setTo(recipientEmail);
             gmail.setText(messageText);
             mailSender.send(gmail);
-            log.info("Gưi thành công yêu cầu xác thực đến địa chỉ : {}",recipientEmail);
-        }catch (Exception e) {
-            log.warn("Không thể gửi tin nhắn đển gmail: {}", recipientEmail);
-            throw new RuntimeException("Gửi gmail thất bại đến  "+ recipientEmail,e);
+            log.info("Gửi thành công yêu cầu xác thực đến địa chỉ: {}", recipientEmail);
+        } catch (Exception e) {
+            // Ghi log lỗi với đầy đủ stack trace để biết chính xác nguyên nhân
+            log.error("Không thể gửi tin nhắn đến gmail: {}. Lỗi chi tiết: ", recipientEmail, e);
+            // Sau đó mới throw lại exception để luồng xử lý bên ngoài biết là đã có lỗi
+            throw new RuntimeException("Gửi gmail thất bại đến " + recipientEmail, e);
         }
     }
 }
