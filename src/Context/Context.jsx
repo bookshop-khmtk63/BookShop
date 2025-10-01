@@ -14,21 +14,17 @@ export function AuthProvider({ children }) {
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Khi app load, đọc token + user từ localStorage
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-
     if (storedToken && storedUser) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
       setIsLoggedIn(true);
     }
-
     setIsLoading(false);
   }, []);
 
-  // login
   const login = (accessToken, userData) => {
     setIsLoggedIn(true);
     setUser(userData);
@@ -37,13 +33,11 @@ export function AuthProvider({ children }) {
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
-  // logout
   const logout = async () => {
     try {
       await fetch(`${API_URL}/api/auth/logout`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
-        credentials: "include",
       });
     } catch (err) {
       console.error("Logout error:", err);
@@ -55,7 +49,6 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("user");
   };
 
-  // refresh token
   const refreshToken = async () => {
     try {
       const res = await fetch(`${API_URL}/api/auth/refresh-token`, {
@@ -63,17 +56,9 @@ export function AuthProvider({ children }) {
         credentials: "include",
       });
       const data = await res.json();
-
       if (res.ok && data.data) {
         const newToken = data.data.accessToken;
-        const userData = {
-          fullName: data.data.fullName,
-          email: data.data.email,
-          phone: data.data.phone,
-          address: data.data.address,
-          role: data.data.role,
-        };
-        login(newToken, userData);
+        login(newToken, { email: data.data.email, role: data.data.role });
         return newToken;
       } else {
         logout();

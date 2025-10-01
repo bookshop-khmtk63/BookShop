@@ -1,4 +1,3 @@
-// src/components/Header/Header.js
 import React, { useState } from "react";
 import { FaSearch, FaShoppingCart, FaUser } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
@@ -16,20 +15,18 @@ export default function Header() {
     e.preventDefault();
     if (searchTerm.trim()) {
       navigate(`/search?keyword=${encodeURIComponent(searchTerm.trim())}`);
-      setSearchTerm(""); // reset input
+      setSearchTerm("");
     }
   };
 
   return (
     <header className="header">
-      {/* Logo */}
       <div className="logo">
         <Link to="/">
           <img src={logo} alt="Logo" />
         </Link>
       </div>
 
-      {/* Search */}
       <form className="search-bar" onSubmit={handleSubmit}>
         <input
           type="text"
@@ -42,10 +39,8 @@ export default function Header() {
         </button>
       </form>
 
-      {/* Icons */}
       <div className="icons">
         <FaShoppingCart className="cart-icon" />
-
         {isLoggedIn ? (
           <div className="user-menu-wrapper">
             <FaUser

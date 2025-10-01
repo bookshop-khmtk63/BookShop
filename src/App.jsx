@@ -23,7 +23,6 @@ import ProtectedRoute from "./routes/ProtectedRoute/ProtectedRoute";
 
 import "./App.css";
 
-// Layout chính
 function MainLayout({ filters, setFilters }) {
   return (
     <div className="app">
@@ -55,13 +54,12 @@ function AppWrapper() {
   const [filters, setFilters] = useState({});
   const { isLoading } = useAuth();
 
-  if (isLoading) {
+  if (isLoading)
     return (
       <div style={{ textAlign: "center", marginTop: "100px" }}>
         ⏳ Đang kiểm tra đăng nhập...
       </div>
     );
-  }
 
   return (
     <Routes>
@@ -74,7 +72,10 @@ function AppWrapper() {
       <Route path="/register-success" element={<RegisterSuccess />} />
 
       {/* Main app */}
-      <Route path="/*" element={<MainLayout filters={filters} setFilters={setFilters} />} />
+      <Route
+        path="/*"
+        element={<MainLayout filters={filters} setFilters={setFilters} />}
+      />
     </Routes>
   );
 }
