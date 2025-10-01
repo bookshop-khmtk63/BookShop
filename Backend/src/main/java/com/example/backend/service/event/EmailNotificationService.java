@@ -10,6 +10,7 @@ import com.example.backend.service.CustomerService;
 import com.example.backend.service.TokensService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.core.token.TokenService;
@@ -24,7 +25,8 @@ public class EmailNotificationService {
     private final CustomerService customerService;
     private final TokensService tokensService;
     private final JavaMailSenderImpl mailSender;
-
+    @Value("${spring.mail.from}")
+    private String fromEmail;
     public void sendToGmail(UserRegisterEvent userRegisterEvent) {
       log.info("Gửi tin nhắn đến gmail");
       switch (userRegisterEvent.getEventName()){
@@ -75,6 +77,7 @@ public class EmailNotificationService {
     private void sendEmail(String recipientEmail, String subject, String messageText) {
         try {
             SimpleMailMessage gmail = new SimpleMailMessage();
+            gmail.setFrom(fromEmail);
             gmail.setSubject(subject);
             gmail.setTo(recipientEmail);
             gmail.setText(messageText);
