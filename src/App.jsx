@@ -34,6 +34,7 @@ function MainLayout({ filters, setFilters }) {
           <Routes>
             <Route path="/" element={<BookList filters={filters} />} />
             <Route path="/book/:id" element={<ProductDetail />} />
+            <Route path="/search" element={<SearchPage />} />
             <Route
               path="/profile"
               element={
@@ -42,7 +43,6 @@ function MainLayout({ filters, setFilters }) {
                 </ProtectedRoute>
               }
             />
-            <Route path="/search" element={<SearchPage />} />
           </Routes>
         </main>
       </div>
@@ -51,7 +51,6 @@ function MainLayout({ filters, setFilters }) {
   );
 }
 
-// Wrapper để load auth trước khi render app
 function AppWrapper() {
   const [filters, setFilters] = useState({});
   const { isLoading } = useAuth();
@@ -66,21 +65,16 @@ function AppWrapper() {
 
   return (
     <Routes>
-      {/* Trang auth */}
+      {/* Public routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot" element={<AuthPassword mode="forgot" />} />
       <Route path="/reset" element={<AuthPassword mode="reset" />} />
-
-      {/* Xác thực email */}
       <Route path="/register-confirmation" element={<RegisterConfirmation />} />
       <Route path="/register-success" element={<RegisterSuccess />} />
 
       {/* Main app */}
-      <Route
-        path="/*"
-        element={<MainLayout filters={filters} setFilters={setFilters} />}
-      />
+      <Route path="/*" element={<MainLayout filters={filters} setFilters={setFilters} />} />
     </Routes>
   );
 }
