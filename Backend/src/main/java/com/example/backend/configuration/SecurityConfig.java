@@ -10,6 +10,7 @@ import org.springframework.core.Ordered;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -57,7 +58,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configure(http)) // Cấu hình CORS
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable) // Vô hiệu hóa CSRF cho API stateless
 
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((AuthenticationEntryPoint) customerAuthenticationEntrypoint)) // Xử lý lỗi 401
