@@ -2,20 +2,23 @@
 FROM node:22 AS build
 WORKDIR /app
 
-# Copy package.json và lock file để install deps
+# Copy package.json và lock file
 COPY package*.json ./
+
+# Cài dependencies
 RUN npm install
 
-# Copy toàn bộ source code
+# Copy toàn bộ source code và .env
 COPY . .
+COPY .env .env
 
-# Build project (output mặc định là /app/dist)
+# Build project (Vite sẽ đọc .env)
 RUN npm run build
 
 # Stage 2: Serve bằng Nginx
 FROM nginx:alpine
 
-# Xóa content mặc định của nginx
+# Xóa content mặc định
 RUN rm -rf /usr/share/nginx/html/*
 
 # Copy từ stage build
