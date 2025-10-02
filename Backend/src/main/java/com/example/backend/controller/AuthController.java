@@ -33,17 +33,22 @@ public class AuthController {
         return ResponseEntity.ok(responseData);
     }
 
+
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response, HttpServletRequest request) {
         authService.logout(request, response);
         return ResponseEntity.ok("Logout successful");
     }
+
+    //API lấy access-token từ refresh-token được lưu ở cookie
     @PostMapping("/refresh-token")
     public ResponseEntity<RefreshTokenResponse> refreshToken(@CookieValue(name = "refresh_token") String refreshToken) {
         RefreshTokenResponse refreshTokenResponse = authService.refreshToken(refreshToken);
         return ResponseEntity.ok(refreshTokenResponse);
     }
 
+
+    //API tạo tài khoản
     @PostMapping("/register")
     public ResponseEntity<ResponseData<UserResponse>> response(@Valid @RequestBody RegisterRequest registerRequest, HttpServletRequest request) {
         UserResponse user = authService.register(registerRequest, request);
@@ -51,6 +56,7 @@ public class AuthController {
         return ResponseEntity.ok(responseData);
     }
 
+    // API Xác thực tài khoản bằng link url gửi tới gmail
     @GetMapping("/registerConfirmation")
     public RedirectView registerConfirmation(@RequestParam("token") String token) {
         try {
@@ -61,6 +67,7 @@ public class AuthController {
         }
     }
 
+    // API gửi lại link  xác thực đến gmail
     @PostMapping("/send-verification")
     public ResponseEntity<ResponseData<String>> resendVerification(@Valid @RequestBody ResendVerificationRequest resendVerificationRequest,HttpServletRequest request) {
         authService.resendVerification(resendVerificationRequest,request);
@@ -69,18 +76,24 @@ public class AuthController {
 
         return ResponseEntity.ok(responseData);
     }
+
+    // API gửi mã OTP đến gmail khi quên mật khẩu
     @PostMapping("/forgot-password")
     public ResponseEntity<ResponseData<String>> restPassword(@Valid @RequestBody ForgotPassword forgotPassword, HttpServletRequest request) {
         authService.forgotPassword(forgotPassword,request);
         ResponseData<String> responseData = new ResponseData<>(200, "Mã otp đã được gửi thành công . Vui lòng kiểm tra hộp thư của bạn.", null);
         return ResponseEntity.ok(responseData);
     }
+
+    // API tạo reset-token khi verify otp
     @PostMapping("/verify-otp")
     public ResponseEntity<ResponseData<ResetTokenResponse>> resetToken(@Valid @RequestBody VerifyOtpRequest verifyOtpRequest) {
         ResetTokenResponse resetToken = authService.getResetToken(verifyOtpRequest);
         ResponseData<ResetTokenResponse> responseData = new ResponseData<>(200, "OTP hợp lệ", resetToken);
         return ResponseEntity.ok(responseData);
     }
+
+    //API đặt lại mật khẩu
     @PostMapping("/rest-password")
     public ResponseEntity<ResponseData<String>> restPassword(@Valid @RequestBody RestPasswordRequest restPasswordRequest) {
             authService.resetPassword(restPasswordRequest);

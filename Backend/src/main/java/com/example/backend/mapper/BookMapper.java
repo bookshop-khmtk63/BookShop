@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BookMapper {
     private final CategoryMapper categoryMapper;
+    private final BookReviewMapper bookReviewMapper;
     public BookDetailResponse toBookDetailResponse(Sach book) {
         if (book == null) return null;
 
@@ -31,6 +32,7 @@ public class BookMapper {
                 .category(getCategoryNames(book))
                 .averageRating(book.getDiemTrungBinh())
                 .number(book.getSoLuong())
+                .reviews(bookReviewMapper.BookReviews(book))
                 .build();
     }
 

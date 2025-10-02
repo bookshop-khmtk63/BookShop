@@ -112,6 +112,8 @@ public class AuthServiceImplement implements AuthService {
         }
 
 
+        // Tạo tài khoản
+
     @Override
     @Transactional
     public UserResponse register(RegisterRequest registerRequest, HttpServletRequest request) {
@@ -147,6 +149,7 @@ public class AuthServiceImplement implements AuthService {
         return "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
     }
 
+    // Xác thực tài khoản bằng link url gửi tới gmail
     @Override
     @Transactional
     public void confirmRegistration(String token) {
@@ -159,6 +162,8 @@ public class AuthServiceImplement implements AuthService {
         log.info("ket thúc : {}", user);
     }
 
+
+    //Lấy accset-token bằng
     @Override
     public RefreshTokenResponse refreshToken(String refreshToken) {
         return tokensService.finByToken(refreshToken)

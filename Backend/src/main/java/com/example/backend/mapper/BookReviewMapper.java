@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.awt.print.Book;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -27,10 +28,10 @@ public class BookReviewMapper {
                 .build();
     }
 
-    public List<BookReviewResponse> BookReviews(Sach sach) {
+    public Set<BookReviewResponse> BookReviews(Sach sach) {
         if (sach == null) {
             return null;
         }
-        return sach.getDanhGias().stream().map(this::toBookReview).collect(Collectors.toList());
+        return sach.getDanhGias().stream().map(this::toBookReview).collect(Collectors.toSet());
     }
 }

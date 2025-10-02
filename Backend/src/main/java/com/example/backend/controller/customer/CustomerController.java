@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 @PreAuthorize("hasRole('USER')")
 public class CustomerController {
     private final CustomerService customerService;
+
+  //API Cập nhật thông tin người dùng
   @PatchMapping("/update-customer")
     public ResponseEntity<ResponseData<CustomerResponse>> updateCustomer(@Valid @RequestBody UserUpdateRequest userUpdateRequest) {
       CustomerResponse customerResponse = customerService.updateCustomer(userUpdateRequest);
