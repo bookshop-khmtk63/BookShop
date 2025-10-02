@@ -20,7 +20,7 @@ public enum ErrorCode {
     TOKEN_ALREADY_USED(2009,"Token đã được kich hoạt" ,HttpStatus.BAD_REQUEST ),
     TOKEN_EXPIRED(2010,"Token hết hạn" ,HttpStatus.BAD_REQUEST ),
     PASSWORD_CONFIRMATION_MISMATCH(2011,"Mật khẩu và xác nhận mật khẩu không khớp." ,HttpStatus.BAD_REQUEST ),
-    BAD_CREDENTIALS(2012,"test" ,HttpStatus.BAD_REQUEST ),
+    BAD_CREDENTIALS(2012,"Sai tài khoản hoặc mật khẩu" ,HttpStatus.BAD_REQUEST ),
     REFRESHTOKEN_EXPIRED(2013,"Refresh token hết hạn, bạn hãy bắt đầu với phiên đăng nhập mới" ,HttpStatus.UNAUTHORIZED ),
     USER_ALREADY_ACTIVATED(2014,"Taì khoản đã được kích hoạt" ,HttpStatus.CONFLICT ),
     INVALID_TOKEN(2015,"loai token không hợp lệ" ,HttpStatus.BAD_REQUEST ),;

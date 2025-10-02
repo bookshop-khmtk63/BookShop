@@ -48,8 +48,6 @@ public class BookController {
     public ResponseEntity<ResponseData<PageResponse<BookResponse>>> searchBook(@RequestParam(required = false) String keyword,
                                                                       @RequestParam(defaultValue = "0") int page,
                                                                       @RequestParam(defaultValue = "6") int size) {
-
-
         PageResponse<BookResponse> pageBook = bookService.advancedSearch(keyword,page,size);
         ResponseData<PageResponse<BookResponse>> responseData = new ResponseData<>(200,"success",pageBook);
         return ResponseEntity.ok(responseData);

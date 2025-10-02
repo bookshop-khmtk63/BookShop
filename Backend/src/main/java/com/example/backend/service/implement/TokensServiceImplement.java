@@ -53,6 +53,7 @@ public class TokensServiceImplement implements TokensService {
     }
 
     @Override
+    @Transactional
     public void deleteRefreshToken(String refreshTokenString) {
         tokensRepository.findByToken(refreshTokenString).ifPresent(token -> {
             if (token.getType() == TokenType.REFRESH) {
@@ -72,11 +73,13 @@ public class TokensServiceImplement implements TokensService {
 
 
     @Override
+    @Transactional
     public void createOtpToken(String token, KhachHang customer) {
         createToken(customer, token, TokenType.RESET, expirationMs);
     }
 
     @Override
+    @Transactional
     public void createRestToken(KhachHang customer, String token) {
         createToken(customer, token, TokenType.PASSWORD_RESET, expirationMs);
     }
