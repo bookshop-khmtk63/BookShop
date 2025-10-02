@@ -9,15 +9,17 @@ export default function BookList({ filters }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const itemsPerPage = 6; // mỗi trang 6 cuốn
+  const itemsPerPage = 6;
   const API_URL = import.meta.env.VITE_API_URL;
 
+  // Hàm parse giá tiền (dùng cho lọc + sắp xếp)
   const parsePrice = (p) => {
     if (typeof p === "number") return p;
     if (typeof p === "string") return Number(p.replace(/[^\d]/g, "")) || 0;
     return 0;
   };
 
+  // Fetch toàn bộ sách
   useEffect(() => {
     setLoading(true);
     setError(null);
@@ -40,7 +42,8 @@ export default function BookList({ filters }) {
           image: b.thumbnail,
           rating: b.averageRating || 0,
           status: b.status?.toLowerCase() || "available",
-          category: b.category || "Khác",
+          categoryId: String(b.category?.id || ""), // ✅ dùng id để lọc
+          category: b.category?.name || "Khác", // tên hiển thị
         }));
         setBooks(mapped);
       })
@@ -50,7 +53,7 @@ export default function BookList({ filters }) {
       .finally(() => setLoading(false));
   }, [API_URL]);
 
-  // Lọc sách theo filters
+  // ✅ Lọc theo filters
   const filteredBooks = books.filter((book) => {
     if (
       filters.search &&
@@ -58,43 +61,51 @@ export default function BookList({ filters }) {
     ) {
       return false;
     }
-    if (filters.category && book.category !== filters.category) return false;
+
+    // Lọc theo categoryId
+    if (filters.category && book.categoryId !== filters.category) return false;
+
+    // Lọc theo giá
     if (filters.price === "under100" && parsePrice(book.price) >= 100000)
       return false;
+
     if (
       filters.price === "100-500" &&
       (parsePrice(book.price) < 100000 || parsePrice(book.price) > 500000)
     )
       return false;
+
+    // Lọc theo trạng thái
     if (filters.status && book.status !== filters.status) return false;
+
+    // Lọc theo rating
     if (filters.rating && book.rating < Number(filters.rating)) return false;
 
     return true;
   });
 
-  // Sắp xếp sách theo giá
+  // ✅ Sắp xếp theo giá
   const sortedBooks = [...filteredBooks].sort((a, b) =>
     sortOrder === "asc"
       ? parsePrice(a.price) - parsePrice(b.price)
       : parsePrice(b.price) - parsePrice(a.price)
   );
 
-  // Phân trang frontend
+  // ✅ Phân trang frontend
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentBooks = sortedBooks.slice(indexOfFirst, indexOfLast);
-
   const totalPages = Math.ceil(filteredBooks.length / itemsPerPage);
 
-  // Helper tạo mảng pagination gọn
+  // Helper pagination
   const getPageNumbers = (currentPage, totalPages, delta = 1) => {
     const pages = [];
     const range = [];
 
     for (let i = 1; i <= totalPages; i++) {
       if (
-        i === 1 || // luôn hiển thị trang đầu
-        i === totalPages || // luôn hiển thị trang cuối
+        i === 1 ||
+        i === totalPages ||
         (i >= currentPage - delta && i <= currentPage + delta)
       ) {
         range.push(i);
@@ -104,7 +115,7 @@ export default function BookList({ filters }) {
     let lastPage = 0;
     for (let i of range) {
       if (i - lastPage > 1) {
-        pages.push("dots"); // thêm … nếu gián đoạn
+        pages.push("dots");
       }
       pages.push(i);
       lastPage = i;
@@ -115,6 +126,7 @@ export default function BookList({ filters }) {
 
   return (
     <main className="book-list">
+      {/* Sort */}
       <div className="sort">
         <label>Sắp xếp: </label>
         <select
@@ -129,9 +141,11 @@ export default function BookList({ filters }) {
         </select>
       </div>
 
+      {/* Hiển thị trạng thái */}
       {loading && <p>Đang tải sách...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
+      {/* Grid sách */}
       <div className="grid">
         {!loading &&
           !error &&
@@ -149,7 +163,7 @@ export default function BookList({ filters }) {
           ))}
       </div>
 
-      {/* Pagination frontend */}
+      {/* Pagination */}
       {!loading && !error && totalPages > 1 && (
         <div className="pagination">
           <button

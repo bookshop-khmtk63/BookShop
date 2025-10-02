@@ -12,10 +12,10 @@ export default function ProfileForm() {
     email: "",
     address: "",
   });
-  const [editing, setEditing] = useState({});
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(""); // nội dung thông báo
+  const [messageType, setMessageType] = useState("success"); // 'success' | 'error'
 
-  // Load thông tin user vào form khi component mount
   useEffect(() => {
     if (user) {
       setForm({
@@ -29,9 +29,6 @@ export default function ProfileForm() {
 
   const handleChange = (e) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-
-  const toggleEdit = (field) =>
-    setEditing((prev) => ({ ...prev, [field]: !prev[field] }));
 
   const updateProfile = async (currentToken) => {
     const res = await fetch(`${API_URL}/api/customer/update-customer`, {
@@ -55,29 +52,30 @@ export default function ProfileForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setMessage("");
 
     try {
       if (!token) throw new Error("Token không tồn tại, vui lòng đăng nhập lại.");
 
       try {
-        // Gọi API update lần đầu
         await updateProfile(token);
       } catch (err) {
-        // Nếu 401 thì thử refresh token
         if (err.status === 401 && refreshToken) {
           const newToken = await refreshToken();
           if (!newToken) throw new Error("Không lấy được token mới, vui lòng đăng nhập lại.");
-          await updateProfile(newToken); // gọi lại API với token mới
+          await updateProfile(newToken);
         } else {
           throw err;
         }
       }
 
-      alert("Cập nhật thành công!");
+      setMessage("Cập nhật thành công!");
+      setMessageType("success");
       setUser({ ...user, ...form });
     } catch (err) {
       console.error("Update error:", err);
-      alert(err.message || "Cập nhật thất bại!");
+      setMessage(err.message || "Cập nhật thất bại!");
+      setMessageType("error");
     } finally {
       setLoading(false);
     }
@@ -98,24 +96,14 @@ export default function ProfileForm() {
         <div key={key} className="form-row">
           <label className="form-label">{labels[key]}</label>
           <div className="form-content">
-            {editing[key] ? (
-              <input
-                type="text"
-                name={key}
-                value={value}
-                placeholder="Nhập dữ liệu..."
-                onChange={handleChange}
-              />
-            ) : (
-              <span>{value || (key === "phone" ? "Chưa có số điện thoại" : "")}</span>
-            )}
+            <input
+              type="text"
+              name={key}
+              value={value}
+              placeholder="Nhập dữ liệu..."
+              onChange={handleChange}
+            />
           </div>
-          <input
-            type="button"
-            className="edit-btn"
-            value={editing[key] ? "Lưu" : "Sửa"}
-            onClick={() => toggleEdit(key)}
-          />
         </div>
       ))}
 
@@ -125,6 +113,15 @@ export default function ProfileForm() {
         value={loading ? "Đang lưu..." : "Lưu thay đổi"}
         disabled={loading}
       />
+
+      {message && (
+        <p
+          className="form-message"
+          style={{ color: messageType === "success" ? "green" : "red" }}
+        >
+          {message}
+        </p>
+      )}
     </form>
   );
 }

@@ -9,7 +9,9 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+
+  const [errorEmail, setErrorEmail] = useState("");
+  const [errorGeneral, setErrorGeneral] = useState("");
 
   // show/hide mật khẩu
   const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +20,7 @@ export default function Register() {
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // ✅ check điều kiện password
+  // ✅ kiểm tra điều kiện password
   const passwordChecks = {
     length: password.length >= 8,
     lowercase: /[a-z]/.test(password),
@@ -30,39 +32,38 @@ export default function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setError("");
+    setErrorEmail("");
+    setErrorGeneral("");
 
     if (password !== confirmPassword) {
-      setError("Mật khẩu nhập lại không khớp!");
+      setErrorGeneral("Mật khẩu nhập lại không khớp!");
       return;
     }
 
     try {
       setLoading(true);
-      console.log("Sending:", { email, password, confirmPassword });
 
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-          confirmPassword: confirmPassword,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, confirmPassword }),
       });
 
       const data = await res.json();
-      console.log("Response:", data);
 
       if (!res.ok) {
-        throw new Error(data.message || "Đăng ký thất bại");
+        if (res.status === 400 && data.validationErrors?.email) {
+          setErrorEmail(data.validationErrors.email); // hiện trong ô email
+        } else {
+          setErrorGeneral(data.message || "Đăng ký thất bại!");
+        }
+        return;
       }
 
-      navigate("/register-success")
+      navigate("/register-success");
     } catch (err) {
-      setError(err.message);
+      setErrorGeneral("Không thể kết nối tới server!");
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -70,7 +71,7 @@ export default function Register() {
 
   return (
     <div className="register-container">
-      {/* Logo bên trái */}
+      {/* Logo */}
       <div className="logo-section">
         <div className="logo-placeholder">
           <img src={logo} alt="Logo" />
@@ -82,13 +83,17 @@ export default function Register() {
         <div className="register-box">
           <h2>ĐĂNG KÝ</h2>
           <form onSubmit={handleRegister}>
-            <input
-              type="email"
-              placeholder="Email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            {/* Email */}
+            <div className="input-group">
+              <input
+                type="email"
+                placeholder="Email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              {errorEmail && <p className="error-text">{errorEmail}</p>}
+            </div>
 
             {/* Mật khẩu */}
             <div className="password-field">
@@ -107,8 +112,9 @@ export default function Register() {
               </span>
             </div>
 
-            {/* ✅ Hiển thị điều kiện mật khẩu */}
+            {/* Hiển thị điều kiện mật khẩu */}
             
+
             {/* Nhập lại mật khẩu */}
             <div className="password-field">
               <input
@@ -120,9 +126,7 @@ export default function Register() {
               />
               <span
                 className="eye"
-                onClick={() =>
-                  setShowConfirmPassword(!showConfirmPassword)
-                }
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
                 {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
@@ -148,7 +152,8 @@ export default function Register() {
               </li>
             </ul>
 
-            {error && <p style={{ color: "red" }}>{error}</p>}
+            {/* Lỗi chung */}
+            {errorGeneral && <p className="error-text">{errorGeneral}</p>}
 
             <button type="submit" disabled={loading}>
               {loading ? "Đang xử lý..." : "ĐĂNG KÝ"}
@@ -160,8 +165,7 @@ export default function Register() {
           </div>
 
           <p>
-            Bạn đã có tài khoản?{" "}
-            <Link to="/login">Đăng nhập</Link>
+            Bạn đã có tài khoản? <Link to="/login">Đăng nhập</Link>
           </p>
         </div>
       </div>

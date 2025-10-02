@@ -8,7 +8,7 @@ import logo from "../../assets/logo.png";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(""); 
   const [showPassword, setShowPassword] = useState(false);
 
   const { login } = useAuth();
@@ -29,7 +29,12 @@ export default function Login() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || "Đăng nhập thất bại!");
+        // Nếu API trả về code 2003 (không tìm thấy tài khoản)
+        if (res.status === 404 && data.code === 2003) {
+          setError("Sai tên tài khoản hoặc mật khẩu");
+        } else {
+          setError(data.message || "Đăng nhập thất bại!");
+        }
         return;
       }
 
@@ -50,7 +55,9 @@ export default function Login() {
   return (
     <div className="login-container">
       <div className="logo-section">
-        <div className="logo"><img src={logo} alt="Logo" /></div>
+        <div className="logo">
+          <img src={logo} alt="Logo" />
+        </div>
       </div>
       <div className="form-section">
         <div className="login-box">
@@ -81,9 +88,15 @@ export default function Login() {
             <button type="submit">ĐĂNG NHẬP</button>
           </form>
 
-          {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
+          {error && (
+            <p style={{ color: "red", marginTop: "10px", fontWeight: "bold" }}>
+              {error}
+            </p>
+          )}
 
-          <Link to="/forgot" className="forgot">Quên mật khẩu</Link>
+          <Link to="/forgot" className="forgot">
+            Quên mật khẩu
+          </Link>
           <div className="divider"></div>
           <p>
             Bạn mới biết đến trang web? <Link to="/register">Đăng ký</Link>

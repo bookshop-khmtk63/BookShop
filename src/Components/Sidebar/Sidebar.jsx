@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Sidebar.css";
 
 export default function Sidebar({ onFilter }) {
@@ -9,15 +9,39 @@ export default function Sidebar({ onFilter }) {
     rating: "",
   });
 
+  const [categories, setCategories] = useState([]);
+
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  // Lấy categories từ API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/books/category`);
+        if (!res.ok) throw new Error("Lỗi khi tải thể loại");
+        const result = await res.json();
+
+        const categoriesArray = Array.isArray(result.data) ? result.data : [];
+
+        setCategories(
+          categoriesArray.map((c) => ({
+            value: c.id,   // id để filter
+            label: c.name, // tên hiển thị
+          }))
+        );
+      } catch (err) {
+        console.error("❌ Lỗi tải categories:", err);
+      }
+    };
+    fetchCategories();
+  }, [API_URL]);
+
   // cấu hình filter groups
   const filterGroups = [
     {
       key: "category",
       label: "Thể loại",
-      options: ["Thể loại 1", "Thể loại 2", "Thể loại 3"].map((c) => ({
-        value: c,
-        label: c,
-      })),
+      options: categories,
     },
     {
       key: "price",
@@ -45,25 +69,18 @@ export default function Sidebar({ onFilter }) {
     },
   ];
 
-  // chỉ cho chọn 1 option trong nhóm (toggle on/off)
   const handleSingleCheck = (value, groupName) => {
-    setFilters((prev) => {
-      const updated = {
-        ...prev,
-        [groupName]: prev[groupName] === value ? "" : value,
-      };
-      return updated;
-    });
+    setFilters((prev) => ({
+      ...prev,
+      [groupName]: prev[groupName] === value ? "" : value,
+    }));
   };
 
-  // reset toàn bộ filter
   const handleReset = () => {
-    const cleared = { category: "", price: "", status: "", rating: "" };
-    setFilters(cleared);
-    onFilter({}); // báo cho cha: clear filter
+    setFilters({ category: "", price: "", status: "", rating: "" });
+    onFilter({});
   };
 
-  // áp dụng filter hiện tại
   const handleApply = () => {
     onFilter(filters);
   };
@@ -86,7 +103,6 @@ export default function Sidebar({ onFilter }) {
         </div>
       ))}
 
-      {/* Buttons */}
       <div className="filter-btns">
         <button className="reset" onClick={handleReset}>
           Bỏ lọc
