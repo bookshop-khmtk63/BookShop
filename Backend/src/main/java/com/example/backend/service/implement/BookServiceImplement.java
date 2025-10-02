@@ -45,7 +45,7 @@ public class BookServiceImplement implements BookService {
     }
 
     @Override
-    public PageResponse<BookResponse> filterBooks(int page, int size, List<String> filters) {
+    public PageResponse<BookResponse> filterBooks(Pageable pageable, List<String> filters) {
         List<SearchCriteria> criteriaList = new ArrayList<>();
         if (filters != null) {
             // SỬA LỖI REGEX TẠI ĐÂY
@@ -67,7 +67,7 @@ public class BookServiceImplement implements BookService {
         }
 
         Specification<Sach> specification = SachSpecification.fromCriteria(criteriaList);
-        Pageable pageable = PageRequest.of(page,size);
+
         Page<Sach> sachPage = sachRepository.findAll(specification, pageable);
 
         List<BookResponse> bookResponses = sachPage.getContent()

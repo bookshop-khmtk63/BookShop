@@ -6,6 +6,7 @@ import com.example.backend.dto.response.*;
 import com.example.backend.service.BookService;
 import com.example.backend.service.CategoryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -53,10 +54,9 @@ public class BookController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<ResponseData<PageResponse<BookResponse>>> SearchFilter (@RequestParam(defaultValue = "0") int page,
-                                                                                         @RequestParam(defaultValue = "12") int size,
+    public ResponseEntity<ResponseData<PageResponse<BookResponse>>> SearchFilter ( Pageable pageable,
                                                                                   @RequestParam (required = false, name = "filters") List<String> filters ){
-        PageResponse<BookResponse> searchFilter = bookService.filterBooks(page,size,filters);
+        PageResponse<BookResponse> searchFilter = bookService.filterBooks(pageable,filters);
         ResponseData<PageResponse<BookResponse>> responseData =new ResponseData<>(200,"Success", searchFilter);
         return ResponseEntity.ok(responseData);
     }
