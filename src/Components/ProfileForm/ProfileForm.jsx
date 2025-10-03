@@ -12,13 +12,12 @@ export default function ProfileForm() {
     address: "",
   });
 
-  const [errors, setErrors] = useState([]); // array chứa các thông báo lỗi
+  const [errors, setErrors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(""); 
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Lấy thông tin user
   const fetchUserData = async () => {
     try {
       const { res, data } = await callApiWithToken(`${API_URL}/api/customer/me`);
@@ -43,7 +42,6 @@ export default function ProfileForm() {
 
   useEffect(() => {
     fetchUserData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = (e) => {
@@ -54,26 +52,43 @@ export default function ProfileForm() {
     e.preventDefault();
     setSuccess("");
     setErrors([]);
-
+  
     const newErrors = [];
-
+  
     if (!form.fullName.trim()) newErrors.push("Họ tên không được để trống");
-
-    if (!form.email.trim()) newErrors.push("Email không được để trống");
-    else if (!/^[^\s@]+@[^\s@]+\.com$/.test(form.email))
-      newErrors.push("Email không hợp lệ! ");
-
+  
+    // ✅ Validate email chi tiết
+    if (!form.email.trim()) {
+        newErrors.push("Email không được để trống");
+      } else {
+        // Regex check chuẩn email (.com hoặc các domain khác)
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+        if (!emailRegex.test(form.email)) {
+          newErrors.push("Email không hợp lệ");
+        }
+      }
+      
+  
     if (!form.phone.trim()) newErrors.push("Số điện thoại không được để trống");
-    else if (!/^\d{10}$/.test(form.phone))
-      newErrors.push("Số điện thoại không hợp lệ! ");
-
+    else if (!/^\d{10}$/.test(form.phone)) newErrors.push("Số điện thoại không hợp lệ!");
+  
     if (!form.address.trim()) newErrors.push("Địa chỉ không được để trống");
-
+    if (
+        !form.fullName.trim() &&
+        !form.email.trim() &&
+        !form.phone.trim() &&
+        !form.address.trim()
+      ) {
+        setErrors(["Không được để trống"]);
+        return;
+      }
+  
     if (newErrors.length > 0) {
       setErrors(newErrors);
       return;
     }
-
+  
     try {
       const { res, data } = await callApiWithToken(
         `${API_URL}/api/customer/update-customer`,
@@ -83,7 +98,7 @@ export default function ProfileForm() {
           body: JSON.stringify(form),
         }
       );
-
+  
       if (res.ok) {
         setUser(data.data);
         setSuccess("Cập nhật thành công!");
@@ -95,7 +110,7 @@ export default function ProfileForm() {
       setErrors(["Lỗi khi cập nhật thông tin!"]);
     }
   };
-
+  
   if (loading) return <p>⏳ Đang tải thông tin...</p>;
 
   return (
@@ -114,12 +129,13 @@ export default function ProfileForm() {
 
       <div className="form-group">
         <label>Email:</label>
-        <input
+        <form noValidate> <input
           type="email"
           name="email"
           value={form.email}
           onChange={handleChange}
-        />
+        /></form>
+       
       </div>
 
       <div className="form-group">
@@ -144,7 +160,6 @@ export default function ProfileForm() {
 
       <button type="submit">Lưu thay đổi</button>
 
-      {/* Hiển thị lỗi chung dưới nút */}
       {errors.length > 0 && (
         <div className="error-messages">
           {errors.map((err, idx) => (
