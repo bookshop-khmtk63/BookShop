@@ -36,10 +36,10 @@ export default function ProductDetail() {
             setReviews(
               b.reviews.map((r) => ({
                 id: r.id,
-                username: r.user?.name || "Người dùng ẩn danh",
+                username: r.fullName || "Người dùng ẩn danh",
                 rating: r.rating,
                 comment: r.comment,
-                createdAt: r.createdAt,
+                createdAt: r.timestamp, // lấy timestamp từ API
               }))
             );
           }
@@ -47,6 +47,26 @@ export default function ProductDetail() {
       })
       .catch((err) => console.error("Lỗi fetch:", err));
   }, [id]);
+
+  // Hàm format ngày giờ dd/MM/yyyy HH:mm:ss
+  const formatDateTime = (isoString) => {
+    const date = new Date(isoString);
+    const pad = (n) => (n < 10 ? "0" + n : n);
+
+    return (
+      pad(date.getDate()) +
+      "/" +
+      pad(date.getMonth() + 1) +
+      "/" +
+      date.getFullYear() +
+      " " +
+      pad(date.getHours()) +
+      ":" +
+      pad(date.getMinutes()) +
+      ":" +
+      pad(date.getSeconds())
+    );
+  };
 
   if (!book) return <div>Đang tải...</div>;
 
@@ -102,7 +122,9 @@ export default function ProductDetail() {
       <section className="product-review">
         <h3>Đánh giá sản phẩm</h3>
         {reviews.length === 0 ? (
-          <div className="review-box">⭐ {book.rating} / 5 - Chưa có đánh giá chi tiết</div>
+          <div className="review-box">
+            ⭐ {book.rating} / 5 - Chưa có đánh giá chi tiết
+          </div>
         ) : (
           reviews.map((r) => (
             <div key={r.id} className="review-box">
@@ -110,9 +132,7 @@ export default function ProductDetail() {
                 <strong>{r.username}</strong> - ⭐ {r.rating} / 5
               </div>
               <div>{r.comment}</div>
-              <div className="review-date">
-                {new Date(r.createdAt).toLocaleDateString("vi-VN")}
-              </div>
+              <div className="review-date">{formatDateTime(r.createdAt)}</div>
             </div>
           ))
         )}
