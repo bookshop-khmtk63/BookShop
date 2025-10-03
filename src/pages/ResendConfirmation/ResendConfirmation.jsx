@@ -1,10 +1,12 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import logo from "../../assets/logo.png";
-import "./Register.css"; // có thể tái sử dụng css của register
+import "../Register/Register.css";
 
 export default function ResendConfirmation() {
-  const [email, setEmail] = useState("");
+  const location = useLocation();
+  const initialEmail = location.state?.email || ""; // nhận email từ Login nếu có
+  const [email, setEmail] = useState(initialEmail);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -15,13 +17,21 @@ export default function ResendConfirmation() {
     setError("");
     setMessage("");
 
+    // ✅ Validate email
+    if (!email.trim()) {
+      setError("Vui lòng nhập email!");
+      return;
+    }
+    if (!email.endsWith(".com")) {
+      setError("Email không hợp lệ! Cần có đuôi .com");
+      return;
+    }
+
     try {
       setLoading(true);
       const res = await fetch(`${API_URL}/api/auth/send-verification`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
 
@@ -56,20 +66,20 @@ export default function ResendConfirmation() {
             <input
               type="email"
               placeholder="Nhập email của bạn"
-              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
 
-            {error && <p style={{ color: "red" }}>{error}</p>}
-            {message && <p style={{ color: "green" }}>{message}</p>}
+            {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
+            {message && <p style={{ color: "green", marginTop: "10px" }}>{message}</p>}
 
             <button type="submit" disabled={loading}>
               {loading ? "Đang gửi..." : "GỬI LẠI"}
             </button>
           </form>
 
-          <p>
+          <p style={{ marginTop: "10px" }}>
             Quay lại <Link to="/login">Đăng nhập</Link>
           </p>
         </div>

@@ -17,13 +17,14 @@ import AuthPassword from "./pages/AuthPassword/AuthPassword";
 import SearchPage from "./pages/SreachPage/SearchPage";
 import RegisterConfirmation from "./pages/Register/RegisterConfirmation";
 import RegisterSuccess from "./pages/RegisterSuccess/RegisterSuccess";
+import ResendConfirmation from "./pages/ResendConfirmation/ResendConfirmation";
 
 // Protected Route
 import ProtectedRoute from "./routes/ProtectedRoute/ProtectedRoute";
 
 import "./App.css";
 
-// 👉 default filters cho frontend (price, status, rating, search)
+// Default filters cho frontend
 const defaultFilters = {
   price: "",
   status: "",
@@ -32,16 +33,13 @@ const defaultFilters = {
 };
 
 function MainLayout() {
-  // query string cho filter category API
   const [categoryQuery, setCategoryQuery] = useState("");
-  // các filter frontend
   const [otherFilters, setOtherFilters] = useState(defaultFilters);
 
   return (
     <div className="app">
       <Header />
       <div className="content">
-        {/* Sidebar gửi cả category API + các filter frontend */}
         <Sidebar
           onCategoryChange={setCategoryQuery}
           onFilterChange={setOtherFilters}
@@ -97,6 +95,7 @@ function AppWrapper() {
         element={<RegisterConfirmation />}
       />
       <Route path="/register-success" element={<RegisterSuccess />} />
+      <Route path="/resend-confirmation" element={<ResendConfirmation />} />
 
       {/* Main app */}
       <Route path="/*" element={<MainLayout />} />
