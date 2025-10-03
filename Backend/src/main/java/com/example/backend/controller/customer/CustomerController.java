@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -32,7 +33,7 @@ public class CustomerController {
       return new ResponseEntity<>(responseData, HttpStatus.OK);
   }
   @GetMapping("/me")
-  public ResponseEntity<ResponseData<CustomerResponse>> getCustomer  ( @AuthenticationPrincipal CustomUserDetails userDetails) {
+  public ResponseEntity<ResponseData<CustomerResponse>> getCustomer(@AuthenticationPrincipal UserDetails userDetails) {
       KhachHang customer = customerService.getCustomerByEmail(userDetails.getUsername());
       ResponseData<CustomerResponse> responseData = new ResponseData<>(200,"success",customerMapper.toCustomerResponse(customer));
       return new ResponseEntity<>(responseData, HttpStatus.OK);
