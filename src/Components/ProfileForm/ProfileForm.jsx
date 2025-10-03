@@ -54,35 +54,35 @@ export default function ProfileForm() {
     setErrors([]);
   
     const newErrors = [];
+    const emptyFields = [];
   
-    if (!form.fullName.trim()) newErrors.push("Họ tên không được để trống");
+    if (!form.fullName.trim()) emptyFields.push("Họ tên không được để trống");
+    if (!form.email.trim()) emptyFields.push("Email không được để trống");
+    if (!form.phone.trim()) emptyFields.push("Số điện thoại không được để trống");
+    if (!form.address.trim()) emptyFields.push("Địa chỉ không được để trống");
   
-    // ✅ Validate email chi tiết
-    if (!form.email.trim()) {
-        newErrors.push("Email không được để trống");
-      } else {
-        // Regex check chuẩn email (.com hoặc các domain khác)
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      
-        if (!emailRegex.test(form.email)) {
-          newErrors.push("Email không hợp lệ");
-        }
-      }
-      
+    // 👉 Nếu có từ 2 ô trống trở lên -> chỉ báo chung
+    if (emptyFields.length >= 2) {
+      setErrors(["Không được để trống"]);
+      return;
+    }
   
-    if (!form.phone.trim()) newErrors.push("Số điện thoại không được để trống");
-    else if (!/^\d{10}$/.test(form.phone)) newErrors.push("Số điện thoại không hợp lệ!");
+    // 👉 Nếu chỉ có 1 ô trống -> báo riêng
+    if (emptyFields.length === 1) {
+      setErrors(emptyFields);
+      return;
+    }
   
-    if (!form.address.trim()) newErrors.push("Địa chỉ không được để trống");
-    if (
-        !form.fullName.trim() &&
-        !form.email.trim() &&
-        !form.phone.trim() &&
-        !form.address.trim()
-      ) {
-        setErrors(["Không được để trống"]);
-        return;
-      }
+    // ✅ Validate email format (chỉ check khi có email)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      newErrors.push("Email không hợp lệ");
+    }
+  
+    // ✅ Validate phone (chỉ check khi có phone)
+    if (!/^\d{10}$/.test(form.phone)) {
+      newErrors.push("Số điện thoại không hợp lệ!");
+    }
   
     if (newErrors.length > 0) {
       setErrors(newErrors);
@@ -110,6 +110,7 @@ export default function ProfileForm() {
       setErrors(["Lỗi khi cập nhật thông tin!"]);
     }
   };
+  
   
   if (loading) return <p>⏳ Đang tải thông tin...</p>;
 
