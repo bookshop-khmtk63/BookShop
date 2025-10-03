@@ -13,7 +13,7 @@ export default function ProfileForm() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(""); // ✅ thêm state lưu thông báo thành công
+  const [success, setSuccess] = useState(""); 
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -52,7 +52,13 @@ export default function ProfileForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    setSuccess(""); // reset trước khi submit
+    setSuccess(""); 
+
+    // ✅ Validate: tất cả trường phải có dữ liệu
+    if (!form.fullName.trim() || !form.email.trim() || !form.phone.trim() || !form.address.trim()) {
+      setError("Vui lòng điền đầy đủ tất cả các trường!");
+      return;
+    }
 
     try {
       const { res, data } = await callApiWithToken(
@@ -66,7 +72,7 @@ export default function ProfileForm() {
 
       if (res.ok) {
         setUser(data.data);
-        setSuccess("Cập nhật thông tin thành công!"); // ✅ hiện thông báo thành công
+        setSuccess("✅ Cập nhật thông tin thành công!");
       } else {
         throw new Error(data?.message || "Cập nhật thất bại");
       }
@@ -83,7 +89,6 @@ export default function ProfileForm() {
     <form onSubmit={handleSubmit} className="profile-form">
       <h2>Thông tin cá nhân</h2>
 
-      {/* Hiện thông báo trong form */}
       {error && <p className="error-message">{error}</p>}
       {success && <p className="success-message">{success}</p>}
 
@@ -94,6 +99,7 @@ export default function ProfileForm() {
           name="fullName"
           value={form.fullName}
           onChange={handleChange}
+          required
         />
       </div>
 
@@ -104,6 +110,7 @@ export default function ProfileForm() {
           name="email"
           value={form.email}
           onChange={handleChange}
+          required
         />
       </div>
 
@@ -114,6 +121,7 @@ export default function ProfileForm() {
           name="phone"
           value={form.phone}
           onChange={handleChange}
+          required
         />
       </div>
 
@@ -124,6 +132,7 @@ export default function ProfileForm() {
           name="address"
           value={form.address}
           onChange={handleChange}
+          required
         />
       </div>
 
