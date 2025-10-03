@@ -1,0 +1,79 @@
+.profile-form {
+    width: 450px;
+    margin: 30px auto;
+    padding: 25px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .profile-form h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 20px;
+  }
+  
+  .profile-form .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .profile-form label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #444;
+  }
+  
+  .profile-form input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border 0.2s;
+    box-sizing: border-box;
+  }
+  
+  .profile-form input:focus {
+    border-color: #007bff;
+  }
+  
+  .profile-form input[disabled] {
+    background: #f5f5f5;
+    color: #666;
+    cursor: not-allowed;
+  }
+  
+  .profile-form button {
+    width: 100%;
+    padding: 12px;
+    background: #007bff;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .profile-form button:hover {
+    background: #0056b3;
+  }
+  .success-message {
+    color: green;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+  
+  .error-message {
+    color: red;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+  
