@@ -1,114 +1,125 @@
 import React, { useState, useEffect } from "react";
 import "./Sidebar.css";
 
-export default function Sidebar({ onFilter }) {
+export default function Sidebar({ onCategoryChange, onFilterChange }) {
+  const [category, setCategory] = useState("");
   const [filters, setFilters] = useState({
-    category: "",
     price: "",
     status: "",
     rating: "",
+    search: "",
   });
 
-  const [categories, setCategories] = useState([]);
-
-  const API_URL = import.meta.env.VITE_API_URL;
-
-  // Lấy categories từ API
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/books/category`);
-        if (!res.ok) throw new Error("Lỗi khi tải thể loại");
-        const result = await res.json();
-
-        const categoriesArray = Array.isArray(result.data) ? result.data : [];
-
-        setCategories(
-          categoriesArray.map((c) => ({
-            value: c.id,   // id để filter
-            label: c.name, // tên hiển thị
-          }))
-        );
-      } catch (err) {
-        console.error("❌ Lỗi tải categories:", err);
-      }
-    };
-    fetchCategories();
-  }, [API_URL]);
-
-  // cấu hình filter groups
-  const filterGroups = [
-    {
-      key: "category",
-      label: "Thể loại",
-      options: categories,
-    },
-    {
-      key: "price",
-      label: "Giá",
-      options: [
-        { value: "under100", label: "Dưới 100k" },
-        { value: "100-500", label: "100k - 500k" },
-      ],
-    },
-    {
-      key: "status",
-      label: "Tình trạng",
-      options: [
-        { value: "available", label: "Còn hàng" },
-        { value: "out", label: "Hết hàng" },
-      ],
-    },
-    {
-      key: "rating",
-      label: "Đánh giá",
-      options: [5, 4, 3, 2, 1].map((star) => ({
-        value: String(star),
-        label: "⭐".repeat(star),
-      })),
-    },
+  const categoryOptions = [
+    "Tiểu thuyết",
+    "Khoa học viễn tưởng",
+    "Tự truyện",
+    "Lịch sử",
+    "Trinh thám",
+    "Tâm lý học",
+    "Kinh doanh",
+    "Kỹ năng sống",
+    "Triết học",
+    "Văn học cổ điển",
+    "Công nghệ thông tin",
+    "Ngoại ngữ",
   ];
 
-  const handleSingleCheck = (value, groupName) => {
-    setFilters((prev) => ({
-      ...prev,
-      [groupName]: prev[groupName] === value ? "" : value,
-    }));
+  const handleCategory = (c) => {
+    const newCategory = category === c ? "" : c;
+    setCategory(newCategory);
+    onCategoryChange(newCategory);
+  };
+
+  const handleFilterChange = (key, value) => {
+    const newFilters = { ...filters, [key]: value };
+    setFilters(newFilters);
+    onFilterChange(newFilters);
   };
 
   const handleReset = () => {
-    setFilters({ category: "", price: "", status: "", rating: "" });
-    onFilter({});
-  };
-
-  const handleApply = () => {
-    onFilter(filters);
+    setCategory("");
+    onCategoryChange("");
+    const cleared = { price: "", status: "", rating: "", search: "" };
+    setFilters(cleared);
+    onFilterChange(cleared);
   };
 
   return (
     <aside className="sidebar">
-      {filterGroups.map((group) => (
-        <div key={group.key} className="filter-group">
-          <h4>{group.label}</h4>
-          {group.options.map((opt) => (
-            <label key={opt.value}>
-              <input
-                type="checkbox"
-                checked={filters[group.key] === opt.value}
-                onChange={() => handleSingleCheck(opt.value, group.key)}
-              />
-              {opt.label}
-            </label>
-          ))}
-        </div>
-      ))}
+      <div className="filter-group">
+        <h4>Thể loại</h4>
+        {categoryOptions.map((c) => (
+          <label key={c}>
+            <input
+              type="checkbox"
+              checked={category === c}
+              onChange={() => handleCategory(c)}
+            />
+            {c}
+          </label>
+        ))}
+      </div>
+
+      <div className="filter-group">
+        <h4>Giá</h4>
+        <label>
+          <input
+            type="checkbox"
+            checked={filters.price === "under100"}
+            onChange={() => handleFilterChange("price", filters.price === "under100" ? "" : "under100")}
+          />
+          Dưới 100k
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={filters.price === "100-500"}
+            onChange={() => handleFilterChange("price", filters.price === "100-500" ? "" : "100-500")}
+          />
+          100k - 500k
+        </label>
+      </div>
+
+      <div className="filter-group">
+        <h4>Tình trạng</h4>
+        <label>
+          <input
+            type="checkbox"
+            checked={filters.status === "available"}
+            onChange={() => handleFilterChange("status", filters.status === "available" ? "" : "available")}
+          />
+          Còn hàng
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={filters.status === "out"}
+            onChange={() => handleFilterChange("status", filters.status === "out" ? "" : "out")}
+          />
+          Hết hàng
+        </label>
+      </div>
+
+      <div className="filter-group">
+        <h4>Đánh giá</h4>
+        {[5, 4, 3, 2, 1].map((star) => (
+          <label key={star}>
+            <input
+              type="checkbox"
+              checked={filters.rating === String(star)}
+              onChange={() =>
+                handleFilterChange("rating", filters.rating === String(star) ? "" : String(star))
+              }
+            />
+            {"⭐".repeat(star)}
+          </label>
+        ))}
+      </div>
 
       <div className="filter-btns">
         <button className="reset" onClick={handleReset}>
           Bỏ lọc
-        </button>
-        <button className="apply" onClick={handleApply}>
-          Lọc
         </button>
       </div>
     </aside>

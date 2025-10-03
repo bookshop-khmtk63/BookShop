@@ -8,7 +8,7 @@ import logo from "../../assets/logo.png";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); 
+  const [error, setError] = useState(""); // dùng để hiển thị lỗi
   const [showPassword, setShowPassword] = useState(false);
 
   const { login } = useAuth();
@@ -18,39 +18,47 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-
+  
+    console.log("👉 API_URL:", API_URL); // Kiểm tra API_URL có undefined không
+    console.log("👉 Email:", email);
+    console.log("👉 Password:", password);
+  
     try {
       const res = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
+        credentials: "include", // gửi cookie cùng request
       });
-
+  
+      console.log("👉 Response status:", res.status);
+  
       const data = await res.json();
-
+      console.log("👉 Response body:", data);
+  
       if (!res.ok) {
-        // Nếu API trả về code 2003 (không tìm thấy tài khoản)
-        if (res.status === 404 && data.code === 2003) {
+        if (res.status === 404 && data.code === 203) {
           setError("Sai tên tài khoản hoặc mật khẩu");
         } else {
           setError(data.message || "Đăng nhập thất bại!");
         }
         return;
       }
-
+  
       // API trả về { data: { accessToken, email, role } }
       const { accessToken, email: userEmail, role } = data.data;
-
+  
       // Lưu token và user vào context + localStorage
       login(accessToken, { email: userEmail, role });
-
+  
       // Điều hướng về trang chủ
       navigate("/");
     } catch (err) {
-      console.error("Lỗi fetch:", err);
+      console.error("❌ Lỗi fetch:", err);
       setError("Không thể kết nối tới server!");
     }
   };
+  
 
   return (
     <div className="login-container">
@@ -89,7 +97,13 @@ export default function Login() {
           </form>
 
           {error && (
-            <p style={{ color: "red", marginTop: "10px", fontWeight: "bold" }}>
+            <p
+              style={{
+                color: "red",
+                marginTop: "10px",
+                fontWeight: "bold",
+              }}
+            >
               {error}
             </p>
           )}

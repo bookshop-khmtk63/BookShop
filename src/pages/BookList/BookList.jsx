@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import BookCard from "../BookCard/BookCard";
 import "./BookList.css";
 
-export default function BookList({ filters }) {
+export default function BookList({ categoryQuery, filters }) {
   const [books, setBooks] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState("asc");
@@ -12,19 +12,24 @@ export default function BookList({ filters }) {
   const itemsPerPage = 6;
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Hàm parse giá tiền (dùng cho lọc + sắp xếp)
   const parsePrice = (p) => {
     if (typeof p === "number") return p;
     if (typeof p === "string") return Number(p.replace(/[^\d]/g, "")) || 0;
     return 0;
   };
 
-  // Fetch toàn bộ sách
   useEffect(() => {
     setLoading(true);
     setError(null);
 
-    fetch(`${API_URL}/api/books/all?page=0&size=1000`)
+    let url = `${API_URL}/api/books/all?page=0&size=1000`;
+    if (categoryQuery) {
+      url = `${API_URL}/api/books/filter?page=0&size=1000&filters=theLoai:${encodeURIComponent(
+        categoryQuery
+      )}`;
+    }
+
+    fetch(url)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
@@ -42,91 +47,54 @@ export default function BookList({ filters }) {
           image: b.thumbnail,
           rating: b.averageRating || 0,
           status: b.status?.toLowerCase() || "available",
-          categoryId: String(b.category?.id || ""), // ✅ dùng id để lọc
-          category: b.category?.name || "Khác", // tên hiển thị
+          categories: (b.category || []).map((c) => c.name),
         }));
         setBooks(mapped);
       })
-      .catch(() =>
-        setError("Không thể tải dữ liệu sách, vui lòng thử lại sau.")
-      )
+      .catch(() => setError("Không thể tải dữ liệu sách, vui lòng thử lại sau."))
       .finally(() => setLoading(false));
-  }, [API_URL]);
+  }, [categoryQuery, API_URL]);
 
-  // ✅ Lọc theo filters
+  // Lọc frontend (price, status, rating, search)
   const filteredBooks = books.filter((book) => {
-    if (
-      filters.search &&
-      !book.title.toLowerCase().includes(filters.search.toLowerCase())
-    ) {
-      return false;
-    }
-
-    // Lọc theo categoryId
-    if (filters.category && book.categoryId !== filters.category) return false;
-
-    // Lọc theo giá
-    if (filters.price === "under100" && parsePrice(book.price) >= 100000)
-      return false;
-
-    if (
-      filters.price === "100-500" &&
-      (parsePrice(book.price) < 100000 || parsePrice(book.price) > 500000)
-    )
-      return false;
-
-    // Lọc theo trạng thái
+    if (filters.search && !book.title.toLowerCase().includes(filters.search.toLowerCase())) return false;
+    if (filters.price === "under100" && parsePrice(book.price) >= 100000) return false;
+    if (filters.price === "100-500" && (parsePrice(book.price) < 100000 || parsePrice(book.price) > 500000)) return false;
     if (filters.status && book.status !== filters.status) return false;
-
-    // Lọc theo rating
     if (filters.rating && book.rating < Number(filters.rating)) return false;
-
     return true;
   });
 
-  // ✅ Sắp xếp theo giá
   const sortedBooks = [...filteredBooks].sort((a, b) =>
     sortOrder === "asc"
       ? parsePrice(a.price) - parsePrice(b.price)
       : parsePrice(b.price) - parsePrice(a.price)
   );
 
-  // ✅ Phân trang frontend
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentBooks = sortedBooks.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.ceil(filteredBooks.length / itemsPerPage);
 
-  // Helper pagination
   const getPageNumbers = (currentPage, totalPages, delta = 1) => {
     const pages = [];
     const range = [];
-
     for (let i = 1; i <= totalPages; i++) {
-      if (
-        i === 1 ||
-        i === totalPages ||
-        (i >= currentPage - delta && i <= currentPage + delta)
-      ) {
+      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
         range.push(i);
       }
     }
-
     let lastPage = 0;
     for (let i of range) {
-      if (i - lastPage > 1) {
-        pages.push("dots");
-      }
+      if (i - lastPage > 1) pages.push("dots");
       pages.push(i);
       lastPage = i;
     }
-
     return pages;
   };
 
   return (
     <main className="book-list">
-      {/* Sort */}
       <div className="sort">
         <label>Sắp xếp: </label>
         <select
@@ -141,60 +109,32 @@ export default function BookList({ filters }) {
         </select>
       </div>
 
-      {/* Hiển thị trạng thái */}
       {loading && <p>Đang tải sách...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {/* Grid sách */}
       <div className="grid">
-        {!loading &&
-          !error &&
-          currentBooks.map((b) => (
-            <BookCard
-              key={b.id}
-              id={b.id}
-              title={b.title}
-              author={b.author}
-              price={b.price}
-              image={b.image}
-              rating={b.rating}
-              status={b.status}
-            />
-          ))}
+        {!loading && !error && currentBooks.map((b) => (
+          <BookCard
+            key={b.id}
+            id={b.id}
+            title={b.title}
+            author={b.author}
+            price={b.price}
+            image={b.image}
+            rating={b.rating}
+            status={b.status}
+          />
+        ))}
       </div>
 
-      {/* Pagination */}
       {!loading && !error && totalPages > 1 && (
         <div className="pagination">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => p - 1)}
-          >
-            &lt;
-          </button>
-
+          <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}>&lt;</button>
           {getPageNumbers(currentPage, totalPages).map((p, idx) =>
-            p === "dots" ? (
-              <span key={idx} className="dots">
-                …
-              </span>
-            ) : (
-              <button
-                key={idx}
-                className={currentPage === p ? "active" : ""}
-                onClick={() => setCurrentPage(p)}
-              >
-                {p}
-              </button>
-            )
+            p === "dots" ? <span key={idx} className="dots">…</span> :
+            <button key={idx} className={currentPage === p ? "active" : ""} onClick={() => setCurrentPage(p)}>{p}</button>
           )}
-
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => p + 1)}
-          >
-            &gt;
-          </button>
+          <button disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}>&gt;</button>
         </div>
       )}
     </main>

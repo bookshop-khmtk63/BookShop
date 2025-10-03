@@ -23,15 +23,40 @@ import ProtectedRoute from "./routes/ProtectedRoute/ProtectedRoute";
 
 import "./App.css";
 
-function MainLayout({ filters, setFilters }) {
+// 👉 default filters cho frontend (price, status, rating, search)
+const defaultFilters = {
+  price: "",
+  status: "",
+  rating: "",
+  search: "",
+};
+
+function MainLayout() {
+  // query string cho filter category API
+  const [categoryQuery, setCategoryQuery] = useState("");
+  // các filter frontend
+  const [otherFilters, setOtherFilters] = useState(defaultFilters);
+
   return (
     <div className="app">
       <Header />
       <div className="content">
-        <Sidebar onFilter={setFilters} />
+        {/* Sidebar gửi cả category API + các filter frontend */}
+        <Sidebar
+          onCategoryChange={setCategoryQuery}
+          onFilterChange={setOtherFilters}
+        />
         <main className="main-view">
           <Routes>
-            <Route path="/" element={<BookList filters={filters} />} />
+            <Route
+              path="/"
+              element={
+                <BookList
+                  categoryQuery={categoryQuery}
+                  filters={otherFilters}
+                />
+              }
+            />
             <Route path="/book/:id" element={<ProductDetail />} />
             <Route path="/search" element={<SearchPage />} />
             <Route
@@ -51,7 +76,6 @@ function MainLayout({ filters, setFilters }) {
 }
 
 function AppWrapper() {
-  const [filters, setFilters] = useState({});
   const { isLoading } = useAuth();
 
   if (isLoading)
@@ -68,14 +92,14 @@ function AppWrapper() {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot" element={<AuthPassword mode="forgot" />} />
       <Route path="/reset" element={<AuthPassword mode="reset" />} />
-      <Route path="/register-confirmation" element={<RegisterConfirmation />} />
+      <Route
+        path="/register-confirmation"
+        element={<RegisterConfirmation />}
+      />
       <Route path="/register-success" element={<RegisterSuccess />} />
 
       {/* Main app */}
-      <Route
-        path="/*"
-        element={<MainLayout filters={filters} setFilters={setFilters} />}
-      />
+      <Route path="/*" element={<MainLayout />} />
     </Routes>
   );
 }

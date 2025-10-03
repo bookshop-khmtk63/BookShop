@@ -6,10 +6,10 @@ export default function ProductDetail() {
   const { id } = useParams(); // lấy id từ URL
   const [book, setBook] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [reviews, setReviews] = useState([]);
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    const API_URL = import.meta.env.VITE_API_URL;
     fetch(`${API_URL}/api/books/${id}`)
       .then(async (res) => {
         if (!res.ok) {
@@ -30,17 +30,30 @@ export default function ProductDetail() {
             categories: b.category.map((c) => c.name).join(", "),
             rating: b.averageRating,
           });
+
+          // Nếu API trả về reviews
+          if (b.reviews && Array.isArray(b.reviews)) {
+            setReviews(
+              b.reviews.map((r) => ({
+                id: r.id,
+                username: r.user?.name || "Người dùng ẩn danh",
+                rating: r.rating,
+                comment: r.comment,
+                createdAt: r.createdAt,
+              }))
+            );
+          }
         }
       })
       .catch((err) => console.error("Lỗi fetch:", err));
   }, [id]);
-  if (!book) return <div></div>;
+
+  if (!book) return <div>Đang tải...</div>;
 
   return (
     <div className="product-detail-page">
       <main className="product-main">
         <div className="product-image">
-          {/* Nếu API chi tiết có ảnh thì thay vào, tạm thời dùng placeholder */}
           <img
             src={`https://placehold.co/400x600?text=${book.title}`}
             alt={book.title}
@@ -88,9 +101,21 @@ export default function ProductDetail() {
 
       <section className="product-review">
         <h3>Đánh giá sản phẩm</h3>
-        <div className="review-box">
-          ⭐ {book.rating} / 5 - Chưa có đánh giá chi tiết
-        </div>
+        {reviews.length === 0 ? (
+          <div className="review-box">⭐ {book.rating} / 5 - Chưa có đánh giá chi tiết</div>
+        ) : (
+          reviews.map((r) => (
+            <div key={r.id} className="review-box">
+              <div>
+                <strong>{r.username}</strong> - ⭐ {r.rating} / 5
+              </div>
+              <div>{r.comment}</div>
+              <div className="review-date">
+                {new Date(r.createdAt).toLocaleDateString("vi-VN")}
+              </div>
+            </div>
+          ))
+        )}
       </section>
     </div>
   );

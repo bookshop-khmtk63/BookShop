@@ -49,9 +49,9 @@ export default function Header() {
             />
             {showMenu && (
               <div className="user-menu">
-                <Link to="/profile">Thông tin cá nhân</Link>
-                <Link to="/orders">Đơn hàng</Link>
-                <Link to="/order-history">Lịch sử đơn hàng</Link>
+                <Link to="/profile" onClick={()=>setShowMenu(false)}>Thông tin cá nhân</Link>
+                <Link to="/orders" onClick={()=>setShowMenu(false)} >Đơn hàng</Link>
+                <Link to="/order-history" onClick={()=>setShowMenu(false)}>Lịch sử đơn hàng</Link>
                 <button onClick={logout}>Đăng xuất</button>
               </div>
             )}
