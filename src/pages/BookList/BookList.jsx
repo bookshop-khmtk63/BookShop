@@ -93,50 +93,68 @@ export default function BookList({ categoryQuery, filters }) {
     return pages;
   };
 
-  return (
-    <main className="book-list">
-      <div className="sort">
-        <label>Sắp xếp: </label>
-        <select
-          value={sortOrder}
-          onChange={(e) => {
-            setSortOrder(e.target.value);
-            setCurrentPage(1);
-          }}
-        >
-          <option value="asc">Giá thấp → cao</option>
-          <option value="desc">Giá cao → thấp</option>
-        </select>
-      </div>
-
-      {loading && <p>Đang tải sách...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      <div className="grid">
-        {!loading && !error && currentBooks.map((b) => (
-          <BookCard
-            key={b.id}
-            id={b.id}
-            title={b.title}
-            author={b.author}
-            price={b.price}
-            image={b.image}
-            rating={b.rating}
-            status={b.status}
-          />
-        ))}
-      </div>
-
-      {!loading && !error && totalPages > 1 && (
-        <div className="pagination">
-          <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}>&lt;</button>
-          {getPageNumbers(currentPage, totalPages).map((p, idx) =>
-            p === "dots" ? <span key={idx} className="dots">…</span> :
-            <button key={idx} className={currentPage === p ? "active" : ""} onClick={() => setCurrentPage(p)}>{p}</button>
-          )}
-          <button disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}>&gt;</button>
+  
+    return (
+      <main className="book-list">
+        <div className="sort">
+          <label>Sắp xếp: </label>
+          <select
+            value={sortOrder}
+            onChange={(e) => {
+              setSortOrder(e.target.value);
+              setCurrentPage(1);
+            }}
+          >
+            <option value="asc">Giá thấp → cao</option>
+            <option value="desc">Giá cao → thấp</option>
+          </select>
         </div>
-      )}
-    </main>
-  );
+    
+        {loading && <p>Đang tải sách...</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
+    
+        {!loading && !error && filteredBooks.length === 0 && (
+          <p className="no-books">Không tìm thấy sách </p>
+        )}
+    
+        <div className="grid">
+          {!loading && !error && filteredBooks.length > 0 && currentBooks.map((b) => (
+            <BookCard
+              key={b.id}
+              id={b.id}
+              title={b.title}
+              author={b.author}
+              price={b.price}
+              image={b.image}
+              rating={b.rating}
+              status={b.status}
+            />
+          ))}
+        </div>
+    
+        {!loading && !error && totalPages > 1 && (
+          <div className="pagination">
+            <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}>
+              &lt;
+            </button>
+            {getPageNumbers(currentPage, totalPages).map((p, idx) =>
+              p === "dots" ? (
+                <span key={idx} className="dots">…</span>
+              ) : (
+                <button
+                  key={idx}
+                  className={currentPage === p ? "active" : ""}
+                  onClick={() => setCurrentPage(p)}
+                >
+                  {p}
+                </button>
+              )
+            )}
+            <button disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}>
+              &gt;
+            </button>
+          </div>
+        )}
+      </main>
+    );
 }

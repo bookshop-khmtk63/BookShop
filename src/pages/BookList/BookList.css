@@ -91,3 +91,17 @@
   color: #fff;
   border-color: #2563eb;
 }
+.no-books {
+  text-align: center;
+  font-size: 1.5rem; /* tăng kích thước chữ */
+  font-weight: 600;  /* đậm hơn */
+  margin: 2rem 0;
+  color: #333; /* màu chữ light mode */
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .no-books {
+    color: #000; /* màu chữ dark mode */
+  }
+}
