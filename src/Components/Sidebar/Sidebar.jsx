@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./Sidebar.css";
 
 export default function Sidebar({ onCategoryChange, onFilterChange }) {
@@ -7,7 +7,6 @@ export default function Sidebar({ onCategoryChange, onFilterChange }) {
     price: "",
     status: "",
     rating: "",
-    search: "",
   });
 
   const categoryOptions = [
@@ -25,24 +24,32 @@ export default function Sidebar({ onCategoryChange, onFilterChange }) {
     "Ngoại ngữ",
   ];
 
+  // chọn category tạm thời
   const handleCategory = (c) => {
     const newCategory = category === c ? "" : c;
     setCategory(newCategory);
-    onCategoryChange(newCategory);
   };
 
+  // thay đổi filter tạm thời
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    onFilterChange(newFilters);
   };
 
+  // reset toàn bộ bộ lọc
   const handleReset = () => {
     setCategory("");
-    onCategoryChange("");
-    const cleared = { price: "", status: "", rating: "", search: "" };
+    const cleared = { price: "", status: "", rating: "" };
     setFilters(cleared);
+    // khi reset thì gửi luôn về cha
+    onCategoryChange("");
     onFilterChange(cleared);
+  };
+
+  // khi nhấn nút "Lọc"
+  const applyFilters = () => {
+    onCategoryChange(category);
+    onFilterChange(filters);
   };
 
   return (
@@ -67,7 +74,9 @@ export default function Sidebar({ onCategoryChange, onFilterChange }) {
           <input
             type="checkbox"
             checked={filters.price === "under100"}
-            onChange={() => handleFilterChange("price", filters.price === "under100" ? "" : "under100")}
+            onChange={() =>
+              handleFilterChange("price", filters.price === "under100" ? "" : "under100")
+            }
           />
           Dưới 100k
         </label>
@@ -75,7 +84,9 @@ export default function Sidebar({ onCategoryChange, onFilterChange }) {
           <input
             type="checkbox"
             checked={filters.price === "100-500"}
-            onChange={() => handleFilterChange("price", filters.price === "100-500" ? "" : "100-500")}
+            onChange={() =>
+              handleFilterChange("price", filters.price === "100-500" ? "" : "100-500")
+            }
           />
           100k - 500k
         </label>
@@ -87,7 +98,9 @@ export default function Sidebar({ onCategoryChange, onFilterChange }) {
           <input
             type="checkbox"
             checked={filters.status === "available"}
-            onChange={() => handleFilterChange("status", filters.status === "available" ? "" : "available")}
+            onChange={() =>
+              handleFilterChange("status", filters.status === "available" ? "" : "available")
+            }
           />
           Còn hàng
         </label>
@@ -95,7 +108,9 @@ export default function Sidebar({ onCategoryChange, onFilterChange }) {
           <input
             type="checkbox"
             checked={filters.status === "out"}
-            onChange={() => handleFilterChange("status", filters.status === "out" ? "" : "out")}
+            onChange={() =>
+              handleFilterChange("status", filters.status === "out" ? "" : "out")
+            }
           />
           Hết hàng
         </label>
@@ -118,8 +133,12 @@ export default function Sidebar({ onCategoryChange, onFilterChange }) {
       </div>
 
       <div className="filter-btns">
+        
         <button className="reset" onClick={handleReset}>
           Bỏ lọc
+        </button>
+        <button className="apply" onClick={applyFilters}>
+          Lọc
         </button>
       </div>
     </aside>
