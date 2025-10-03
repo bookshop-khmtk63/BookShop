@@ -23,7 +23,8 @@ public enum ErrorCode {
     BAD_CREDENTIALS(2012,"Sai tài khoản hoặc mật khẩu" ,HttpStatus.BAD_REQUEST ),
     REFRESHTOKEN_EXPIRED(2013,"Refresh token hết hạn, bạn hãy bắt đầu với phiên đăng nhập mới" ,HttpStatus.UNAUTHORIZED ),
     USER_ALREADY_ACTIVATED(2014,"Taì khoản đã được kích hoạt" ,HttpStatus.CONFLICT ),
-    INVALID_TOKEN(2015,"loai token không hợp lệ" ,HttpStatus.BAD_REQUEST ),;
+    INVALID_TOKEN(2015,"loai token không hợp lệ" ,HttpStatus.BAD_REQUEST ),
+    EMAIL_SEND_FAILURE(2016,"Không gửi được gmail" ,HttpStatus.BAD_REQUEST),;
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

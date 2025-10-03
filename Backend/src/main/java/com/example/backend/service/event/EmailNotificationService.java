@@ -97,9 +97,9 @@ public class EmailNotificationService {
 //            // Sau đó mới throw lại exception để luồng xử lý bên ngoài biết là đã có lỗi
 //            throw new RuntimeException("Gửi gmail thất bại đến " + recipientEmail, e);
 //        }
-        Email from = new Email("quangnguyenxuanymnb20004@gmail.com"); // Email người gửi ĐÃ XÁC THỰC trên SendGrid
+        Email from = new Email("xuanquang260604@gmail.com"); // Email người gửi ĐÃ XÁC THỰC trên SendGrid
         Email to = new Email(recipientEmail);
-        Content content = new Content("text/plain", messageText); // Hoặc "text/html" nếu bạn muốn gửi HTML
+        Content content = new Content("text/plain", messageText);
         Mail mail = new Mail(from, subject, to, content);
 
         // Lấy API Key từ biến môi trường
@@ -127,7 +127,7 @@ public class EmailNotificationService {
 
         } catch (IOException ex) {
             log.error("Có lỗi xảy ra khi gửi email qua SendGrid API", ex);
-            throw new RuntimeException("Gửi gmail thất bại đến " + recipientEmail, ex);
+            throw new AppException(ErrorCode.EMAIL_SEND_FAILURE);
         }
     }
 }

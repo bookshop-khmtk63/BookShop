@@ -2,12 +2,14 @@ package com.example.backend.service.implement;
 
 import com.example.backend.dto.request.UserUpdateRequest;
 import com.example.backend.dto.response.CustomerResponse;
+import com.example.backend.dto.response.ResponseData;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.mapper.CustomerMapper;
 import com.example.backend.model.KhachHang;
 import com.example.backend.repository.KhachHangRepository;
 import com.example.backend.service.CustomerService;
+import com.example.backend.utils.JwtTokenUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 public class CustomerImplementService implements CustomerService {
     private final KhachHangRepository khachHangRepository;
     private final CustomerMapper customerMapper;
+    private final JwtTokenUtils jwtTokenUtils;
     public KhachHang getCustomerByEmail(String email) {
         return khachHangRepository.findByEmail(email).orElseThrow(()->new AppException(ErrorCode.USER_NOT_FOUND));
     }
@@ -61,5 +64,13 @@ public class CustomerImplementService implements CustomerService {
         }
 
         return response;
+    }
+
+    @Override
+    public CustomerResponse getCustomerByAuthHeader(String authHeader) {
+        String token = authHeader.substring(7);
+        String email = jwtTokenUtils.getUsernameFromToken(token);
+        KhachHang customer = getCustomerByEmail(email);
+        return customerMapper.toCustomerResponse(customer);
     }
 }
