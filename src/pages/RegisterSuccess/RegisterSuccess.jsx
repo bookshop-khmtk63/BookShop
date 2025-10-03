@@ -50,13 +50,7 @@ export default function RegisterSuccess() {
           </p>
 
           {/* Nút gửi lại email xác nhận nằm trên */}
-          <button
-            onClick={handleResend}
-            disabled={loading}
-            className="resend-btn"
-          >
-            {loading ? "Đang gửi..." : "Gửi lại email xác nhận"}
-          </button>
+          
 
           {/* Thông báo */}
           {message && <p className="success-msg">{message}</p>}

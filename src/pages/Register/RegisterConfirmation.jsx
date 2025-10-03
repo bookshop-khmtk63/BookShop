@@ -48,11 +48,6 @@ export default function RegisterConfirmation() {
           👉 <Link to="/login">Đăng nhập ngay</Link>
         </p>
       )}
-      {!success && (
-        <p>
-          🔁 <Link to="/register-success">Gửi lại email xác nhận</Link>
-        </p>
-      )}
     </div>
   );
 }
