@@ -1,0 +1,178 @@
+.login-container {
+  display: flex;
+  height: 100vh;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f9fafb; /* nền xanh đồng bộ 2 bên */
+}
+
+/* Bên trái - logo */
+.logo-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: #fff;
+}
+
+.logo-section::before {
+  content: "";
+  position: absolute;
+  width: 450px;
+  height: 450px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  filter: blur(120px);
+}
+
+.logo img {
+  width: 420px;
+  height: auto;
+  z-index: 2;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.logo img:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.35));
+}
+
+/* Bên phải - form */
+.form-section {
+  flex: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hộp login nổi bật trên nền xanh */
+.login-box {
+  background: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  width: 360px;
+  text-align: center;
+}
+
+.login-box h2 {
+  margin-bottom: 20px;
+  color: #1e293b;
+}
+
+.login-box form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.login-box input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border 0.3s;
+}
+
+.login-box input:focus {
+  border: 1px solid #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 35px; /* để icon không che chữ */
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  color: #555;
+}
+
+
+/* Nút đăng nhập */
+.login-box button {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 15px;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.login-box button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+/* Quên mật khẩu */
+.login-box a.forgot {
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+  text-decoration: none;
+  text-align: right;
+  color: #2563eb;
+}
+
+.login-box a.forgot:hover {
+  text-decoration: underline;
+}
+
+/* Divider */
+.divider {
+  margin: 20px 0;
+  position: relative;
+  text-align: center;
+}
+
+.divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: #e5e7eb;
+  z-index: 0;
+}
+
+.divider span {
+  background: #fff;
+  padding: 0 10px;
+  color: #6b7280;
+  font-size: 13px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Link đăng ký */
+.login-box p {
+  font-size: 14px;
+  color: #374151;
+}
+
+.login-box p a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.login-box p a:hover {
+  text-decoration: underline;
+}

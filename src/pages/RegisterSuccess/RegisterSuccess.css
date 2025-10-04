@@ -1,0 +1,58 @@
+.register-box {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 30px;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .register-box h2 {
+    margin-bottom: 15px;
+  }
+  
+  .register-box p {
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .register-box .resend-btn,
+  .register-box .login-btn {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .register-box .resend-btn {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .register-box .resend-btn:disabled {
+    background-color: #66a3ff;
+    cursor: not-allowed;
+  }
+  
+  .register-box .login-btn {
+    background-color: #28a745;
+    color: #fff;
+  }
+  
+  .register-box .success-msg {
+    color: green;
+    margin: 10px 0;
+    font-weight: 500;
+  }
+  
+  .register-box .error-msg {
+    color: red;
+    margin: 10px 0;
+    font-weight: 500;
+  }
+  
