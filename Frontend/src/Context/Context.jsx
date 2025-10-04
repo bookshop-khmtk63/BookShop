@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Lưu/xoá user vào localStorage
+  // ==================== LocalStorage helpers ====================
   const setUser = (userData) => {
     setUserState(userData);
     if (userData) {
@@ -43,7 +43,7 @@ export function AuthProvider({ children }) {
     setIsLoading(false);
   }, []);
 
-  // Login
+  // ==================== Auth Actions ====================
   const login = (accessToken, userData) => {
     setIsLoggedIn(true);
     setToken(accessToken);
@@ -51,14 +51,13 @@ export function AuthProvider({ children }) {
     localStorage.setItem("accessToken", accessToken);
   };
 
-  // Logout
   const logout = async () => {
     try {
       if (token) {
         await fetch(`${API_URL}/api/auth/logout`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
-          credentials: "include", // gửi cookie refresh
+          credentials: "include",
         });
       }
     } catch (err) {
@@ -72,46 +71,44 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("user");
   };
 
-  // Refresh token
+  // ==================== Refresh Token ====================
   const refreshToken = async () => {
     try {
       console.log("🔄 Attempting to refresh token...");
-  
+
       const res = await fetch(`${API_URL}/api/auth/refresh-token`, {
         method: "POST",
-        credentials: "include", 
-        headers: { "Content-Type": "application/json" },
+        credentials: "include", // gửi cookie refreshToken
       });
-  
+
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        console.error("❌ Refresh token failed:", err);
+        console.error("❌ Refresh token failed:", res.status);
         logout();
         return null;
       }
-  
+
       const data = await res.json();
       console.log("✅ Refresh token response:", data);
-  
-      // ---- CHỈNH Ở ĐÂY ----
+
       const newAccessToken =
         data.access_token || data.token || data.data?.accessToken;
-  
-      if (!newAccessToken) throw new Error("No access token in refresh response");
-  
+
+      if (!newAccessToken)
+        throw new Error("No access token in refresh response");
+
+      // Cập nhật state + localStorage
       setToken(newAccessToken);
       localStorage.setItem("accessToken", newAccessToken);
-  
+
       return newAccessToken;
     } catch (err) {
-      console.error("❌ Refresh token error:", err);
+      console.error("Refresh token error:", err);
       logout();
       return null;
     }
   };
-  
 
-  // Gọi API kèm token, tự động refresh nếu 401
+  // ==================== API Call Wrapper ====================
   const callApiWithToken = async (url, options = {}) => {
     let currentToken = token;
 
@@ -122,17 +119,23 @@ export function AuthProvider({ children }) {
         ...(options.headers || {}),
         Authorization: `Bearer ${currentToken}`,
       },
-      credentials: "include", // gửi cookie refresh nếu backend cần
+      credentials: "include", // để backend nhận cookie refreshToken
     };
 
     try {
       let res = await fetch(url, fetchOptions);
 
+      // Nếu accessToken hết hạn → 401 → thử refresh
       if (res.status === 401) {
-        console.warn("⚠️ Got 401, attempting to refresh token...");
-        currentToken = await refreshToken();
-        if (!currentToken) throw new Error("Token hết hạn, vui lòng đăng nhập lại");
+        console.warn("⚠️ Access token expired, refreshing...");
 
+        currentToken = await refreshToken();
+
+        if (!currentToken) {
+          throw new Error("Token hết hạn và refresh không thành công.");
+        }
+
+        // Gọi lại API với token mới
         res = await fetch(url, {
           ...fetchOptions,
           headers: {
@@ -143,6 +146,11 @@ export function AuthProvider({ children }) {
       }
 
       const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "API call failed");
+      }
+
       return { res, data };
     } catch (err) {
       console.error("❌ API call error:", err);
