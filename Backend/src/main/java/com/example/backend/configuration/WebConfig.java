@@ -8,7 +8,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOriginPatterns("https://bookshop-jeh4.onrender.com/") // Cho phép tất cả domain
+                .allowedOriginPatterns("*") // Cho phép tất cả domain
                 .allowedMethods("*")        // GET, POST, PUT, DELETE, OPTIONS
                 .allowedHeaders("*")
                 .allowCredentials(true);
