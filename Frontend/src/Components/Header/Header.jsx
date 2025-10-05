@@ -40,7 +40,7 @@ export default function Header() {
       </form>
 
       <div className="icons">
-        <FaShoppingCart className="cart-icon" />
+        <FaShoppingCart className="cart-icon" />  
         {isLoggedIn ? (
           <div className="user-menu-wrapper">
             <FaUser
@@ -50,7 +50,7 @@ export default function Header() {
             {showMenu && (
               <div className="user-menu">
                 <Link to="/profile" onClick={()=>setShowMenu(false)}>Thông tin cá nhân</Link>
-                <Link to="/orders" onClick={()=>setShowMenu(false)} >Đơn hàng</Link>
+                <Link to="/orders" onClick={()=>setShowMenu(false)} >Theo dõi đơn hàng</Link>
                 <Link to="/order-history" onClick={()=>setShowMenu(false)}>Lịch sử đơn hàng</Link>
                 <button onClick={logout}>Đăng xuất</button>
               </div>
