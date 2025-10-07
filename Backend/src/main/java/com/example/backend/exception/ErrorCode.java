@@ -24,7 +24,10 @@ public enum ErrorCode {
     REFRESHTOKEN_EXPIRED(2013,"Refresh token hết hạn, bạn hãy bắt đầu với phiên đăng nhập mới" ,HttpStatus.UNAUTHORIZED ),
     USER_ALREADY_ACTIVATED(2014,"Taì khoản đã được kích hoạt" ,HttpStatus.CONFLICT ),
     INVALID_TOKEN(2015,"loai token không hợp lệ" ,HttpStatus.BAD_REQUEST ),
-    EMAIL_SEND_FAILURE(2016,"Không gửi được gmail" ,HttpStatus.BAD_REQUEST),;
+    EMAIL_SEND_FAILURE(2016,"Không gửi được gmail" ,HttpStatus.BAD_REQUEST),
+    CATEGORY_NOT_FOUND(2017,"Không tìm thấy thể loại" ,HttpStatus.NOT_FOUND ),
+    FILE_UPLOAD_ERROR(2018,"Lỗi upload file" ,HttpStatus.BAD_REQUEST ),
+    AUTHOR_NOT_FOUND(2019,"Không thìm thấy tác giả" ,HttpStatus.NOT_FOUND ),;
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

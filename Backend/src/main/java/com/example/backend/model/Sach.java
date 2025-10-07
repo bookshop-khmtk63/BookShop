@@ -39,9 +39,12 @@ public class Sach {
     @Lob
     @Column(name = "mo_ta")
     private String moTa;
+    @Builder.Default
+
     @OneToMany(mappedBy = "sach",  cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true, fetch = FetchType.LAZY)
     @ToString.Exclude
     private Set<DanhGiaSach> danhGias = new HashSet<>() ;
+    @Builder.Default
     @Column(name = "diem_trung_binh", nullable = false)
     private Double diemTrungBinh = 0.0;
 
