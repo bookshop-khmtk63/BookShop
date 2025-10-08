@@ -6,8 +6,9 @@ import { fileURLToPath, URL } from 'node:url';
 export default defineConfig({
   plugins: [react()],
   server: {
-    // Port frontend khi chạy local, có thể dùng biến môi trường .env
     port: parseInt(process.env.VITE_PORT) || 5173,
+    // Thêm dòng này để SPA reload không 404
+    historyApiFallback: true,
   },
   resolve: {
     alias: {
