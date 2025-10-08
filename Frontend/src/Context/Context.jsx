@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(null);
-
 export function useAuth() {
   return useContext(AuthContext);
 }
@@ -14,7 +13,7 @@ export function AuthProvider({ children }) {
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // ==================== LocalStorage helpers ====================
+  // ==================== Helpers ====================
   const setUser = (userData) => {
     setUserState(userData);
     if (userData) {
@@ -24,7 +23,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Load token + user từ localStorage khi app khởi động
+  // Khi app load lại → kiểm tra token trong localStorage
   useEffect(() => {
     const storedToken = localStorage.getItem("accessToken");
     const storedUser = localStorage.getItem("user");
@@ -35,7 +34,7 @@ export function AuthProvider({ children }) {
         setUserState(JSON.parse(storedUser));
         setIsLoggedIn(true);
       } catch (err) {
-        console.error("❌ User trong localStorage bị lỗi, xoá luôn.", err);
+        console.error("❌ Lỗi khi parse user từ localStorage:", err);
         localStorage.removeItem("user");
         localStorage.removeItem("accessToken");
       }
@@ -43,7 +42,7 @@ export function AuthProvider({ children }) {
     setIsLoading(false);
   }, []);
 
-  // ==================== Auth Actions ====================
+  // ==================== Login / Logout ====================
   const login = (accessToken, userData) => {
     setIsLoggedIn(true);
     setToken(accessToken);
@@ -53,17 +52,15 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      if (token) {
-        await fetch(`${API_URL}/api/auth/logout`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          credentials: "include",
-        });
-      }
+      await fetch(`${API_URL}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include", // để xóa refreshToken cookie
+      });
     } catch (err) {
       console.error("❌ Logout error:", err);
     }
 
+    // Xóa toàn bộ thông tin local
     setIsLoggedIn(false);
     setToken(null);
     setUser(null);
@@ -74,7 +71,7 @@ export function AuthProvider({ children }) {
   // ==================== Refresh Token ====================
   const refreshToken = async () => {
     try {
-      console.log("🔄 Attempting to refresh token...");
+      console.log("🔄 Đang gọi refresh token...");
 
       const res = await fetch(`${API_URL}/api/auth/refresh-token`, {
         method: "POST",
@@ -82,81 +79,74 @@ export function AuthProvider({ children }) {
       });
 
       if (!res.ok) {
-        console.error("❌ Refresh token failed:", res.status);
-        logout();
+        console.error("❌ Refresh token thất bại:", res.status);
+        await logout();
         return null;
       }
 
       const data = await res.json();
-      console.log("✅ Refresh token response:", data);
-
       const newAccessToken =
         data.access_token || data.token || data.data?.accessToken;
 
-      if (!newAccessToken)
-        throw new Error("No access token in refresh response");
+      if (!newAccessToken) throw new Error("Không có accessToken trong response");
 
-      // Cập nhật state + localStorage
+      // Cập nhật token mới
       setToken(newAccessToken);
       localStorage.setItem("accessToken", newAccessToken);
 
+      console.log("✅ Refresh token thành công!");
       return newAccessToken;
     } catch (err) {
-      console.error("Refresh token error:", err);
-      logout();
+      console.error("❌ Refresh token error:", err);
+      await logout();
       return null;
     }
   };
 
   // ==================== API Call Wrapper ====================
-  const callApiWithToken = async (url, options = {}) => {
+  const callApiWithToken = async (url, options = {}, isMultipart = false) => {
     let currentToken = token;
-
+  
     const fetchOptions = {
       ...options,
       headers: {
-        "Content-Type": "application/json",
         ...(options.headers || {}),
         Authorization: `Bearer ${currentToken}`,
       },
-      credentials: "include", // để backend nhận cookie refreshToken
+      credentials: "include",
     };
-
+  
+    // Nếu không phải multipart → thêm Content-Type JSON
+    if (!isMultipart) {
+      fetchOptions.headers["Content-Type"] = "application/json";
+    }
+  
     try {
       let res = await fetch(url, fetchOptions);
-
-      // Nếu accessToken hết hạn → 401 → thử refresh
+  
+      // Nếu token hết hạn → refresh
       if (res.status === 401) {
-        console.warn("⚠️ Access token expired, refreshing...");
-
+        console.warn("⚠️ Access token hết hạn, thử refresh...");
+  
         currentToken = await refreshToken();
-
-        if (!currentToken) {
-          throw new Error("Token hết hạn và refresh không thành công.");
-        }
-
-        // Gọi lại API với token mới
+        if (!currentToken) throw new Error("Token hết hạn và refresh thất bại");
+  
         res = await fetch(url, {
           ...fetchOptions,
-          headers: {
-            ...fetchOptions.headers,
-            Authorization: `Bearer ${currentToken}`,
-          },
+          headers: { ...fetchOptions.headers, Authorization: `Bearer ${currentToken}` },
         });
       }
-
+  
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "API call failed");
-      }
-
-      return { res, data };
+      if (!res.ok) throw new Error(data.message || "Lỗi khi gọi API");
+  
+      return data?.data || data;
     } catch (err) {
       console.error("❌ API call error:", err);
       throw err;
     }
   };
+  
 
   return (
     <AuthContext.Provider
@@ -167,8 +157,8 @@ export function AuthProvider({ children }) {
         login,
         logout,
         refreshToken,
-        setUser,
         callApiWithToken,
+        setUser,
         isLoading,
       }}
     >

@@ -7,6 +7,7 @@ import Header from "@components/Header/Header";
 import Sidebar from "@components/Sidebar/Sidebar";
 import Footer from "@components/Footer/Footer";
 import ProfileForm from "./Components/ProfileForm/ProfileForm";
+import AdminApp from "./Components/AdminLayout/AdminApp/AdminApp";
 
 // Pages
 import BookList from "./pages/BookList/BookList";
@@ -18,7 +19,7 @@ import SearchPage from "./pages/SreachPage/SearchPage";
 import RegisterConfirmation from "./pages/Register/RegisterConfirmation";
 import RegisterSuccess from "./pages/RegisterSuccess/RegisterSuccess";
 import ResendConfirmation from "./pages/ResendConfirmation/ResendConfirmation";
-
+import AddBook from "./pages/Admin/AddBook/AddBook"
 // Protected Route
 import ProtectedRoute from "./routes/ProtectedRoute/ProtectedRoute";
 
@@ -96,6 +97,9 @@ function AppWrapper() {
       />
       <Route path="/register-success" element={<RegisterSuccess />} />
       <Route path="/resend-confirmation" element={<ResendConfirmation />} />
+      
+      {/*trang admin*/}
+       <Route path="/admin" element={<AdminApp />}/> 
 
       {/* Main app */}
       <Route path="/*" element={<MainLayout />} />
