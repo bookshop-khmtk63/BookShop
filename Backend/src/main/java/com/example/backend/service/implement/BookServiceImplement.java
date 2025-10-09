@@ -10,7 +10,7 @@ import com.example.backend.dto.response.PageResponse;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.mapper.BookMapper;
-import com.example.backend.model.Sach;
+import com.example.backend.model.Book;
 import com.example.backend.model.SearchCriteria;
 import com.example.backend.model.TacGia;
 import com.example.backend.model.TheLoai;
@@ -18,7 +18,6 @@ import com.example.backend.repository.SachRepository;
 import com.example.backend.service.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -44,14 +43,14 @@ public class BookServiceImplement implements BookService {
     @Override
     public PageResponse<BookResponse> getAllBooks(int page, int size) {
         Pageable pageable = PageRequest.of(page,size);
-        Page<Sach> sach = sachRepository.findAll(pageable);
+        Page<Book> sach = sachRepository.findAll(pageable);
         List<BookResponse> bookResponseList = bookMapper.toBookResponseList(sach.getContent());
         return PageResponse.from(sach,bookResponseList);
     }
 
     @Override
     public BookDetailResponse getBookById(int id) {
-        Sach sach = sachRepository.findById(id).orElseThrow(()->new AppException(ErrorCode.BOOK_NOT_FOUND));
+        Book sach = sachRepository.findById(id).orElseThrow(()->new AppException(ErrorCode.BOOK_NOT_FOUND));
 
         return bookMapper.toBookDetailResponse(sach);
     }
@@ -78,9 +77,9 @@ public class BookServiceImplement implements BookService {
             }
         }
 
-        Specification<Sach> specification = SachSpecification.fromCriteria(criteriaList);
+        Specification<Book> specification = SachSpecification.fromCriteria(criteriaList);
 
-        Page<Sach> sachPage = sachRepository.findAll(specification, pageable);
+        Page<Book> sachPage = sachRepository.findAll(specification, pageable);
 
         List<BookResponse> bookResponses = sachPage.getContent()
                 .stream()
@@ -93,7 +92,7 @@ public class BookServiceImplement implements BookService {
     @Override
     public PageResponse<BookResponse> advancedSearch(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page,size);
-        Page<Sach> sach = sachRepository.searchByKeyWord(keyword,pageable);
+        Page<Book> sach = sachRepository.searchByKeyWord(keyword,pageable);
         return PageResponse.from(sach,bookMapper.toBookResponseList(sach.getContent()));
     }
 
@@ -119,7 +118,7 @@ public class BookServiceImplement implements BookService {
             }
         }
         TacGia author = authorService.getAuthorById(createBookRequest.getIdAuthor());
-        Sach sach = Sach.builder()
+        Book sach = Book.builder()
                 .tenSach(createBookRequest.getNameBook())
                 .gia(createBookRequest.getPrice())
                 .anhSach(thumbnailUrl)
@@ -135,8 +134,7 @@ public class BookServiceImplement implements BookService {
     @Override
     @Transactional
     public BookDetailResponse updateBook(UpdateBookRequest updateBookRequest, MultipartFile thumbnail, int id) {
-        // 1. TÌM SÁCH: Đã làm đúng.
-        Sach book = sachRepository.findById(id)
+        Book book = sachRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_FOUND));
 
         // 2. CẬP NHẬT CÁC TRƯỜNG ĐƠN GIẢN:

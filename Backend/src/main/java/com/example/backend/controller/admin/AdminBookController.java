@@ -2,12 +2,11 @@ package com.example.backend.controller.admin;
 
 import com.example.backend.dto.request.CreateBookRequest;
 import com.example.backend.dto.request.UpdateBookRequest;
-import com.example.backend.dto.response.BookAdminResponse;
-import com.example.backend.dto.response.BookDetailResponse;
-import com.example.backend.dto.response.PageResponse;
-import com.example.backend.dto.response.ResponseData;
+import com.example.backend.dto.response.*;
+import com.example.backend.service.AuthorService;
 import com.example.backend.service.BookService;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.sql.Update;
 import org.springframework.data.domain.Pageable;
@@ -18,12 +17,15 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/api/admin")
 public class AdminBookController {
     private final BookService bookService;
+    private final AuthorService authorService;
     @GetMapping("/get-all-book")
     public ResponseEntity<ResponseData<PageResponse<BookAdminResponse>>> getAllBook(@PageableDefault(size = 6,sort = "idSach") Pageable pageable) {
         PageResponse<BookAdminResponse> bookAdminResponse = bookService.AdmingetAllBook(pageable);
@@ -51,5 +53,12 @@ public class AdminBookController {
         ResponseData<BookDetailResponse> bookDetailResponseData = new ResponseData<>(200,"success",null);
         return ResponseEntity.ok(bookDetailResponseData);
     }
+    @GetMapping("/get-all-author")
+    public ResponseEntity<ResponseData<List<AuthorResponse>>> getAllAuthor() {
+        List<AuthorResponse> authorResponse = authorService.getAllAuthor();
+        ResponseData<List<AuthorResponse>> authorResponseData = new ResponseData<>(200,"success",authorResponse);
+        return ResponseEntity.ok(authorResponseData);
+    }
+
 
 }

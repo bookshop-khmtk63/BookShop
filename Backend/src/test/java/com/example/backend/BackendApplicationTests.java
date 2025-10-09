@@ -1,6 +1,5 @@
 package com.example.backend;
 
-import com.example.backend.common.EventType;
 import com.example.backend.common.Role;
 //import com.example.backend.event.BookSyncEvent;
 import com.example.backend.mapper.BookMapper;
@@ -8,7 +7,6 @@ import com.example.backend.model.*;
 import com.example.backend.repository.*;
 //import com.example.backend.service.KafkaProducerService;
 import com.github.javafaker.Faker;
-import lombok.RequiredArgsConstructor;
 //import org.apache.kafka.clients.producer.KafkaProducer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -125,7 +123,7 @@ class BackendApplicationTests {
             int categoryCount = faker.number().numberBetween(1, 4);
             Set<TheLoai> danhSachTheLoai = new HashSet<>(allTheLoai.subList(0, Math.min(categoryCount, allTheLoai.size())));
             TacGia randomTacGia = allTacGia.get(faker.number().numberBetween(0, allTacGia.size()));
-            Sach sachToSave = Sach.builder()
+            Book sachToSave = Book.builder()
                     .tenSach(tenSach)
                     .gia(new BigDecimal(faker.commerce().price(50000, 500000)))
                     .soLuong(faker.number().numberBetween(0, 30))
@@ -138,7 +136,7 @@ class BackendApplicationTests {
 
             // Bước 1: Lưu 'Sach' vào DB. Phương thức save() sẽ trả về
             // đối tượng Sach đã được cập nhật với ID.
-            Sach savedSach = sachRepository.save(sachToSave);
+            Book savedSach = sachRepository.save(sachToSave);
 
             // Bước 2: BÂY GIỜ savedSach.getIdSach() đã có giá trị.
             // Sử dụng đối tượng đã được lưu để mapping.
@@ -172,7 +170,7 @@ class BackendApplicationTests {
     void generate_fake_danh_gia_sach_and_update_ratings() {
         System.out.println("Generating reviews and updating ratings...");
         List<KhachHang> allKhachHang = khachHangRepository.findAll();
-        List<Sach> allSach = sachRepository.findAll();
+        List<Book> allSach = sachRepository.findAll();
 
         if (allKhachHang.isEmpty() || allSach.isEmpty()) {
             System.out.println("No customers or books found. Skipping review generation.");
@@ -181,7 +179,7 @@ class BackendApplicationTests {
 
         int reviewsToGenerate = 300;
         for (int i = 0; i < reviewsToGenerate; i++) {
-            Sach randomSach;
+            Book randomSach;
             KhachHang randomKhachHang;
             String reviewKey;
 

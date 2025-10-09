@@ -31,7 +31,7 @@ public class DanhGiaSach {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_sach")
     @ToString.Exclude
-    private Sach sach;
+    private Book sach;
 
     @Column(name = "diem_xep_hang", nullable = false)
     private int diemXepHang; // Từ 1 đến 5

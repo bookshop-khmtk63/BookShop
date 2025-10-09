@@ -17,6 +17,7 @@ public class BookDetailResponse {
     private String nameBook;
     private BigDecimal price;
     private String describe;
+    private String author;
     private int number;
     private Set<CategoryResponse> category;
     private double averageRating;

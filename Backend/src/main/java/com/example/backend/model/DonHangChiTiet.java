@@ -31,7 +31,7 @@ public class DonHangChiTiet {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_sach")
     @ToString.Exclude
-    private Sach sach;
+    private Book sach;
 
     @Column(name = "so_luong", nullable = false)
     private int soLuong;

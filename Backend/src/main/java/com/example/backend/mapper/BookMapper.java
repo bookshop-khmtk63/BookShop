@@ -4,13 +4,10 @@ import com.example.backend.dto.response.BookDetailResponse;
 import com.example.backend.dto.response.BookResponse;
 import com.example.backend.dto.response.CategoryResponse;
 //import com.example.backend.model.BookElasticsearch;
-import com.example.backend.model.DanhGiaSach;
-import com.example.backend.model.Sach;
-import com.example.backend.model.TheLoai;
+import com.example.backend.model.Book;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.awt.print.Book;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -21,7 +18,7 @@ import java.util.stream.Collectors;
 public class BookMapper {
     private final CategoryMapper categoryMapper;
     private final BookReviewMapper bookReviewMapper;
-    public BookDetailResponse toBookDetailResponse(Sach book) {
+    public BookDetailResponse toBookDetailResponse(Book book) {
         if (book == null) return null;
 
         return BookDetailResponse.builder()
@@ -31,6 +28,7 @@ public class BookMapper {
                 .describe(book.getMoTa())
                 .category(getCategoryNames(book))
                 .averageRating(book.getDiemTrungBinh())
+                .author(book.getTacGia().getTenTacGia())
                 .number(book.getSoLuong())
                 .reviews(bookReviewMapper.BookReviews(book))
                 .build();
@@ -38,7 +36,7 @@ public class BookMapper {
 
 
 
-    public BookResponse toBookResponse(Sach book) {
+    public BookResponse toBookResponse(Book book) {
         if (book == null) return null;
         return BookResponse.builder()
                 .nameBook(book.getTenSach())
@@ -67,13 +65,13 @@ public class BookMapper {
 //                    .build();
 //    }
 
-    public List<BookResponse> toBookResponseList (List<Sach> books) {
+    public List<BookResponse> toBookResponseList (List<Book> books) {
         if (books == null) return Collections.emptyList();
         return books.stream().map(this::toBookResponse).collect(Collectors.toList());
     }
 
 
-    private Set<CategoryResponse> getCategoryNames(Sach book) {
+    private Set<CategoryResponse> getCategoryNames(Book book) {
         return book.getDanhSachTheLoai()==null ? Collections.emptySet() :
                 book.getDanhSachTheLoai().stream().map(categoryMapper::toCategoryResponse).collect(Collectors.toSet());
     }

@@ -86,7 +86,6 @@ public class AuthServiceImplement implements AuthService {
         }
 
         log.info("Xác thực thành công cho user '{}'", loginRequest.getEmail());
-
         SecurityContextHolder.getContext().setAuthentication(authentication);
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 

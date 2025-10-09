@@ -17,7 +17,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Builder
 @Table(name = "SACH")
-public class Sach {
+public class Book {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -69,7 +69,7 @@ public class Sach {
         Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
         Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
-        Sach sach = (Sach) o;
+        Book sach = (Book) o;
         return getIdSach() != null && Objects.equals(getIdSach(), sach.getIdSach());
     }
 
