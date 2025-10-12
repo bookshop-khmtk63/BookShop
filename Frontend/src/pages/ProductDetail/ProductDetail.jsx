@@ -21,17 +21,19 @@ export default function ProductDetail() {
       .then((json) => {
         const b = json.data;
         if (b) {
+          // ✅ Lấy thêm tác giả (author)
           setBook({
             id: b.id,
             title: b.nameBook,
             price: b.price,
             desc: b.describe,
             stock: b.number,
+            author: b.author, // thêm dòng này
             categories: b.category.map((c) => c.name).join(", "),
             rating: b.averageRating,
           });
 
-          // Nếu API trả về reviews
+          // ✅ Nếu API trả về reviews
           if (b.reviews && Array.isArray(b.reviews)) {
             setReviews(
               b.reviews.map((r) => ({
@@ -39,7 +41,7 @@ export default function ProductDetail() {
                 username: r.fullName || "Người dùng ẩn danh",
                 rating: r.rating,
                 comment: r.comment,
-                createdAt: r.timestamp, // lấy timestamp từ API
+                createdAt: r.timestamp,
               }))
             );
           }
@@ -48,7 +50,7 @@ export default function ProductDetail() {
       .catch((err) => console.error("Lỗi fetch:", err));
   }, [id]);
 
-  // Hàm format ngày giờ dd/MM/yyyy HH:mm:ss
+  // Format ngày giờ dd/MM/yyyy HH:mm:ss
   const formatDateTime = (isoString) => {
     const date = new Date(isoString);
     const pad = (n) => (n < 10 ? "0" + n : n);
@@ -82,7 +84,14 @@ export default function ProductDetail() {
 
         <div className="product-info">
           <h2 className="title">{book.title}</h2>
+
+          {/* ✅ Hiển thị tác giả */}
+          <p className="author">
+            <strong>Tác giả:</strong> {book.author || "Đang cập nhật"}
+          </p>
+
           <p className="desc">{book.desc}</p>
+
           <div className="price">
             Giá:{" "}
             {book.price.toLocaleString("vi-VN", {
@@ -90,6 +99,7 @@ export default function ProductDetail() {
               currency: "VND",
             })}
           </div>
+
           <div className="stock">Tồn kho: {book.stock}</div>
           <div className="category">Thể loại: {book.categories}</div>
 

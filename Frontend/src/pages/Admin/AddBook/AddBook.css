@@ -27,20 +27,31 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+}
+
+/* === Căn đều các ô trong cột trái === */
+.left-form input,
+.left-form select,
+.left-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  background-color: #fafafa;
+}
+
+.left-form select[multiple] {
+  height: 120px;
+  resize: vertical;
 }
 
 label {
   font-weight: 600;
   color: #444;
-}
-
-input,
-textarea {
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
+  margin-bottom: 3px;
 }
 
 textarea {
@@ -48,51 +59,61 @@ textarea {
   min-height: 120px;
 }
 
+/* === Ô tác giả và thể loại có cùng độ rộng với tên sách === */
+.left-form input[name="nameBook"],
+.left-form select[name="idAuthor"],
+.left-form select[name="idsCategory"] {
+  max-width: 100%;
+}
+
+/* === Số lượng đẹp, đều, cân giữa === */
 .quantity {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   width: fit-content;
 }
 
 .quantity button {
-  width: 22px;
-  height: 22px;
+  width: 36px;
+  height: 36px;
   border: none;
   background: #007bff;
-  color: #000;
-  border-radius: 4px;
+  color: #fff;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
+  font-size: 18px;
+  font-weight: 600;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-
 .quantity button:hover {
   background: #0056b3;
 }
 
 .quantity input {
-  width: 55px;
+  width: 70px;
+  height: 36px;
   text-align: center;
-  font-size: 14px;
+  font-size: 15px;
   border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 5px;
+  border-radius: 6px;
+  padding: 4px;
 }
 
+/* === Ảnh bìa === */
 .preview-image {
   margin-top: 10px;
   max-width: 100%;
   border-radius: 8px;
   border: 1px solid #ddd;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-/* Nút thêm sách to và nổi bật hơn */
+/* === Nút Thêm Sách === */
 .form-footer {
   width: 100%;
   text-align: center;
@@ -100,8 +121,8 @@ textarea {
 }
 
 .form-footer button {
-  padding: 15px 60px;
-  font-size: 18px;
+  padding: 14px 55px;
+  font-size: 17px;
   background: linear-gradient(135deg, #28a745, #23913b);
   color: white;
   font-weight: bold;
@@ -121,25 +142,36 @@ textarea {
   cursor: not-allowed;
   transform: none;
 }
+
+/* === Thông báo === */
 .message-box {
-  margin-top: 20px;
-  padding: 10px 15px;
+  margin-top: 25px;
+  padding: 12px 15px;
   border-radius: 8px;
   text-align: center;
   font-weight: 500;
   animation: fadeIn 0.3s ease;
+  width: 100%;
 }
 
 .message-box.success {
-  background-color: #e6f7e6;
+  background-color: #e8f5e9;
   color: #2e7d32;
   border: 1px solid #81c784;
 }
 
 .message-box.error {
-  background-color: #fdecea;
+  background-color: #ffebee;
   color: #c62828;
-  border: 1px solid #ef9a9a;
+  border: 1px solid #ef5350;
+}
+
+/* Đặt thông báo ở dưới cùng form, căn giữa */
+.bottom-message {
+  margin-top: 30px;
+  align-self: center;
+  width: 100%;
+  text-align: center;
 }
 
 @keyframes fadeIn {

@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 const AuthContext = createContext(null);
 export function useAuth() {
@@ -18,15 +20,16 @@ export function AuthProvider({ children }) {
     setUserState(userData);
     if (userData) {
       localStorage.setItem("user", JSON.stringify(userData));
+      Cookies.set("user", JSON.stringify(userData), { expires: 7 });
     } else {
       localStorage.removeItem("user");
+      Cookies.remove("user");
     }
   };
 
-  // Khi app load lại → kiểm tra token trong localStorage
   useEffect(() => {
-    const storedToken = localStorage.getItem("accessToken");
-    const storedUser = localStorage.getItem("user");
+    const storedToken = Cookies.get("token") || localStorage.getItem("accessToken");
+    const storedUser = Cookies.get("user") || localStorage.getItem("user");
 
     if (storedToken && storedUser) {
       try {
@@ -34,11 +37,14 @@ export function AuthProvider({ children }) {
         setUserState(JSON.parse(storedUser));
         setIsLoggedIn(true);
       } catch (err) {
-        console.error("❌ Lỗi khi parse user từ localStorage:", err);
+        console.error("❌ Lỗi khi parse user:", err);
         localStorage.removeItem("user");
+        Cookies.remove("user");
         localStorage.removeItem("accessToken");
+        Cookies.remove("token");
       }
     }
+
     setIsLoading(false);
   }, []);
 
@@ -47,107 +53,128 @@ export function AuthProvider({ children }) {
     setIsLoggedIn(true);
     setToken(accessToken);
     setUser(userData);
+
+    // ✅ Lưu vào localStorage
     localStorage.setItem("accessToken", accessToken);
+
+    // ✅ Lưu token vào cookie
+    Cookies.set("token", accessToken, { expires: 7, secure: true, sameSite: "Strict" });
+
+    console.log("🍪 Token đã lưu vào cookie:", Cookies.get("token"));
   };
 
   const logout = async () => {
     try {
-      await fetch(`${API_URL}/api/auth/logout`, {
-        method: "POST",
-        credentials: "include", // để xóa refreshToken cookie
-      });
+      await axios.post(`${API_URL}/api/auth/logout`, {}, { withCredentials: true });
     } catch (err) {
       console.error("❌ Logout error:", err);
     }
 
-    // Xóa toàn bộ thông tin local
     setIsLoggedIn(false);
     setToken(null);
     setUser(null);
+
+    // ✅ Xóa toàn bộ dữ liệu xác thực
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
+    Cookies.remove("token");
+    Cookies.remove("refreshToken");
+    Cookies.remove("user");
+
+    console.log("👋 Đã đăng xuất & xóa toàn bộ token + cookie.");
   };
 
-  // ==================== Refresh Token ====================
-  const refreshToken = async () => {
-    try {
-      console.log("🔄 Đang gọi refresh token...");
+  // ==================== Axios Instance ====================
+  const axiosInstance = axios.create({
+    baseURL: API_URL,
+    withCredentials: true,
+  });
 
-      const res = await fetch(`${API_URL}/api/auth/refresh-token`, {
-        method: "POST",
-        credentials: "include", // gửi cookie refreshToken
-      });
-
-      if (!res.ok) {
-        console.error("❌ Refresh token thất bại:", res.status);
-        await logout();
-        return null;
+  // ✅ Gắn token vào mọi request
+  axiosInstance.interceptors.request.use(
+    (config) => {
+      const accessToken = Cookies.get("token") || localStorage.getItem("accessToken");
+      if (accessToken) {
+        config.headers["Authorization"] = `Bearer ${accessToken}`;
       }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
 
-      const data = await res.json();
-      const newAccessToken =
-        data.access_token || data.token || data.data?.accessToken;
-
-      if (!newAccessToken) throw new Error("Không có accessToken trong response");
-
-      // Cập nhật token mới
-      setToken(newAccessToken);
-      localStorage.setItem("accessToken", newAccessToken);
-
-      console.log("✅ Refresh token thành công!");
-      return newAccessToken;
-    } catch (err) {
-      console.error("❌ Refresh token error:", err);
-      await logout();
-      return null;
+  // ==================== Refresh Token Interceptor ====================
+  axiosInstance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config;
+  
+      // Nếu 401 và chưa retry
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        if (originalRequest.url.includes("/auth/refresh-token")) {
+          console.warn("🚫 Refresh token bị 401 — logout.");
+          await logout();
+          return Promise.reject(error);
+        }
+  
+        originalRequest._retry = true;
+        console.log("🔄 401 detected → Trying to refresh token...");
+  
+        try {
+          const refreshResponse = await axios.post(
+            `${API_URL}/api/auth/refresh-token`,
+            {},
+            { withCredentials: true }
+          );
+  
+          const newAccessToken =
+            refreshResponse.data.access_token ||
+            refreshResponse.data.token ||
+            refreshResponse.data.data?.accessToken;
+  
+          if (!newAccessToken) throw new Error("Không có access token mới!");
+  
+          // ✅ Lưu token mới vào cookie + localStorage
+          Cookies.set("token", newAccessToken, { expires: 7, secure: true, sameSite: "Strict" });
+          localStorage.setItem("accessToken", newAccessToken);
+          setToken(newAccessToken);
+  
+          // ✅ Cập nhật token vào axios instance (rất quan trọng)
+          axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
+          originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+  
+          console.log("✅ Token mới đã được refresh và lưu lại cookie + localStorage.");
+  
+          // ✅ Gọi lại request cũ bằng axiosInstance
+          return axiosInstance(originalRequest);
+        } catch (refreshError) {
+          console.error("❌ Refresh thất bại:", refreshError);
+          await logout();
+          return Promise.reject(refreshError);
+        }
+      }
+  
+      return Promise.reject(error);
     }
-  };
+  );
+  
 
   // ==================== API Call Wrapper ====================
-  const callApiWithToken = async (url, options = {}, isMultipart = false) => {
-    let currentToken = token;
-  
-    const fetchOptions = {
-      ...options,
-      headers: {
-        ...(options.headers || {}),
-        Authorization: `Bearer ${currentToken}`,
-      },
-      credentials: "include",
-    };
-  
-    // Nếu không phải multipart → thêm Content-Type JSON
-    if (!isMultipart) {
-      fetchOptions.headers["Content-Type"] = "application/json";
-    }
-  
+  const callApiWithToken = async (endpoint, options = {}) => {
     try {
-      let res = await fetch(url, fetchOptions);
-  
-      // Nếu token hết hạn → refresh
-      if (res.status === 401) {
-        console.warn("⚠️ Access token hết hạn, thử refresh...");
-  
-        currentToken = await refreshToken();
-        if (!currentToken) throw new Error("Token hết hạn và refresh thất bại");
-  
-        res = await fetch(url, {
-          ...fetchOptions,
-          headers: { ...fetchOptions.headers, Authorization: `Bearer ${currentToken}` },
-        });
-      }
-  
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Lỗi khi gọi API");
-  
-      return data?.data || data;
+      const response = await axiosInstance({
+        url: endpoint,
+        method: options.method || "GET",
+        data: options.body || options.data || {},
+        headers: options.headers || {},
+      });
+      return response.data?.data || response.data;
     } catch (err) {
       console.error("❌ API call error:", err);
       throw err;
     }
   };
-  
 
+  // ==================== Provider ====================
   return (
     <AuthContext.Provider
       value={{
@@ -156,7 +183,6 @@ export function AuthProvider({ children }) {
         token,
         login,
         logout,
-        refreshToken,
         callApiWithToken,
         setUser,
         isLoading,

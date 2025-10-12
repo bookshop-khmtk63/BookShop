@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../../Context/Context"; 
+import { useAuth } from "../../Context/Context";
 import "./ProfileForm.css";
 
 export default function ProfileForm() {
@@ -14,27 +14,31 @@ export default function ProfileForm() {
 
   const [errors, setErrors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [success, setSuccess] = useState(""); 
+  const [success, setSuccess] = useState("");
 
   const API_URL = import.meta.env.VITE_API_URL;
 
+  // ==========================
+  // 📦 Lấy thông tin người dùng
+  // ==========================
   const fetchUserData = async () => {
     try {
-      const { res, data } = await callApiWithToken(`${API_URL}/api/customer/me`);
-      if (res.ok && data?.data) {
-        setUser(data.data);
+      const data = await callApiWithToken(`${API_URL}/api/customer/me`);
+
+      if (data) {
+        setUser(data);
         setForm({
-          fullName: data.data.fullName || "",
-          email: data.data.email || "",
-          phone: data.data.phone || "",
-          address: data.data.address || "",
+          fullName: data.fullName || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          address: data.address || "",
         });
       } else {
-        throw new Error(data?.message || "Không lấy được thông tin user");
+        throw new Error("Không lấy được thông tin người dùng");
       }
     } catch (err) {
       console.error("❌ Fetch user error:", err);
-      setErrors(["Lỗi tải thông tin người dùng"]);
+      setErrors(["Không thể tải thông tin người dùng"]);
     } finally {
       setLoading(false);
     }
@@ -44,80 +48,69 @@ export default function ProfileForm() {
     fetchUserData();
   }, []);
 
+  // ==========================
+  // ✏️ Xử lý input thay đổi
+  // ==========================
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // ==========================
+  // 💾 Gửi form cập nhật
+  // ==========================
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSuccess("");
     setErrors([]);
-  
+    setSuccess("");
+
     const newErrors = [];
-    const emptyFields = [];
-  
-    if (!form.fullName.trim()) emptyFields.push("Họ tên không được để trống");
-    if (!form.email.trim()) emptyFields.push("Email không được để trống");
-    if (!form.phone.trim()) emptyFields.push("Số điện thoại không được để trống");
-    if (!form.address.trim()) emptyFields.push("Địa chỉ không được để trống");
-  
-    // 👉 Nếu có từ 2 ô trống trở lên -> chỉ báo chung
-    if (emptyFields.length >= 2) {
-      setErrors(["Không được để trống"]);
-      return;
+    const { fullName, email, phone, address } = form;
+
+    if (!fullName.trim() || !email.trim() || !phone.trim() || !address.trim()) {
+      newErrors.push("Không được để trống các trường bắt buộc");
     }
-  
-    // 👉 Nếu chỉ có 1 ô trống -> báo riêng
-    if (emptyFields.length === 1) {
-      setErrors(emptyFields);
-      return;
-    }
-  
-    // ✅ Validate email format (chỉ check khi có email)
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(form.email)) {
+    if (email && !emailRegex.test(email)) {
       newErrors.push("Email không hợp lệ");
     }
-  
-    // ✅ Validate phone (chỉ check khi có phone)
-    if (!/^\d{10}$/.test(form.phone)) {
-      newErrors.push("Số điện thoại không hợp lệ!");
+
+    const phoneRegex = /^\d{10}$/;
+    if (phone && !phoneRegex.test(phone)) {
+      newErrors.push("Số điện thoại không hợp lệ (phải gồm 10 chữ số)");
     }
-  
+
     if (newErrors.length > 0) {
       setErrors(newErrors);
       return;
     }
-  
+
     try {
-      const { res, data } = await callApiWithToken(
+      const data = await callApiWithToken(
         `${API_URL}/api/customer/update-customer`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
         }
       );
-  
-      if (res.ok) {
-        setUser(data.data);
-        setSuccess("Cập nhật thành công!");
-      } else {
-        throw new Error(data?.message || "Cập nhật thất bại");
+
+      if (data) {
+        setUser(data);
+        setSuccess("✅ Cập nhật thông tin thành công!");
       }
     } catch (err) {
       console.error("❌ Update profile error:", err);
       setErrors(["Lỗi khi cập nhật thông tin!"]);
     }
   };
-  
-  
-  if (loading) return <p>⏳ Đang tải thông tin...</p>;
+
+  if (loading) return <p>⏳ Đang tải thông tin người dùng...</p>;
 
   return (
     <form onSubmit={handleSubmit} className="profile-form">
       <h2>Thông tin cá nhân</h2>
 
+      {/* Họ tên */}
       <div className="form-group">
         <label>Họ tên:</label>
         <input
@@ -125,20 +118,23 @@ export default function ProfileForm() {
           name="fullName"
           value={form.fullName}
           onChange={handleChange}
+          placeholder="Nhập họ và tên"
         />
       </div>
 
+      {/* Email */}
       <div className="form-group">
         <label>Email:</label>
-        <form noValidate> <input
+        <input
           type="email"
           name="email"
           value={form.email}
           onChange={handleChange}
-        /></form>
-       
+          placeholder="Nhập email"
+        />
       </div>
 
+      {/* Số điện thoại */}
       <div className="form-group">
         <label>Số điện thoại:</label>
         <input
@@ -146,9 +142,11 @@ export default function ProfileForm() {
           name="phone"
           value={form.phone}
           onChange={handleChange}
+          placeholder="Nhập số điện thoại"
         />
       </div>
 
+      {/* Địa chỉ */}
       <div className="form-group">
         <label>Địa chỉ:</label>
         <input
@@ -156,19 +154,26 @@ export default function ProfileForm() {
           name="address"
           value={form.address}
           onChange={handleChange}
+          placeholder="Nhập địa chỉ"
         />
       </div>
 
-      <button type="submit">Lưu thay đổi</button>
+      <button type="submit" className="btn-save">
+        Lưu thay đổi
+      </button>
 
+      {/* Thông báo lỗi */}
       {errors.length > 0 && (
         <div className="error-messages">
           {errors.map((err, idx) => (
-            <p key={idx} className="error-message">{err}</p>
+            <p key={idx} className="error-message">
+              ❌ {err}
+            </p>
           ))}
         </div>
       )}
 
+      {/* Thông báo thành công */}
       {success && <p className="success-message">{success}</p>}
     </form>
   );
