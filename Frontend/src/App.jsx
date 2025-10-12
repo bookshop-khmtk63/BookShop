@@ -19,7 +19,6 @@ import SearchPage from "./pages/SreachPage/SearchPage";
 import RegisterConfirmation from "./pages/Register/RegisterConfirmation";
 import RegisterSuccess from "./pages/RegisterSuccess/RegisterSuccess";
 import ResendConfirmation from "./pages/ResendConfirmation/ResendConfirmation";
-import AddBook from "./pages/Admin/AddBook/AddBook"
 // Protected Route
 import ProtectedRoute from "./routes/ProtectedRoute/ProtectedRoute";
 

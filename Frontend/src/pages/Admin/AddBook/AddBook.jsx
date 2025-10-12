@@ -10,6 +10,7 @@ export default function AddBook() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
   const [errors, setErrors] = useState({});
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const [formData, setFormData] = useState({
     nameBook: "",
@@ -26,7 +27,7 @@ export default function AddBook() {
   useEffect(() => {
     const fetchAuthors = async () => {
       try {
-        const res = await callApiWithToken("/api/admin/get-all-author", { method: "GET" });
+        const res = await callApiWithToken(`${API_URL}/api/admin/get-all-author`, { method: "GET" });
         const data = res?.data || res;
         const mapped = Array.isArray(data)
           ? data.map((a) => ({ idAuthor: a.idAuthor, author: a.author }))
@@ -39,7 +40,7 @@ export default function AddBook() {
 
     const fetchCategories = async () => {
       try {
-        const res = await callApiWithToken("/api/books/category", { method: "GET" });
+        const res = await callApiWithToken(`${API_URL}/api/books/category`, { method: "GET" });
         const data = res?.data || res;
         const mapped = Array.isArray(data)
           ? data.map((c) => ({ id: c.id, name: c.name }))
@@ -52,7 +53,7 @@ export default function AddBook() {
 
     fetchAuthors();
     fetchCategories();
-  }, [callApiWithToken]);
+  }, [callApiWithToken, API_URL]);
 
   // ==================== Input change ====================
   const handleChange = (e) => {
@@ -127,13 +128,10 @@ export default function AddBook() {
         idsCategory: formData.idsCategory.map(Number),
       };
 
-      form.append(
-        "createBookRequest",
-        new Blob([JSON.stringify(payload)], { type: "application/json" })
-      );
+      form.append("createBookRequest", new Blob([JSON.stringify(payload)], { type: "application/json" }));
       form.append("thumbnail", formData.imageFile);
 
-      await callApiWithToken("/api/admin/create-book", { method: "POST", body: form }, true);
+      await callApiWithToken(`${API_URL}/api/admin/create-book`, { method: "POST", body: form }, true);
 
       setMessageType("success");
       setMessage("✅ Thêm sách thành công!");
