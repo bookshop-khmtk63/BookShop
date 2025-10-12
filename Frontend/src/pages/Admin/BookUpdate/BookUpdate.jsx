@@ -23,7 +23,7 @@ export default function BookUpdate({ id, onBack }) {
   const [removeImage, setRemoveImage] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
-  const [bookData, setBookData] = useState(null); // giữ bản gốc API
+  const [bookData, setBookData] = useState(null);
 
   // 🔹 Lấy danh sách thể loại
   useEffect(() => {
@@ -65,14 +65,12 @@ export default function BookUpdate({ id, onBack }) {
 
   // 🔹 Lấy thông tin sách theo ID
   useEffect(() => {
-    let objectUrl;
     const fetchBook = async () => {
       try {
         const res = await callApiWithToken(`${API_URL}/api/books/${id}`);
         const data = res?.data || res;
         setBookData(data);
 
-        // 🔹 Tìm id tác giả khớp theo tên
         let matchedAuthor = null;
         if (Array.isArray(authors) && data.author) {
           matchedAuthor = authors.find(
@@ -117,10 +115,6 @@ export default function BookUpdate({ id, onBack }) {
     };
 
     if (id && authors.length > 0) fetchBook();
-
-    return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
   }, [id, callApiWithToken, API_URL, authors]);
 
   // 🔹 Xử lý thay đổi input
@@ -135,7 +129,7 @@ export default function BookUpdate({ id, onBack }) {
     setBook((prev) => ({ ...prev, categoryIds: ids }));
   };
 
-  // 🔹 Validate
+  // 🔹 Validate toàn bộ form
   const validateForm = () => {
     if (
       !book.nameBook.trim() ||
@@ -146,23 +140,32 @@ export default function BookUpdate({ id, onBack }) {
       !book.idAuthor
     ) {
       setMessageType("error");
-      setMessage("⚠️ Vui lòng điền đầy đủ tất cả các trường bắt buộc!");
+      setMessage("⚠️ Vui lòng điền đầy đủ các trường bắt buộc!");
       setTimeout(() => setMessage(""), 3000);
       return false;
     }
+
+    // 🔹 Bắt buộc có ảnh bìa
+    if (!preview && !selectedFile) {
+      setMessageType("error");
+      setMessage("⚠️ Vui lòng chọn ảnh bìa cho sách!");
+      setTimeout(() => setMessage(""), 3000);
+      return false;
+    }
+
     return true;
   };
 
-  // 🔹 Submit
+  // 🔹 Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     const payload = {
-      nameBook: book.nameBook,
+      nameBook: book.nameBook.trim(),
       price: Number(book.price),
       quantity: Number(book.number),
-      description: book.describe,
+      description: book.describe.trim(),
       idsCategory: book.categoryIds,
       idAuthor: Number(book.idAuthor),
       removeThumbnail: removeImage,
@@ -173,6 +176,7 @@ export default function BookUpdate({ id, onBack }) {
       "updateBookRequest",
       new Blob([JSON.stringify(payload)], { type: "application/json" })
     );
+
     if (selectedFile) form.append("thumbnail", selectedFile);
 
     try {
@@ -191,11 +195,12 @@ export default function BookUpdate({ id, onBack }) {
     }
   };
 
-  if (loading) return <p className="loading">Đang tải dữ liệu...</p>;
+  if (loading) return <p className="loading">⏳ Đang tải dữ liệu...</p>;
 
   return (
     <div className="book-update-container">
       <h2>Cập nhật sách</h2>
+
       <form onSubmit={handleSubmit} className="book-form">
         {/* --- Hàng 1 --- */}
         <div className="form-group half">
@@ -218,17 +223,16 @@ export default function BookUpdate({ id, onBack }) {
             onChange={handleChange}
           >
             <option value="">-- Chọn tác giả --</option>
-            {authors.map((author, index) => (
-              <option key={author.idAuthor || index} value={author.idAuthor}>
-                🖋 {author.name}
+            {authors.map((a, i) => (
+              <option key={`${a.idAuthor}-${i}`} value={a.idAuthor}>
+                🖋 {a.name}
               </option>
             ))}
           </select>
 
           {book.idAuthor ? (
             <div className="selected-author fade-in">
-              ✅{" "}
-              {
+              ✅ {
                 authors.find(
                   (a) => String(a.idAuthor) === String(book.idAuthor)
                 )?.name
@@ -325,7 +329,7 @@ export default function BookUpdate({ id, onBack }) {
 
         {/* --- Ảnh bìa --- */}
         <div className="form-group full">
-          <label>Ảnh bìa</label>
+          <label>Ảnh bìa *</label>
           <input
             type="file"
             accept="image/*"

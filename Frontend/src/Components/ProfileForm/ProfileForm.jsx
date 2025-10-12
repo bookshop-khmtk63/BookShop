@@ -14,6 +14,7 @@ export default function ProfileForm() {
 
   const [errors, setErrors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState("");
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -24,7 +25,6 @@ export default function ProfileForm() {
   const fetchUserData = async () => {
     try {
       const data = await callApiWithToken(`${API_URL}/api/customer/me`);
-
       if (data) {
         setUser(data);
         setForm({
@@ -77,7 +77,7 @@ export default function ProfileForm() {
 
     const phoneRegex = /^\d{10}$/;
     if (phone && !phoneRegex.test(phone)) {
-      newErrors.push("Số điện thoại không hợp lệ (phải gồm 10 chữ số)");
+      newErrors.push("Số điện thoại phải có 10 chữ số");
     }
 
     if (newErrors.length > 0) {
@@ -86,11 +86,13 @@ export default function ProfileForm() {
     }
 
     try {
+      setSaving(true);
       const data = await callApiWithToken(
         `${API_URL}/api/customer/update-customer`,
         {
           method: "PATCH",
-          body: JSON.stringify(form),
+          data: form,
+          headers: { "Content-Type": "application/json" },
         }
       );
 
@@ -100,19 +102,24 @@ export default function ProfileForm() {
       }
     } catch (err) {
       console.error("❌ Update profile error:", err);
-      setErrors(["Lỗi khi cập nhật thông tin!"]);
+      setErrors(["Không thể cập nhật thông tin. Vui lòng thử lại!"]);
+    } finally {
+      setSaving(false);
     }
   };
 
-  if (loading) return <p>⏳ Đang tải thông tin người dùng...</p>;
+  // ==========================
+  // ⏳ Loading state
+  // ==========================
+  if (loading) return <p className="loading-text">⏳ Đang tải thông tin người dùng...</p>;
 
   return (
     <form onSubmit={handleSubmit} className="profile-form">
-      <h2>Thông tin cá nhân</h2>
+      <h2 className="form-title">Thông tin cá nhân</h2>
 
       {/* Họ tên */}
       <div className="form-group">
-        <label>Họ tên:</label>
+        <label>Họ và tên *</label>
         <input
           type="text"
           name="fullName"
@@ -124,7 +131,7 @@ export default function ProfileForm() {
 
       {/* Email */}
       <div className="form-group">
-        <label>Email:</label>
+        <label>Email *</label>
         <input
           type="email"
           name="email"
@@ -136,7 +143,7 @@ export default function ProfileForm() {
 
       {/* Số điện thoại */}
       <div className="form-group">
-        <label>Số điện thoại:</label>
+        <label>Số điện thoại *</label>
         <input
           type="text"
           name="phone"
@@ -148,7 +155,7 @@ export default function ProfileForm() {
 
       {/* Địa chỉ */}
       <div className="form-group">
-        <label>Địa chỉ:</label>
+        <label>Địa chỉ *</label>
         <input
           type="text"
           name="address"
@@ -158,23 +165,22 @@ export default function ProfileForm() {
         />
       </div>
 
-      <button type="submit" className="btn-save">
-        Lưu thay đổi
+      {/* Nút lưu */}
+      <button type="submit" className="btn-save" disabled={saving}>
+        {saving ? "💾 Đang lưu..." : "Lưu thay đổi"}
       </button>
 
       {/* Thông báo lỗi */}
       {errors.length > 0 && (
-        <div className="error-messages">
+        <div className="error-box">
           {errors.map((err, idx) => (
-            <p key={idx} className="error-message">
-              ❌ {err}
-            </p>
+            <p key={idx} className="error-text">❌ {err}</p>
           ))}
         </div>
       )}
 
       {/* Thông báo thành công */}
-      {success && <p className="success-message">{success}</p>}
+      {success && <p className="success-text">{success}</p>}
     </form>
   );
 }

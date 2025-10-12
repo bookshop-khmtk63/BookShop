@@ -38,10 +38,9 @@ export function AuthProvider({ children }) {
         setIsLoggedIn(true);
       } catch (err) {
         console.error("❌ Lỗi khi parse user:", err);
-        localStorage.removeItem("user");
-        Cookies.remove("user");
-        localStorage.removeItem("accessToken");
+        localStorage.clear();
         Cookies.remove("token");
+        Cookies.remove("user");
       }
     }
 
@@ -54,34 +53,27 @@ export function AuthProvider({ children }) {
     setToken(accessToken);
     setUser(userData);
 
-    // ✅ Lưu vào localStorage
     localStorage.setItem("accessToken", accessToken);
-
-    // ✅ Lưu token vào cookie
     Cookies.set("token", accessToken, { expires: 7, secure: true, sameSite: "Strict" });
 
-    console.log("🍪 Token đã lưu vào cookie:", Cookies.get("token"));
+    console.log("🍪 Token đã lưu:", accessToken);
   };
 
   const logout = async () => {
     try {
       await axios.post(`${API_URL}/api/auth/logout`, {}, { withCredentials: true });
     } catch (err) {
-      console.error("❌ Logout error:", err);
+      console.warn("⚠️ Logout error:", err);
     }
 
     setIsLoggedIn(false);
     setToken(null);
     setUser(null);
-
-    // ✅ Xóa toàn bộ dữ liệu xác thực
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
+    localStorage.clear();
     Cookies.remove("token");
     Cookies.remove("refreshToken");
     Cookies.remove("user");
-
-    console.log("👋 Đã đăng xuất & xóa toàn bộ token + cookie.");
+    console.log("👋 Đã đăng xuất & xóa token.");
   };
 
   // ==================== Axios Instance ====================
@@ -90,12 +82,11 @@ export function AuthProvider({ children }) {
     withCredentials: true,
   });
 
-  // ✅ Gắn token vào mọi request
   axiosInstance.interceptors.request.use(
     (config) => {
-      const accessToken = Cookies.get("token") || localStorage.getItem("accessToken");
-      if (accessToken) {
-        config.headers["Authorization"] = `Bearer ${accessToken}`;
+      const currentToken = Cookies.get("token") || localStorage.getItem("accessToken");
+      if (currentToken) {
+        config.headers["Authorization"] = `Bearer ${currentToken}`;
       }
       return config;
     },
@@ -107,44 +98,43 @@ export function AuthProvider({ children }) {
     (response) => response,
     async (error) => {
       const originalRequest = error.config;
-  
-      // Nếu 401 và chưa retry
+
       if (error.response?.status === 401 && !originalRequest._retry) {
         if (originalRequest.url.includes("/auth/refresh-token")) {
           console.warn("🚫 Refresh token bị 401 — logout.");
           await logout();
           return Promise.reject(error);
         }
-  
+
         originalRequest._retry = true;
-        console.log("🔄 401 detected → Trying to refresh token...");
-  
+        console.log("🔄 401 detected → Refreshing token...");
+
         try {
           const refreshResponse = await axios.post(
             `${API_URL}/api/auth/refresh-token`,
             {},
             { withCredentials: true }
           );
-  
+
           const newAccessToken =
             refreshResponse.data.access_token ||
             refreshResponse.data.token ||
             refreshResponse.data.data?.accessToken;
-  
+
           if (!newAccessToken) throw new Error("Không có access token mới!");
-  
-          // ✅ Lưu token mới vào cookie + localStorage
+
+          // ✅ Lưu token mới
           Cookies.set("token", newAccessToken, { expires: 7, secure: true, sameSite: "Strict" });
           localStorage.setItem("accessToken", newAccessToken);
           setToken(newAccessToken);
-  
-          // ✅ Cập nhật token vào axios instance (rất quan trọng)
+
+          // ✅ Cập nhật headers
           axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
           originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
-  
-          console.log("✅ Token mới đã được refresh và lưu lại cookie + localStorage.");
-  
-          // ✅ Gọi lại request cũ bằng axiosInstance
+
+          console.log("✅ Token mới đã được refresh thành công.");
+
+          // 🔁 Gọi lại request cũ
           return axiosInstance(originalRequest);
         } catch (refreshError) {
           console.error("❌ Refresh thất bại:", refreshError);
@@ -152,20 +142,23 @@ export function AuthProvider({ children }) {
           return Promise.reject(refreshError);
         }
       }
-  
+
       return Promise.reject(error);
     }
   );
-  
 
   // ==================== API Call Wrapper ====================
   const callApiWithToken = async (endpoint, options = {}) => {
     try {
+      const currentToken = Cookies.get("token") || localStorage.getItem("accessToken");
       const response = await axiosInstance({
         url: endpoint,
         method: options.method || "GET",
         data: options.body || options.data || {},
-        headers: options.headers || {},
+        headers: {
+          "Authorization": `Bearer ${currentToken}`,
+          ...(options.headers || {}),
+        },
       });
       return response.data?.data || response.data;
     } catch (err) {
