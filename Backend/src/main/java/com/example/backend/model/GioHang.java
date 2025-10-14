@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -28,7 +29,7 @@ public class GioHang {
     private KhachHang khachHang;
 
     @Column(name = "ngay_tao", insertable = false, updatable = false)
-    private Timestamp ngayTao;
+    private Instant ngayTao;
 
     @OneToMany(mappedBy = "gioHang", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude

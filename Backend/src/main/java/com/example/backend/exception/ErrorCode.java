@@ -27,7 +27,8 @@ public enum ErrorCode {
     EMAIL_SEND_FAILURE(2016,"Không gửi được gmail" ,HttpStatus.BAD_REQUEST),
     CATEGORY_NOT_FOUND(2017,"Không tìm thấy thể loại" ,HttpStatus.NOT_FOUND ),
     FILE_UPLOAD_ERROR(2018,"Lỗi upload file" ,HttpStatus.BAD_REQUEST ),
-    AUTHOR_NOT_FOUND(2019,"Không thìm thấy tác giả" ,HttpStatus.NOT_FOUND ),;
+    AUTHOR_NOT_FOUND(2019,"Không thìm thấy tác giả" ,HttpStatus.NOT_FOUND ),
+    NOT_FOUND_ORDER_ID(2020,"Khồng timf thấy idorder",HttpStatus.NOT_FOUND ),;
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

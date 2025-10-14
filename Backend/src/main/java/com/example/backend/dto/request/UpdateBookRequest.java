@@ -9,7 +9,7 @@ import java.util.Set;
 @Getter
 @Setter
 public class UpdateBookRequest {
-    @Size(max = 255, message = "Tên sách không được vượt quá 255 ký tự")
+    @Size(min = 1,max = 255, message = "Tên sách không được vượt quá 255 ký tự")
     private String nameBook;
 
     @DecimalMin(value = "0.0",inclusive = false,message = "Số tiền phải lớn hơn 0")
