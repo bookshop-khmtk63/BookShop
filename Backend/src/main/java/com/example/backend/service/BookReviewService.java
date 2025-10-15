@@ -6,8 +6,11 @@ import com.example.backend.dto.response.PageResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Set;
+
 public interface BookReviewService {
     BookReviewResponse createReview(@Valid CreateReviewRequest createReviewRequest, String idKhachHang,Integer bookId);
 
 
+    Set<Integer> findReviewBookIdAndCustomer(Set<Integer> bookIds, Integer idKhachHang);
 }

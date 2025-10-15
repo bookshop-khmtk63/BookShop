@@ -48,7 +48,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 1. KIỂM TRA BLACKLIST
         if (redisService.isTokenInBlacklist(jwtToken)) {
             log.warn(">>> Token đã bị logout (có trong blacklist). Bỏ qua xác thực.");
-            // CHỈ CẦN CHO ĐI TIẾP. EntryPoint sẽ xử lý.
             filterChain.doFilter(request, response);
             return;
         }
@@ -77,7 +76,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     log.info(">>> Đã set Authentication thành công cho user: {}", userDetails.getUsername());
                 }
             } catch (UsernameNotFoundException | AppException e) {
-                // 4. LỖI KHÔNG TÌM THẤY USER
                 log.warn(">>> Xác thực thất bại: Không tìm thấy user '{}' từ token. Lỗi: {}", userEmail, e.getMessage());
                 // Không làm gì cả, cứ để request đi tiếp mà không có Authentication.
             }

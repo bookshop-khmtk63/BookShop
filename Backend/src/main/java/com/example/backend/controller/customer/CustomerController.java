@@ -7,6 +7,7 @@ import com.example.backend.mapper.CustomerMapper;
 import com.example.backend.model.CustomUserDetails;
 import com.example.backend.model.KhachHang;
 import com.example.backend.service.BookReviewService;
+import com.example.backend.service.CartService;
 import com.example.backend.service.CustomerService;
 import com.example.backend.service.OrderService;
 import com.example.backend.utils.JwtTokenUtils;
@@ -31,6 +32,7 @@ public class CustomerController {
     private final CustomerMapper customerMapper;
     private final OrderService orderService;
     private final BookReviewService bookReviewService;
+    private final CartService cartService;
   //API Cập nhật thông tin người dùng
   @PatchMapping("/update-customer")
     public ResponseEntity<ResponseData<CustomerResponse>> updateCustomer(@Valid @RequestBody UserUpdateRequest userUpdateRequest) {
@@ -66,5 +68,16 @@ public class CustomerController {
         PageResponse<OrderDetailResponse> trackingOrder = orderService.getTrackingOrder(userDetails.getUser().getIdKhachHang(),pageable);
         ResponseData<PageResponse<OrderDetailResponse>> responseData =  new ResponseData<>(200,"success",trackingOrder);
         return new ResponseEntity<>(responseData,HttpStatus.OK);
-}
+    }
+    @GetMapping("/get-cart")
+    public ResponseEntity<ResponseData<CartResponse>> getCart (@AuthenticationPrincipal CustomUserDetails userDetails){
+      CartResponse cart = cartService.getCart(userDetails.getUser().getIdKhachHang());
+      ResponseData<CartResponse> responseData = new ResponseData<>(200,"success",cart);
+      return new ResponseEntity<>(responseData, HttpStatus.OK);
+    }
+
+
+
+
+
 }

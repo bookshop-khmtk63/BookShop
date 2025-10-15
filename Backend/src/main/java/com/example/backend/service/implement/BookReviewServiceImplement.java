@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -50,5 +51,11 @@ public class BookReviewServiceImplement implements BookReviewService {
                 .build();
             bookReviewRepository.save(bookReview);
         return bookReviewMapper.toBookReview(bookReview) ;
+    }
+
+    @Override
+    public Set<Integer> findReviewBookIdAndCustomer(Set<Integer> bookIds, Integer idKhachHang) {
+
+        return bookReviewRepository.findReviewBookIdAndCustomer(bookIds,idKhachHang);
     }
 }

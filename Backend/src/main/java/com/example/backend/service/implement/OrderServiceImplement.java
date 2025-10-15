@@ -9,6 +9,7 @@ import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.repository.DonHangChiTietRepository;
 import com.example.backend.repository.DonHangRepository;
+import com.example.backend.service.BookReviewService;
 import com.example.backend.service.OrderDetailService;
 import com.example.backend.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,22 +27,23 @@ import java.util.stream.Collectors;
 public class OrderServiceImplement implements OrderService {
     private final DonHangRepository orderRepository;
     private final OrderDetailService orderDetailService;
+    private final BookReviewService bookReviewService;
     @Override
     public PageResponse<OrderDetailResponse> getAllOrder(Integer idKhachHang, Pageable pageable) {
         List<TrangThaiDonHang> listOrder  = List.of(TrangThaiDonHang.HOAN_THANH);
         Page<OrderDetailResponse> orderDetailResponses = orderRepository.findByOderByCustomerIdAndStatus(idKhachHang,pageable,listOrder);
 
-        return enrichOrdersWithItems(orderDetailResponses);
+        return enrichOrdersWithItems(orderDetailResponses,idKhachHang);
     }
 
     @Override
     public PageResponse<OrderDetailResponse> getTrackingOrder(Integer idKhachHang, Pageable pageable) {
         List<TrangThaiDonHang> listOrder = List.of(TrangThaiDonHang.DANG_GIAO,TrangThaiDonHang.CHO_XU_LY);
         Page<OrderDetailResponse> orderDetailResponses = orderRepository.findByOderByCustomerIdAndStatus(idKhachHang,pageable, listOrder);
-        return enrichOrdersWithItems(orderDetailResponses);
+        return enrichOrdersWithItems(orderDetailResponses,null);
     }
 
-    private PageResponse<OrderDetailResponse> enrichOrdersWithItems(Page<OrderDetailResponse> orderDetailResponses) {
+    private PageResponse<OrderDetailResponse> enrichOrdersWithItems(Page<OrderDetailResponse> orderDetailResponses,Integer idKhachHang) {
         if (orderDetailResponses.getContent().isEmpty()) {
             return PageResponse.empty(0,1);
         }
@@ -52,6 +51,21 @@ public class OrderServiceImplement implements OrderService {
         log.info("id  don hang: {}", idOrder );
 
         List<OrderItemResponse> orderItemResponses = orderDetailService.findByOderItemByOrderID(idOrder);
+
+        //Kiểm tra trạng thái xem sách đã đươcj đánh giá chưa
+        if(!orderItemResponses.isEmpty() && idKhachHang!=null) {
+            //Lấy danh sách idbook trong history
+            Set<Integer> bookIds = orderItemResponses.stream().map(OrderItemResponse::getBookId).collect(Collectors.toSet());
+
+            //Lấy ds idbook đã được đnash giá
+            Set<Integer> idBookReview = bookReviewService.findReviewBookIdAndCustomer(bookIds,idKhachHang);
+            orderItemResponses.forEach(orderItemResponse -> {
+                if(idBookReview.contains(orderItemResponse.getBookId())) {
+                    orderItemResponse.setReview(true);
+                }
+            });
+
+        }
 
         Map<Integer,List<OrderItemResponse>> listMap = orderItemResponses.stream().collect(Collectors.groupingBy(item-> findOrderIdForItem(item, orderDetailResponses.getContent())));
 

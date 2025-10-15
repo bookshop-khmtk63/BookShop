@@ -4,8 +4,6 @@ import com.example.backend.common.TrangThaiDonHang;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 @Getter
 @Setter
@@ -35,7 +33,6 @@ public class OrderDetailResponse {
         this.amount = amount;
         this.address = address;
         this.status = status;
-        // Trường "items" sẽ được gán giá trị sau đó (ở tầng Service)
         this.items = new java.util.ArrayList<>(); // Hoặc new ArrayList<>();
     }
 }
