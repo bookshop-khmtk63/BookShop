@@ -1,0 +1,116 @@
+.order-history-page {
+    padding: 40px 60px;
+    background-color: #fff;
+  }
+  
+  .page-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 30px;
+  }
+  
+  /* --- Thẻ đơn hàng --- */
+  .order-card {
+    margin-bottom: 40px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px 25px;
+    background: #fafafa;
+  }
+  
+  /* --- Tiêu đề đơn hàng --- */
+  .order-header {
+    margin-bottom: 15px;
+  }
+  
+  .order-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  /* --- Bảng hiển thị sản phẩm --- */
+  .order-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .table-header,
+  .table-row {
+    display: grid;
+    grid-template-columns: 120px 2fr 1fr 1fr 1fr 1fr;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .table-header {
+    background-color: #e0e0e0;
+    font-weight: 600;
+    padding: 10px 0;
+    border-radius: 8px 8px 0 0;
+  }
+  
+  .table-row {
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    padding: 12px 0;
+    transition: background 0.2s;
+  }
+  
+  .table-row:hover {
+    background-color: #f9f9f9;
+  }
+  
+  /* --- Ảnh sản phẩm --- */
+  .col-image img {
+    width: 80px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+  
+  /* --- Cột tên sách --- */
+  .col-name {
+    text-align: left;
+    padding-left: 10px;
+    font-size: 15px;
+  }
+  
+  /* --- Nút hành động --- */
+  .btn-rebuy,
+  .btn-review {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  
+  .btn-rebuy {
+    background-color: #3498db;
+    color: white;
+  }
+  
+  .btn-review {
+    background-color: #2ecc71;
+    color: white;
+  }
+  
+  .btn-rebuy:hover {
+    background-color: #2980b9;
+  }
+  
+  .btn-review:hover {
+    background-color: #27ae60;
+  }
+  
+  /* --- Tổng tiền --- */
+  .order-total {
+    text-align: right;
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 10px;
+    color: #2c3e50;
+  }
+  

@@ -1,15 +1,20 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { AuthProvider, useAuth } from "./Context/Context";
 
-// Components
+// 🧩 Components chung
 import Header from "@components/Header/Header";
 import Sidebar from "@components/Sidebar/Sidebar";
 import Footer from "@components/Footer/Footer";
 import ProfileForm from "./Components/ProfileForm/ProfileForm";
 import AdminApp from "./Components/AdminLayout/AdminApp/AdminApp";
 
-// Pages
+// 🧩 Các trang người dùng
 import BookList from "./pages/BookList/BookList";
 import ProductDetail from "./pages/ProductDetail/ProductDetail";
 import Login from "./pages/Login/Login";
@@ -19,12 +24,16 @@ import SearchPage from "./pages/SreachPage/SearchPage";
 import RegisterConfirmation from "./pages/Register/RegisterConfirmation";
 import RegisterSuccess from "./pages/RegisterSuccess/RegisterSuccess";
 import ResendConfirmation from "./pages/ResendConfirmation/ResendConfirmation";
-// Protected Route
+import OrderTracking from "./Components/OrderTracking/OrderTracking";
+import OrderHistory from "./Components/OrderHistory/OrderHistory";
+import ReviewProduct from "./Components/ReviewProduct/ReviewProduct";
+
+// 🧩 Route bảo vệ
 import ProtectedRoute from "./routes/ProtectedRoute/ProtectedRoute";
 
 import "./App.css";
 
-// Default filters cho frontend
+// --- Bộ lọc mặc định cho BookList ---
 const defaultFilters = {
   price: "",
   status: "",
@@ -32,20 +41,38 @@ const defaultFilters = {
   search: "",
 };
 
+// =============================
+// 🧱 Layout chính của website
+// =============================
 function MainLayout() {
   const [categoryQuery, setCategoryQuery] = useState("");
   const [otherFilters, setOtherFilters] = useState(defaultFilters);
+  const location = useLocation();
+
+  // ✅ Ẩn sidebar ở các trang tài khoản / đơn hàng / đánh giá
+  const hideSidebar = [
+    "/orders",
+    "/order-history",
+    "/profile",
+    "/review/:id",
+  ].some((path) => location.pathname.startsWith(path.replace(":id", "")));
 
   return (
     <div className="app">
       <Header />
+
       <div className="content">
-        <Sidebar
-          onCategoryChange={setCategoryQuery}
-          onFilterChange={setOtherFilters}
-        />
-        <main className="main-view">
+        {/* ✅ Chỉ hiển thị Sidebar ở các trang chính */}
+        {!hideSidebar && (
+          <Sidebar
+            onCategoryChange={setCategoryQuery}
+            onFilterChange={setOtherFilters}
+          />
+        )}
+
+        <main className={`main-view ${hideSidebar ? "full-width" : ""}`}>
           <Routes>
+            {/* 🏠 Trang chủ */}
             <Route
               path="/"
               element={
@@ -55,8 +82,14 @@ function MainLayout() {
                 />
               }
             />
+
+            {/* 📖 Chi tiết sách */}
             <Route path="/book/:id" element={<ProductDetail />} />
+
+            {/* 🔍 Tìm kiếm */}
             <Route path="/search" element={<SearchPage />} />
+
+            {/* 👤 Hồ sơ cá nhân */}
             <Route
               path="/profile"
               element={
@@ -65,14 +98,48 @@ function MainLayout() {
                 </ProtectedRoute>
               }
             />
+
+            {/* 🚚 Theo dõi đơn hàng */}
+            <Route
+              path="/orders"
+              element={
+                <ProtectedRoute>
+                  <OrderTracking />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* 🧾 Lịch sử đơn hàng */}
+            <Route
+              path="/order-history"
+              element={
+                <ProtectedRoute>
+                  <OrderHistory />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* ⭐ Trang đánh giá sản phẩm */}
+            <Route
+              path="/review/:id"
+              element={
+                <ProtectedRoute>
+                  <ReviewProduct />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </main>
       </div>
+
       <Footer />
     </div>
   );
 }
 
+// =============================
+// 🔐 AppWrapper — quản lý trạng thái login
+// =============================
 function AppWrapper() {
   const { isLoading } = useAuth();
 
@@ -85,7 +152,7 @@ function AppWrapper() {
 
   return (
     <Routes>
-      {/* Public routes */}
+      {/* 🔓 Public routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot" element={<AuthPassword mode="forgot" />} />
@@ -96,15 +163,16 @@ function AppWrapper() {
       />
       <Route path="/register-success" element={<RegisterSuccess />} />
       <Route path="/resend-confirmation" element={<ResendConfirmation />} />
-      
-      {/*trang admin*/}
-       <Route path="/admin" element={<AdminApp />}/> 
 
-      {/* Main app */}
+      {/* 🛠️ Admin */}
+      <Route path="/admin" element={<AdminApp />} />
+
+      {/* 🌐 Toàn bộ app chính */}
       <Route path="/*" element={<MainLayout />} />
     </Routes>
   );
 }
+
 
 export default function App() {
   return (
