@@ -157,4 +157,27 @@
     color: #333;
     font-size: 15px;
   }
+  .btn-review {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .btn-review:hover {
+    background-color: #0056b3;
+  }
+  
+  /* 🔒 Khi nút bị vô hiệu hóa */
+  .btn-review.disabled,
+  .btn-review:disabled {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  
 /* ===== KẾT THÚC PAGINATION CHUẨN ===== */  

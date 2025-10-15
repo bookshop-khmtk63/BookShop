@@ -164,13 +164,25 @@ export default function OrderHistory() {
                     <button className="btn-rebuy">Mua lại</button>
                   </div>
                   <div className="col-review">
-                    <button
-                      className="btn-review"
-                      onClick={() => handleReview(item)}
-                    >
-                      Đánh giá
-                    </button>
-                  </div>
+  {item.review ? (
+    <button
+      className="btn-review disabled"
+      disabled
+      title="Bạn đã đánh giá sản phẩm này"
+    >
+      Đã đánh giá
+    </button>
+  ) : (
+    <button
+      className="btn-review"
+      onClick={() => handleReview(item)}
+      title="Đánh giá sản phẩm"
+    >
+      Đánh giá
+    </button>
+  )}
+</div>
+
                 </div>
               ))
             ) : (

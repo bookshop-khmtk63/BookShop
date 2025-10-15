@@ -53,16 +53,21 @@ export default function ReviewProduct() {
           data: reviewData,
         }
       );
-
+      
+      
+      
       console.log("📤 API Response:", response);
 
-      if (response?.code === 200 && response?.message === "success") {
+      // Nếu API trả về dữ liệu review (có id, rating, comment...)
+      if (response?.id && response?.rating) {
         setMessageType("success");
-        setMessage(`Bạn đã đánh giá thành công!`);
+        setMessage("✅ Bạn đã đánh giá thành công!");
         setTimeout(() => navigate("/order-history"), 2000);
       } else {
-        throw new Error(response?.message || "Gửi đánh giá thất bại!");
+        console.warn("⚠️ API phản hồi không hợp lệ:", response);
+        throw new Error("Gửi đánh giá thất bại!");
       }
+      
     } catch (err) {
       console.error("❌ Lỗi khi gửi đánh giá:", err);
       const status = err.response?.status;

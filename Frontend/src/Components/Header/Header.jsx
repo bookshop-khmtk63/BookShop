@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FaSearch, FaShoppingCart, FaUser } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../Context/Context";
@@ -9,7 +9,19 @@ export default function Header() {
   const { isLoggedIn, logout } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
   const navigate = useNavigate();
+
+  // 🔹 Ẩn menu khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -40,19 +52,32 @@ export default function Header() {
       </form>
 
       <div className="icons">
-        <FaShoppingCart className="cart-icon" />  
+        <FaShoppingCart className="cart-icon" />
         {isLoggedIn ? (
-          <div className="user-menu-wrapper">
+          <div className="user-menu-wrapper" ref={menuRef}>
             <FaUser
               className="user-icon"
               onClick={() => setShowMenu((prev) => !prev)}
             />
             {showMenu && (
               <div className="user-menu">
-                <Link to="/profile" onClick={()=>setShowMenu(false)}>Thông tin cá nhân</Link>
-                <Link to="/orders" onClick={()=>setShowMenu(false)} >Theo dõi đơn hàng</Link>
-                <Link to="/order-history" onClick={()=>setShowMenu(false)}>Lịch sử đơn hàng</Link>
-                <button onClick={logout}>Đăng xuất</button>
+                <Link to="/profile" onClick={() => setShowMenu(false)}>
+                  Thông tin cá nhân
+                </Link>
+                <Link to="/orders" onClick={() => setShowMenu(false)}>
+                  Theo dõi đơn hàng
+                </Link>
+                <Link to="/order-history" onClick={() => setShowMenu(false)}>
+                  Lịch sử đơn hàng
+                </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    navigate("/login");
+                  }}
+                >
+                  Đăng xuất
+                </button>
               </div>
             )}
           </div>
