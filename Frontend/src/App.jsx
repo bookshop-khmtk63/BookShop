@@ -49,13 +49,17 @@ function MainLayout() {
   const [otherFilters, setOtherFilters] = useState(defaultFilters);
   const location = useLocation();
 
-  // ✅ Ẩn sidebar ở các trang tài khoản / đơn hàng / đánh giá
-  const hideSidebar = [
+  // ✅ Ẩn Sidebar ở các trang không cần hiển thị nó
+  const hideSidebarPaths = [
     "/orders",
     "/order-history",
     "/profile",
-    "/review/:id",
-  ].some((path) => location.pathname.startsWith(path.replace(":id", "")));
+    "/review",
+  ];
+
+  const hideSidebar = hideSidebarPaths.some((path) =>
+    location.pathname.startsWith(path)
+  );
 
   return (
     <div className="app">
@@ -86,7 +90,7 @@ function MainLayout() {
             {/* 📖 Chi tiết sách */}
             <Route path="/book/:id" element={<ProductDetail />} />
 
-            {/* 🔍 Tìm kiếm */}
+            {/* 🔍 Trang tìm kiếm */}
             <Route path="/search" element={<SearchPage />} />
 
             {/* 👤 Hồ sơ cá nhân */}
@@ -138,17 +142,18 @@ function MainLayout() {
 }
 
 // =============================
-// 🔐 AppWrapper — quản lý trạng thái login
+// 🔐 AppWrapper — quản lý trạng thái đăng nhập
 // =============================
 function AppWrapper() {
   const { isLoading } = useAuth();
 
-  if (isLoading)
+  if (isLoading) {
     return (
       <div style={{ textAlign: "center", marginTop: "100px" }}>
         ⏳ Đang kiểm tra đăng nhập...
       </div>
     );
+  }
 
   return (
     <Routes>
@@ -164,7 +169,7 @@ function AppWrapper() {
       <Route path="/register-success" element={<RegisterSuccess />} />
       <Route path="/resend-confirmation" element={<ResendConfirmation />} />
 
-      {/* 🛠️ Admin */}
+      {/* 🛠️ Trang admin */}
       <Route path="/admin" element={<AdminApp />} />
 
       {/* 🌐 Toàn bộ app chính */}
@@ -173,7 +178,9 @@ function AppWrapper() {
   );
 }
 
-
+// =============================
+// 🚀 App chính
+// =============================
 export default function App() {
   return (
     <AuthProvider>
