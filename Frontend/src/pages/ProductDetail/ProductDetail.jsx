@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import "./ProductDetail.css";
 
 export default function ProductDetail() {
-  const { id } = useParams(); // lấy id từ URL
+  const { id } = useParams();
   const [book, setBook] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [reviews, setReviews] = useState([]);
@@ -21,20 +21,20 @@ export default function ProductDetail() {
       .then((json) => {
         const b = json.data;
         if (b) {
-          // ✅ Lấy thêm tác giả (author)
+          // ✅ Lưu thông tin sách
           setBook({
             id: b.id,
             title: b.nameBook,
             price: b.price,
             desc: b.describe,
             stock: b.number,
-            author: b.author, // thêm dòng này
+            author: b.author,
             categories: b.category.map((c) => c.name).join(", "),
             rating: b.averageRating,
           });
 
-          // ✅ Nếu API trả về reviews
-          if (b.reviews && Array.isArray(b.reviews)) {
+          // ✅ Lưu toàn bộ đánh giá (nếu có)
+          if (Array.isArray(b.reviews)) {
             setReviews(
               b.reviews.map((r) => ({
                 id: r.id,
@@ -44,17 +44,19 @@ export default function ProductDetail() {
                 createdAt: r.timestamp,
               }))
             );
+          } else {
+            setReviews([]);
           }
         }
       })
-      .catch((err) => console.error("Lỗi fetch:", err));
+      .catch((err) => console.error("❌ Lỗi fetch:", err));
   }, [id]);
 
-  // Format ngày giờ dd/MM/yyyy HH:mm:ss
+  // ✅ Format ngày giờ dd/MM/yyyy HH:mm:ss
   const formatDateTime = (isoString) => {
     const date = new Date(isoString);
+    if (isNaN(date)) return "Không xác định";
     const pad = (n) => (n < 10 ? "0" + n : n);
-
     return (
       pad(date.getDate()) +
       "/" +
@@ -70,7 +72,7 @@ export default function ProductDetail() {
     );
   };
 
-  if (!book) return <div>Đang tải...</div>;
+  if (!book) return <div className="loading">⏳ Đang tải thông tin sản phẩm...</div>;
 
   return (
     <div className="product-detail-page">
@@ -84,8 +86,6 @@ export default function ProductDetail() {
 
         <div className="product-info">
           <h2 className="title">{book.title}</h2>
-
-          {/* ✅ Hiển thị tác giả */}
           <p className="author">
             <strong>Tác giả:</strong> {book.author || "Đang cập nhật"}
           </p>
@@ -102,6 +102,9 @@ export default function ProductDetail() {
 
           <div className="stock">Tồn kho: {book.stock}</div>
           <div className="category">Thể loại: {book.categories}</div>
+          <div className="rating">
+            ⭐ {book.rating ? book.rating.toFixed(1) : "0.0"} / 5
+          </div>
 
           <div className="cart-actions">
             <div className="quantity">
@@ -110,9 +113,7 @@ export default function ProductDetail() {
               </button>
               <input type="text" value={quantity} readOnly />
               <button
-                onClick={() =>
-                  setQuantity((q) => Math.min(book.stock, q + 1))
-                }
+                onClick={() => setQuantity((q) => Math.min(book.stock, q + 1))}
               >
                 +
               </button>
@@ -120,7 +121,7 @@ export default function ProductDetail() {
             <button
               className="add-to-cart"
               onClick={() =>
-                console.log("Thêm giỏ hàng:", book.id, quantity)
+                console.log("🛒 Thêm giỏ hàng:", book.id, quantity)
               }
             >
               Thêm giỏ hàng
@@ -129,19 +130,21 @@ export default function ProductDetail() {
         </div>
       </main>
 
+      {/* 🧩 Danh sách đánh giá */}
       <section className="product-review">
         <h3>Đánh giá sản phẩm</h3>
+
         {reviews.length === 0 ? (
           <div className="review-box">
-            ⭐ {book.rating} / 5 - Chưa có đánh giá chi tiết
+            ⭐ {book.rating || 0} / 5 - Chưa có đánh giá chi tiết
           </div>
         ) : (
           reviews.map((r) => (
             <div key={r.id} className="review-box">
-              <div>
-                <strong>{r.username}</strong> - ⭐ {r.rating} / 5
+              <div className="review-header">
+                <strong>{r.username}</strong> — ⭐ {r.rating} / 5
               </div>
-              <div>{r.comment}</div>
+              <div className="review-comment">{r.comment}</div>
               <div className="review-date">{formatDateTime(r.createdAt)}</div>
             </div>
           ))

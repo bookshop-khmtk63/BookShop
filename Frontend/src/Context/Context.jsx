@@ -148,24 +148,31 @@ export function AuthProvider({ children }) {
   );
 
   // ==================== API Call Wrapper ====================
-  const callApiWithToken = async (endpoint, options = {}) => {
-    try {
-      const currentToken = Cookies.get("token") || localStorage.getItem("accessToken");
-      const response = await axiosInstance({
-        url: endpoint,
-        method: options.method || "GET",
-        data: options.body || options.data || {},
-        headers: {
-          "Authorization": `Bearer ${currentToken}`,
-          ...(options.headers || {}),
-        },
-      });
-      return response.data?.data || response.data;
-    } catch (err) {
-      console.error("❌ API call error:", err);
-      throw err;
-    }
-  };
+  // ==================== API Call Wrapper ====================
+const callApiWithToken = async (endpoint, options = {}) => {
+  try {
+    const currentToken = Cookies.get("token") || localStorage.getItem("accessToken");
+    const response = await axiosInstance({
+      url: endpoint,
+      method: options.method || "GET",
+      data: options.body || options.data || {},
+      headers: {
+        "Authorization": `Bearer ${currentToken}`,
+        ...(options.headers || {}),
+      },
+    });
+
+    // ✅ Chuẩn hóa dữ liệu trả về để tương thích với mọi API
+    const resData = response.data;
+    if (resData?.data) return resData.data;
+    if (resData?.result) return resData.result;
+    return resData; // fallback nếu API trả trực tiếp object
+  } catch (err) {
+    console.error("❌ API call error:", err);
+    throw err;
+  }
+};
+
 
   // ==================== Provider ====================
   return (

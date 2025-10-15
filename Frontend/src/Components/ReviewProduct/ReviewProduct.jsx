@@ -1,63 +1,117 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../Context/Context";
 import "./ReviewProduct.css";
 
 export default function ReviewProduct() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { callApiWithToken } = useAuth();
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const product = location.state?.product;
 
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [comment, setComment] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState(""); // ✅ success / error
 
-  // Dòng mô tả tương ứng cho mỗi mức sao
   const ratingLabels = ["Rất tệ", "Tệ", "Bình thường", "Tốt", "Tuyệt vời"];
 
   if (!product) {
     return (
       <div className="review-page">
-        <p>⚠️ Không tìm thấy sản phẩm để đánh giá.</p>
+        <p>Không tìm thấy sản phẩm để đánh giá.</p>
         <button onClick={() => navigate("/order-history")}>⬅️ Quay lại</button>
       </div>
     );
   }
 
-  const handleSubmit = (e) => {
+  // ✅ Gửi đánh giá lên server
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (rating === 0) {
-      alert("Vui lòng chọn số sao để đánh giá!");
+      setMessageType("error");
+      setMessage("⚠️ Vui lòng chọn số sao để đánh giá!");
       return;
     }
 
-    alert(
-      `Bạn đã đánh giá ${rating} sao (${ratingLabels[rating - 1]}) cho ${product.name}!\nBình luận: ${comment}`
-    );
-    navigate("/order-history");
+    const reviewData = { rating, comment };
+
+    try {
+      setLoading(true);
+      setMessage("");
+      setMessageType("");
+
+      const response = await callApiWithToken(
+        `${API_URL}/api/customer/create-review/${product.bookId}`,
+        {
+          method: "POST",
+          data: reviewData,
+        }
+      );
+
+      console.log("📤 API Response:", response);
+
+      if (response?.code === 200 && response?.message === "success") {
+        setMessageType("success");
+        setMessage(`Bạn đã đánh giá thành công!`);
+        setTimeout(() => navigate("/order-history"), 2000);
+      } else {
+        throw new Error(response?.message || "Gửi đánh giá thất bại!");
+      }
+    } catch (err) {
+      console.error("❌ Lỗi khi gửi đánh giá:", err);
+      const status = err.response?.status;
+
+      if (status === 401) {
+        setMessageType("error");
+        setMessage("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+        setTimeout(() => navigate("/login"), 2000);
+      } else if (status === 409) {
+        setMessageType("error");
+        setMessage("Bạn đã đánh giá sản phẩm này rồi.");
+        setTimeout(() => navigate("/order-history"), 2000);
+      } else {
+        setMessageType("error");
+        setMessage("Gửi đánh giá thất bại. Vui lòng thử lại.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="review-page">
       <h2 className="page-title">Đánh Giá Sản Phẩm</h2>
 
+      {/* 🧩 Thông tin sản phẩm */}
       <div className="product-box">
-        <img src={product.image} alt={product.name} className="product-img" />
+        <img
+          src={product.thumbnail || product.image}
+          alt={product.bookName || product.name}
+          className="product-img"
+        />
         <div className="product-info">
-          <h3>{product.name}</h3>
-          <p>Giá: {product.price.toLocaleString("vi-VN")} ₫</p>
+          <h3>{product.bookName || product.name}</h3>
+          <p>
+            Giá:{" "}
+            {Number(product.unitPrice || product.price).toLocaleString("vi-VN")} ₫
+          </p>
         </div>
       </div>
 
-      {/* Phần chọn sao giống Shopee */}
+      {/* ⭐ Phần chọn sao */}
       <div className="rating-section">
         <span className="rating-title">Chất lượng sản phẩm:</span>
         <div className="rating-stars">
           {[1, 2, 3, 4, 5].map((star) => (
             <span
               key={star}
-              className={`star ${
-                (hovered || rating) >= star ? "active" : ""
-              }`}
+              className={`star ${(hovered || rating) >= star ? "active" : ""}`}
               onMouseEnter={() => setHovered(star)}
               onMouseLeave={() => setHovered(0)}
               onClick={() => setRating(star)}
@@ -73,7 +127,7 @@ export default function ReviewProduct() {
         </span>
       </div>
 
-      {/* Form bình luận */}
+      {/* 💬 Bình luận */}
       <form className="review-form" onSubmit={handleSubmit}>
         <label htmlFor="comment">Nội dung đánh giá:</label>
         <textarea
@@ -81,6 +135,7 @@ export default function ReviewProduct() {
           placeholder="Hãy chia sẻ trải nghiệm của bạn về sản phẩm này..."
           value={comment}
           onChange={(e) => setComment(e.target.value)}
+          required
         />
 
         <div className="button-group">
@@ -91,11 +146,18 @@ export default function ReviewProduct() {
           >
             Trở lại
           </button>
-          <button type="submit" className="btn-submit">
-            Hoàn thành
+          <button type="submit" className="btn-submit" disabled={loading}>
+            {loading ? "Đang gửi..." : "Hoàn thành"}
           </button>
         </div>
       </form>
+
+      {/* ✅ Thông báo trong khung */}
+      {message && (
+        <div className={`message-box ${messageType}`}>
+          {message}
+        </div>
+      )}
     </div>
   );
 }

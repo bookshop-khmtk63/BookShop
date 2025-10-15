@@ -1,63 +1,135 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ Dùng để điều hướng
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../Context/Context";
 import "./OrderHistory.css";
 
 export default function OrderHistory() {
-  const navigate = useNavigate(); // ✅ Hook điều hướng
+  const navigate = useNavigate();
+  const { callApiWithToken } = useAuth();
+  const API_URL = import.meta.env.VITE_API_URL;
 
-  const [orders] = useState([
-    {
-      id: "DH001",
-      total: 345000,
-      items: [
-        {
-          id: 1,
-          name: "Tuổi Trẻ Đáng Giá Bao Nhiêu",
-          price: 115000,
-          quantity: 2,
-          image:
-            "https://cdn0.fahasa.com/media/catalog/product/t/u/tuoi-tre-dang-gia-bao-nhieu-tai-ban-2022.jpg",
-        },
-        {
-          id: 2,
-          name: "Đắc Nhân Tâm",
-          price: 115000,
-          quantity: 1,
-          image:
-            "https://cdn0.fahasa.com/media/catalog/product/d/a/dac-nhan-tam-bia-cung.jpg",
-        },
-      ],
-    },
-    {
-      id: "DH002",
-      total: 180000,
-      items: [
-        {
-          id: 3,
-          name: "Harry Potter và Hòn Đá Phù Thủy",
-          price: 180000,
-          quantity: 1,
-          image:
-            "https://cdn0.fahasa.com/media/catalog/product/h/a/harry-potter-va-hon-da-phu-thuy.jpg",
-        },
-      ],
-    },
-  ]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [page, setPage] = useState(0); // ✅ Trang hiện tại
+  const [totalPages, setTotalPages] = useState(1);
 
-  // ✅ Khi nhấn "Đánh giá", chuyển hướng đến trang ReviewProduct
-  const handleReview = (item) => {
-    navigate(`/review/${item.id}`, { state: { product: item } });
+  // ✅ Chuẩn hóa dữ liệu API về mảng đơn hàng
+  const normalizeOrdersResponse = (res) => {
+    if (!res) return [];
+
+    if (Array.isArray(res)) return res;
+    const d1 = res?.data;
+    if (Array.isArray(d1)) return d1;
+
+    const d2 = d1?.data;
+    if (Array.isArray(d2)) return d2;
+
+    const d3 = d2?.data;
+    if (Array.isArray(d3)) return d3;
+
+    if (d1 && d1.data && Array.isArray(d1.data)) return d1.data;
+    if (res?.data && res.data.data && Array.isArray(res.data.data))
+      return res.data.data;
+
+    return [];
   };
+
+  // ✅ Lấy dữ liệu lịch sử đơn hàng
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchOrderHistory = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await callApiWithToken(
+          `${API_URL}/api/customer/history-order?pageNumber=${page}&pageSize=3`
+        );
+
+        console.log("🔥 Full API Response:", res);
+
+        const rawData =
+          res?.data?.data ||
+          res?.data ||
+          res; // Lấy phần chứa thông tin phân trang
+        const ordersData = normalizeOrdersResponse(res);
+
+        console.log("✅ Parsed ordersData:", ordersData);
+
+        if (!cancelled) {
+          setOrders(Array.isArray(ordersData) ? [...ordersData] : []);
+          setTotalPages(rawData?.totalPages || 1);
+        }
+      } catch (err) {
+        console.error("❌ Lỗi khi tải lịch sử đơn hàng:", err);
+        if (!cancelled)
+          setError("Không thể tải lịch sử đơn hàng. Vui lòng thử lại.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    fetchOrderHistory();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [API_URL, callApiWithToken, page]);
+
+  // Log sau khi setState (do async)
+  useEffect(() => {
+    console.log("🟢 orders state updated:", orders);
+  }, [orders]);
+
+  // ✅ Điều hướng đến trang đánh giá
+  const handleReview = (item) => {
+    navigate(`/review/${item.bookId}`, { state: { product: item } });
+  };
+
+  // ✅ Chuyển trang
+  const handlePrevPage = () => {
+    if (page > 0) setPage(page - 1);
+  };
+
+  const handleNextPage = () => {
+    if (page < totalPages - 1) setPage(page + 1);
+  };
+
+  // 🧭 Hiển thị trạng thái
+  if (loading) return <p className="loading">⏳ Đang tải lịch sử đơn hàng...</p>;
+  if (error) return <p className="error">{error}</p>;
+  if (!orders || orders.length === 0)
+    return <p className="no-orders">😕 Bạn chưa có đơn hàng nào.</p>;
 
   return (
     <div className="order-history-page">
       <h2 className="page-title">Lịch sử đơn hàng</h2>
 
       {orders.map((order) => (
-        <div key={order.id} className="order-card">
-          {/* --- Mã đơn hàng --- */}
+        <div
+          key={order.idOrder ?? order.id ?? JSON.stringify(order)}
+          className="order-card"
+        >
+          {/* --- Thông tin đơn hàng --- */}
           <div className="order-header">
-            <h3>📦 Mã đơn hàng: {order.id}</h3>
+            <h3>📦 Mã đơn hàng: {order.idOrder ?? order.id}</h3>
+
+            <span
+              className={`order-status ${
+                order.status === "HOAN_THANH"
+                  ? "completed"
+                  : order.status === "DANG_GIAO"
+                  ? "shipping"
+                  : "pending"
+              }`}
+            >
+              {order.status === "HOAN_THANH"
+                ? "Hoàn thành"
+                : order.status === "DANG_GIAO"
+                ? "Đang giao"
+                : order.status ?? "Đang xử lý"}
+            </span>
           </div>
 
           {/* --- Bảng sản phẩm --- */}
@@ -71,38 +143,73 @@ export default function OrderHistory() {
               <div className="col-review">Đánh giá</div>
             </div>
 
-            {order.items.map((item) => (
-              <div className="table-row" key={item.id}>
-                <div className="col-image">
-                  <img src={item.image} alt={item.name} />
+            {(order.items ?? []).length > 0 ? (
+              order.items.map((item) => (
+                <div
+                  className="table-row"
+                  key={item.bookId ?? item.orderDetailId ?? JSON.stringify(item)}
+                >
+                  <div className="col-image">
+                    <img src={item.thumbnail} alt={item.bookName} />
+                  </div>
+                  <div className="col-name">{item.bookName}</div>
+                  <div className="col-price">
+                    {Number(item.unitPrice ?? item.linePrice ?? 0).toLocaleString(
+                      "vi-VN"
+                    )}{" "}
+                    ₫
+                  </div>
+                  <div className="col-quantity">{item.quantity}</div>
+                  <div className="col-actions">
+                    <button className="btn-rebuy">Mua lại</button>
+                  </div>
+                  <div className="col-review">
+                    <button
+                      className="btn-review"
+                      onClick={() => handleReview(item)}
+                    >
+                      Đánh giá
+                    </button>
+                  </div>
                 </div>
-                <div className="col-name">{item.name}</div>
-                <div className="col-price">
-                  {item.price.toLocaleString("vi-VN")} ₫
-                </div>
-                <div className="col-quantity">{item.quantity}</div>
-                <div className="col-actions">
-                  <button className="btn-rebuy">Mua lại</button>
-                </div>
-                <div className="col-review">
-                  <button
-                    className="btn-review"
-                    onClick={() => handleReview(item)}
-                  >
-                    Đánh giá
-                  </button>
-                </div>
+              ))
+            ) : (
+              <div className="table-row no-items">
+                <p>Không có sản phẩm trong đơn hàng này.</p>
               </div>
-            ))}
+            )}
           </div>
 
           {/* --- Tổng tiền --- */}
           <div className="order-total">
             <strong>Tổng tiền:</strong>{" "}
-            {order.total.toLocaleString("vi-VN")} ₫
+            {Number(order.totalPrice ?? 0).toLocaleString("vi-VN")} ₫
           </div>
         </div>
       ))}
+
+      {/* --- Phân trang --- */}
+      <div className="pagination">
+        <button
+          onClick={handlePrevPage}
+          disabled={page === 0}
+          className="btn-page"
+        >
+          ⬅ Trang trước
+        </button>
+
+        <span className="page-info">
+          Trang {page + 1} / {totalPages}
+        </span>
+
+        <button
+          onClick={handleNextPage}
+          disabled={page >= totalPages - 1}
+          className="btn-page"
+        >
+          Trang sau ➡
+        </button>
+      </div>
     </div>
   );
 }

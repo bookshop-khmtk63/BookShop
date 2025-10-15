@@ -113,4 +113,48 @@
     margin-top: 10px;
     color: #2c3e50;
   }
+  /* ===== PAGINATION CHUẨN ===== */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin: 30px 0;
+    font-family: "Inter", sans-serif;
+  }
   
+  /* 🟢 Nút phân trang cơ bản */
+  .pagination button {
+    background-color: #ffffff;
+    color: #222;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  /* 🩶 Hover — chuyển xám nhẹ */
+  .pagination button:hover {
+    background-color: #f5f5f5;
+    border-color: #cfcfcf;
+  }
+  
+  /* 🚫 Disabled — sáng nhẹ, mờ hơn */
+  .pagination button:disabled {
+    background-color: #fafafa;
+    color: #b0b0b0;
+    border-color: #e5e7eb;
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  /* 🔠 Số trang ở giữa */
+  .page-info {
+    font-weight: 700;
+    color: #333;
+    font-size: 15px;
+  }
+/* ===== KẾT THÚC PAGINATION CHUẨN ===== */  

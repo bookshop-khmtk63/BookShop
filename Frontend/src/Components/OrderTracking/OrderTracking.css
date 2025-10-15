@@ -1,20 +1,21 @@
 .order-tracking-page {
-  padding: 30px 50px;
-  background-color: #fff;
+  padding: 20px 40px;
 }
 
 .page-title {
   font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 25px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #222;
 }
 
 .order-block {
-  margin-bottom: 40px;
-  border: 1px solid #ddd;
+  border: 1px solid #e5e7eb;
   border-radius: 10px;
+  margin-bottom: 25px;
   padding: 20px;
-  background-color: #fafafa;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .order-header {
@@ -24,69 +25,89 @@
   margin-bottom: 15px;
 }
 
-.order-id {
-  font-size: 16px;
-  font-weight: 600;
-  color: #2f58cd;
-}
-
 .order-status {
+  padding: 6px 12px;
+  border-radius: 8px;
   font-weight: 600;
-  padding: 5px 12px;
-  border-radius: 6px;
-  color: white;
-  font-size: 14px;
+  color: #fff;
 }
 
 .order-status.shipping {
-  background-color: #f39c12;
+  background: #007bff;
 }
 
 .order-status.completed {
-  background-color: #27ae60;
+  background: #28a745;
+}
+
+.order-status.pending {
+  background: #ffc107;
+  color: #000;
 }
 
 .order-table {
   width: 100%;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  overflow: hidden;
+  border-collapse: collapse;
 }
 
 .order-header-row,
 .order-row {
   display: grid;
-  grid-template-columns: 100px 1.5fr 1fr 1fr;
+  grid-template-columns: 100px 2fr 1fr 1fr;
   align-items: center;
+  text-align: left;
+  padding: 10px 0;
   border-bottom: 1px solid #eee;
-  padding: 10px 15px;
-  gap: 10px;
 }
 
 .order-header-row {
-  background-color: #f0f0f0;
-  font-weight: 600;
+  font-weight: bold;
+  color: #333;
 }
 
-.order-row img {
+.order-image img {
   width: 70px;
-  height: 90px;
+  height: 70px;
   object-fit: cover;
-  border-radius: 4px;
-}
-
-.order-row div {
-  text-align: center;
-}
-
-.order-name {
-  text-align: left !important;
+  border-radius: 6px;
 }
 
 .order-total {
   text-align: right;
-  font-size: 16px;
+  margin-top: 10px;
   font-weight: bold;
-  color: #2c3e50;
-  margin-top: 15px;
+  color: #333;
+}
+
+/* === PHÂN TRANG === */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 30px;
+}
+
+.btn-page {
+  background: #ffffff;
+  color: #222;
+  border: 1px solid #ddd;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-page:hover {
+  background: #f7f7f7;
+  border-color: #ccc;
+}
+
+.btn-page:disabled {
+  background: #fafafa;
+  color: #b0b0b0;
+  border-color: #eee;
+  opacity: 0.7;
+  cursor: not-allowed;
 }
