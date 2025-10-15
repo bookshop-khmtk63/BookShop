@@ -16,7 +16,7 @@ public class BookReviewResponse {
     private Integer id;
     private double rating;
     private String comment;
-    private Timestamp timestamp;
+    private LocalDateTime timestamp;
     private Integer userId;
     private String fullName;
 }

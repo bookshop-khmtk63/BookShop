@@ -1,5 +1,6 @@
 package com.example.backend.service.implement;
 
+import com.example.backend.common.TrangThaiDonHang;
 import com.example.backend.dto.response.OrderItemResponse;
 import com.example.backend.repository.DonHangChiTietRepository;
 import com.example.backend.service.OrderDetailService;
@@ -18,5 +19,11 @@ public class OrderDetailImplementService implements OrderDetailService {
     @Override
     public List<OrderItemResponse> findByOderItemByOrderID(List<Integer> idOrder) {
         return donHangChiTietRepository.findByOderItemByOrderID(idOrder);
+    }
+
+    @Override
+    public boolean hasPurchasedAndReceived(Integer idKhachHang, Integer idSach, TrangThaiDonHang trangThaiDonHang) {
+
+        return donHangChiTietRepository.hasPurchasedAndReceived(idKhachHang,idSach,trangThaiDonHang);
     }
 }

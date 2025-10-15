@@ -28,7 +28,9 @@ public enum ErrorCode {
     CATEGORY_NOT_FOUND(2017,"Không tìm thấy thể loại" ,HttpStatus.NOT_FOUND ),
     FILE_UPLOAD_ERROR(2018,"Lỗi upload file" ,HttpStatus.BAD_REQUEST ),
     AUTHOR_NOT_FOUND(2019,"Không thìm thấy tác giả" ,HttpStatus.NOT_FOUND ),
-    NOT_FOUND_ORDER_ID(2020,"Khồng timf thấy idorder",HttpStatus.NOT_FOUND ),;
+    NOT_FOUND_ORDER_ID(2020,"Khồng tim thấy đơn hàng",HttpStatus.NOT_FOUND ),
+    BOOK_NOT_PURCHASE_AND_RECEIVED(2021,"Không tìm thấy sách trạng thái đã giao trong đơn hàng" ,HttpStatus.NOT_FOUND ),
+    REVIEW_ALREADY_EXISTS(2022,"Đơn hàng đã được đánh giá" ,HttpStatus.CONFLICT ),;
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

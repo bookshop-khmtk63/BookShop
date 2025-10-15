@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface DonHangRepository extends JpaRepository<DonHang, Integer> {
 
     @Query(value = """ 
@@ -21,12 +23,12 @@ public interface DonHangRepository extends JpaRepository<DonHang, Integer> {
        dh.trangThai
    )
    from DonHang dh
-   where dh.khachHang.idKhachHang=:idKhachHang and dh.trangThai = :trangThaiDonHang
+   where dh.khachHang.idKhachHang=:idKhachHang and dh.trangThai IN :trangThaiDonHang
 """)
     Page<OrderDetailResponse> findByOderByCustomerIdAndStatus(
             @Param("idKhachHang") Integer idKhachHang,
             Pageable pageable,
-            @Param("trangThaiDonHang") TrangThaiDonHang trangThaiDonHang
+            @Param("trangThaiDonHang") List<TrangThaiDonHang> trangThaiDonHang
     );
 
 }

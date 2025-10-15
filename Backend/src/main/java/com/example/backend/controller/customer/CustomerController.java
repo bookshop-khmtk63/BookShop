@@ -1,13 +1,12 @@
 package com.example.backend.controller.customer;
 
+import com.example.backend.dto.request.CreateReviewRequest;
 import com.example.backend.dto.request.UserUpdateRequest;
-import com.example.backend.dto.response.CustomerResponse;
-import com.example.backend.dto.response.OrderDetailResponse;
-import com.example.backend.dto.response.PageResponse;
-import com.example.backend.dto.response.ResponseData;
+import com.example.backend.dto.response.*;
 import com.example.backend.mapper.CustomerMapper;
 import com.example.backend.model.CustomUserDetails;
 import com.example.backend.model.KhachHang;
+import com.example.backend.service.BookReviewService;
 import com.example.backend.service.CustomerService;
 import com.example.backend.service.OrderService;
 import com.example.backend.utils.JwtTokenUtils;
@@ -31,6 +30,7 @@ public class CustomerController {
     private final CustomerService customerService;
     private final CustomerMapper customerMapper;
     private final OrderService orderService;
+    private final BookReviewService bookReviewService;
   //API Cập nhật thông tin người dùng
   @PatchMapping("/update-customer")
     public ResponseEntity<ResponseData<CustomerResponse>> updateCustomer(@Valid @RequestBody UserUpdateRequest userUpdateRequest) {
@@ -52,5 +52,19 @@ public class CustomerController {
     ResponseData<PageResponse<OrderDetailResponse>> response = new ResponseData<>(200,"success",order);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
-
+  @PostMapping("/create-review/{bookId}")
+    public ResponseEntity<ResponseData<BookReviewResponse>> createReview(@AuthenticationPrincipal UserDetails userDetails,
+                                                                         @Valid @RequestBody CreateReviewRequest createReviewRequest,@PathVariable Integer bookId) {
+      BookReviewResponse review = bookReviewService.createReview(createReviewRequest,userDetails.getUsername(),bookId);
+      ResponseData<BookReviewResponse> response = new ResponseData<>(200,"success",review);
+      return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+      @GetMapping("/tracking-order")
+        public  ResponseEntity<ResponseData<PageResponse<OrderDetailResponse>>> getTrackingOrder(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                                  @PageableDefault(page = 0,size = 3,sort ="ngayDat",direction = Sort.Direction.DESC)
+                                                                                  Pageable pageable){
+        PageResponse<OrderDetailResponse> trackingOrder = orderService.getTrackingOrder(userDetails.getUser().getIdKhachHang(),pageable);
+        ResponseData<PageResponse<OrderDetailResponse>> responseData =  new ResponseData<>(200,"success",trackingOrder);
+        return new ResponseEntity<>(responseData,HttpStatus.OK);
+}
 }

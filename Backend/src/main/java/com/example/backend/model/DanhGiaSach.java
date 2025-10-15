@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -41,7 +42,7 @@ public class DanhGiaSach {
     private String binhLuan;
 
     @Column(name = "ngay_danh_gia", insertable = false, updatable = false)
-    private Timestamp ngayDanhGia;
+    private Instant ngayDanhGia;
 
     @Override
     public final boolean equals(Object o) {

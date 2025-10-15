@@ -1,6 +1,7 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.common.TrangThaiDonHang;
+import com.example.backend.dto.response.BookReviewResponse;
 import com.example.backend.dto.response.OrderDetailResponse;
 import com.example.backend.dto.response.OrderItemResponse;
 import com.example.backend.dto.response.PageResponse;
@@ -30,7 +31,20 @@ public class OrderServiceImplement implements OrderService {
     private final OrderDetailService orderDetailService;
     @Override
     public PageResponse<OrderDetailResponse> getAllOrder(Integer idKhachHang, Pageable pageable) {
-        Page<OrderDetailResponse> orderDetailResponses = orderRepository.findByOderByCustomerIdAndStatus(idKhachHang,pageable, TrangThaiDonHang.HOAN_THANH);
+        List<TrangThaiDonHang> listOrder  = List.of(TrangThaiDonHang.HOAN_THANH);
+        Page<OrderDetailResponse> orderDetailResponses = orderRepository.findByOderByCustomerIdAndStatus(idKhachHang,pageable,listOrder);
+
+        return enrichOrdersWithItems(orderDetailResponses);
+    }
+
+    @Override
+    public PageResponse<OrderDetailResponse> getTrackingOrder(Integer idKhachHang, Pageable pageable) {
+        List<TrangThaiDonHang> listOrder = List.of(TrangThaiDonHang.DANG_GIAO,TrangThaiDonHang.CHO_XU_LY);
+        Page<OrderDetailResponse> orderDetailResponses = orderRepository.findByOderByCustomerIdAndStatus(idKhachHang,pageable, listOrder);
+        return enrichOrdersWithItems(orderDetailResponses);
+    }
+
+    private PageResponse<OrderDetailResponse> enrichOrdersWithItems(Page<OrderDetailResponse> orderDetailResponses) {
         if (orderDetailResponses.getContent().isEmpty()) {
             return PageResponse.empty(0,1);
         }
@@ -38,7 +52,6 @@ public class OrderServiceImplement implements OrderService {
         log.info("id  don hang: {}", idOrder );
 
         List<OrderItemResponse> orderItemResponses = orderDetailService.findByOderItemByOrderID(idOrder);
-        log.info("chi tier don hang : {}", orderItemResponses.size() );
 
         Map<Integer,List<OrderItemResponse>> listMap = orderItemResponses.stream().collect(Collectors.groupingBy(item-> findOrderIdForItem(item, orderDetailResponses.getContent())));
 
@@ -56,7 +69,10 @@ public class OrderServiceImplement implements OrderService {
         return PageResponse.from(orderDetailResponses,listOrder);
     }
 
+
     private Integer findOrderIdForItem(OrderItemResponse item, List<OrderDetailResponse> content) {
+        log.info("chi tiet don hang : {}", item.toString() );
+
         for (OrderDetailResponse orderDetailResponse : content) {
             if(Objects.equals(orderDetailResponse.getIdOrder(), item.getOrderDetailId())) {
                 return orderDetailResponse.getIdOrder();

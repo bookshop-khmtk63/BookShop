@@ -185,6 +185,11 @@ public class BookServiceImplement implements BookService {
         sachRepository.deleteById(id);
     }
 
+    @Override
+    public Book getBookByIds(Integer bookId) {
+        return sachRepository.findById(bookId).orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_FOUND));
+    }
+
 
     private SearchOperation mapOperator(String operator) {
         switch (operator) {

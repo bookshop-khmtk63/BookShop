@@ -5,6 +5,9 @@ import com.example.backend.model.DanhGiaSach;
 import com.example.backend.model.Book;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,7 +20,7 @@ public class BookReviewMapper {
         return BookReviewResponse.builder()
                 .id(review.getIdDanhGia())
                 .rating(review.getDiemXepHang())
-                .timestamp(review.getNgayDanhGia())
+                .timestamp(LocalDateTime.ofInstant(review.getNgayDanhGia(), ZoneId.of("Asia/Ho_Chi_Minh")))
                 .comment(review.getBinhLuan())
                 .fullName(review.getKhachHang().getHoTen())
                 .userId(review.getKhachHang().getIdKhachHang())
