@@ -100,7 +100,7 @@ export default function OrderHistory() {
   if (loading) return <p className="loading">⏳ Đang tải lịch sử đơn hàng...</p>;
   if (error) return <p className="error">{error}</p>;
   if (!orders || orders.length === 0)
-    return <p className="no-orders">😕 Bạn chưa có đơn hàng nào.</p>;
+    return <p className="no-orders"> Bạn chưa có đơn hàng nào.</p>;
 
   return (
     <div className="order-history-page">
