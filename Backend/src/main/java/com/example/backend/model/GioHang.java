@@ -33,6 +33,7 @@ public class GioHang {
 
     @OneToMany(mappedBy = "gioHang", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
+    @Builder.Default
     private Set<GioHangChiTiet> chiTietGioHang = new HashSet<>();
 
     @Override

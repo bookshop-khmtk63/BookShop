@@ -1,16 +1,13 @@
 package com.example.backend.controller.customer;
 
+import com.example.backend.dto.request.CartItemRequest;
 import com.example.backend.dto.request.CreateReviewRequest;
 import com.example.backend.dto.request.UserUpdateRequest;
 import com.example.backend.dto.response.*;
 import com.example.backend.mapper.CustomerMapper;
 import com.example.backend.model.CustomUserDetails;
 import com.example.backend.model.KhachHang;
-import com.example.backend.service.BookReviewService;
-import com.example.backend.service.CartService;
-import com.example.backend.service.CustomerService;
-import com.example.backend.service.OrderService;
-import com.example.backend.utils.JwtTokenUtils;
+import com.example.backend.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +30,7 @@ public class CustomerController {
     private final OrderService orderService;
     private final BookReviewService bookReviewService;
     private final CartService cartService;
+    private final CartItemService cartItemService;
   //API Cập nhật thông tin người dùng
   @PatchMapping("/update-customer")
     public ResponseEntity<ResponseData<CustomerResponse>> updateCustomer(@Valid @RequestBody UserUpdateRequest userUpdateRequest) {
@@ -73,6 +71,13 @@ public class CustomerController {
     public ResponseEntity<ResponseData<CartResponse>> getCart (@AuthenticationPrincipal CustomUserDetails userDetails){
       CartResponse cart = cartService.getCart(userDetails.getUser().getIdKhachHang());
       ResponseData<CartResponse> responseData = new ResponseData<>(200,"success",cart);
+      return new ResponseEntity<>(responseData, HttpStatus.OK);
+    }
+    @PostMapping("/cart-add/{bookId}")
+    public ResponseEntity<ResponseData<CartItemResponse>> addItem(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody CartItemRequest cartItemRequest,
+                                                                  @PathVariable Integer bookId) {
+      CartItemResponse cart = cartItemService.addItem(cartItemRequest,userDetails.getUsername(),bookId);
+      ResponseData<CartItemResponse> responseData = new ResponseData<>(200,"success",cart);
       return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
 

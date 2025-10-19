@@ -30,7 +30,6 @@ public class CartMapper {
     }
 
 
-
     public List<CartItemResponse> toCartItemResponseList(List<GioHangChiTiet> cartItems) {
         if (cartItems == null || cartItems.isEmpty()) {
             return null;

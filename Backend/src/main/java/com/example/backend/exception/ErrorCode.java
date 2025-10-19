@@ -30,7 +30,9 @@ public enum ErrorCode {
     AUTHOR_NOT_FOUND(2019,"Không thìm thấy tác giả" ,HttpStatus.NOT_FOUND ),
     NOT_FOUND_ORDER_ID(2020,"Khồng tim thấy đơn hàng",HttpStatus.NOT_FOUND ),
     BOOK_NOT_PURCHASE_AND_RECEIVED(2021,"Không tìm thấy sách trạng thái đã giao trong đơn hàng" ,HttpStatus.NOT_FOUND ),
-    REVIEW_ALREADY_EXISTS(2022,"Đơn hàng đã được đánh giá" ,HttpStatus.CONFLICT ),;
+    REVIEW_ALREADY_EXISTS(2022,"Đơn hàng đã được đánh giá" ,HttpStatus.CONFLICT ),
+    CART_NOT_FOUND(2023,"Không tìm thấy giỏ hàng" ,HttpStatus.NOT_FOUND ),
+    BOOK_OUT_OF_STOCK(2024,"Sách hêt hàng" ,HttpStatus.BAD_REQUEST );
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

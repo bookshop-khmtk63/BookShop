@@ -19,6 +19,7 @@ import java.util.Objects;
 public class GioHangChiTiet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_gio_hang_chi_tiet")
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
