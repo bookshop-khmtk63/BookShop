@@ -244,7 +244,7 @@ public class AuthServiceImplement implements AuthService {
         resetToken.setUsed(true);
 
     }
-//      Trên cùng một serve
+//      Trên cùng một service
 //    private void deleteRefreshTokenCookie(HttpServletResponse response) {
 //        Cookie refreshTokenCookie = new Cookie(refreshTokenCookieName, null);
 //        refreshTokenCookie.setPath("/");

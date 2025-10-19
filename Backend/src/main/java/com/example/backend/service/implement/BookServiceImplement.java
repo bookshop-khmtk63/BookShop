@@ -10,10 +10,7 @@ import com.example.backend.dto.response.PageResponse;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.mapper.BookMapper;
-import com.example.backend.model.Book;
-import com.example.backend.model.SearchCriteria;
-import com.example.backend.model.TacGia;
-import com.example.backend.model.TheLoai;
+import com.example.backend.model.*;
 import com.example.backend.repository.SachRepository;
 import com.example.backend.service.*;
 import jakarta.transaction.Transactional;
@@ -189,6 +186,8 @@ public class BookServiceImplement implements BookService {
     public Book getBookByIds(Integer bookId) {
         return sachRepository.findById(bookId).orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_FOUND));
     }
+
+
 
 
     private SearchOperation mapOperator(String operator) {

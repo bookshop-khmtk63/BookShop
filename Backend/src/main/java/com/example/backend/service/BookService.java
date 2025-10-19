@@ -7,6 +7,7 @@ import com.example.backend.dto.response.BookDetailResponse;
 import com.example.backend.dto.response.BookResponse;
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.model.Book;
+import com.example.backend.model.GioHangChiTiet;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Pageable;
@@ -34,4 +35,6 @@ public interface BookService {
     void deleteBook(Integer id);
 
     Book getBookByIds(@NotNull(message = "ID sách không được để trống") Integer bookId);
+
+
 }
