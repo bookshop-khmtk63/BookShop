@@ -2,12 +2,16 @@ package com.example.backend.repository;
 
 import com.example.backend.dto.response.BookAdminResponse;
 import com.example.backend.model.Book;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.Optional;
 
 public interface SachRepository extends JpaRepository<Book, Integer>, JpaSpecificationExecutor<Book> {
     @Query("SELECT s FROM Book s " +
@@ -38,4 +42,8 @@ public interface SachRepository extends JpaRepository<Book, Integer>, JpaSpecifi
     )
     Page<BookAdminResponse> AdminGetAllBooks(Pageable pageable);
 
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT b FROM Book b WHERE b.idSach = :idSach")
+    Optional<Book> findByIdForUpdate(@Param("idSach") Integer idSach);
 }

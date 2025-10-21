@@ -2,6 +2,7 @@ package com.example.backend.service.implement;
 
 import com.example.backend.common.TrangThaiDonHang;
 import com.example.backend.dto.response.OrderItemResponse;
+import com.example.backend.model.DonHangChiTiet;
 import com.example.backend.repository.DonHangChiTietRepository;
 import com.example.backend.service.OrderDetailService;
 import lombok.RequiredArgsConstructor;
@@ -25,5 +26,10 @@ public class OrderDetailImplementService implements OrderDetailService {
     public boolean hasPurchasedAndReceived(Integer idKhachHang, Integer idSach, TrangThaiDonHang trangThaiDonHang) {
 
         return donHangChiTietRepository.hasPurchasedAndReceived(idKhachHang,idSach,trangThaiDonHang);
+    }
+
+    @Override
+    public void save(List<DonHangChiTiet> orderDetail) {
+        donHangChiTietRepository.saveAll(orderDetail);
     }
 }

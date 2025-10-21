@@ -187,7 +187,16 @@ public class BookServiceImplement implements BookService {
         return sachRepository.findById(bookId).orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_FOUND));
     }
 
+    @Override
+    public void save(Book book) {
+        sachRepository.save(book);
+    }
 
+    @Override
+    public Book getBookByIdForUpdate(Integer idSach) {
+
+        return  sachRepository.findByIdForUpdate(idSach).orElseThrow(()->new AppException(ErrorCode.BOOK_NOT_FOUND));
+    }
 
 
     private SearchOperation mapOperator(String operator) {

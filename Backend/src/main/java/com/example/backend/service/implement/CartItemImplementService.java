@@ -2,6 +2,7 @@ package com.example.backend.service.implement;
 
 import com.example.backend.dto.request.CartItemRequest;
 import com.example.backend.dto.response.CartItemResponse;
+import com.example.backend.dto.response.CartResponse;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.mapper.CartMapper;
@@ -19,6 +20,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -28,6 +33,7 @@ public class CartItemImplementService implements CartItemService {
     private final BookService bookService;
     private final CartMapper cartMapper;
     private final CustomerService customerService;
+
     @Override
     @Transactional
     public CartItemResponse addItem(CartItemRequest cartItemRequest, String userName, Integer bookId) {
@@ -38,7 +44,6 @@ public class CartItemImplementService implements CartItemService {
         if (cartItemRequest.getQuantity() > book.getSoLuong()) {
             throw new AppException(ErrorCode.BOOK_OUT_OF_STOCK);
         }
-
         // 2. Tìm hoặc Tạo mới Giỏ hàng (GioHang)
         GioHang cart = cartService.getCartOrCreateCart(customer.getIdKhachHang())
                 .orElseGet(() -> {
@@ -65,9 +70,46 @@ public class CartItemImplementService implements CartItemService {
                     .build();
 
             cartItem = cartItemRepository.save(cartItem);
-
             cart.getChiTietGioHang().add(cartItem);
         }
         return cartMapper.toCartItemResponse(cartItem);
     }
+
+    @Override
+    @Transactional
+    public int deleteItem(String username, List<Integer> cartItemIds) {
+        if(cartItemIds==null || cartItemIds.isEmpty()){
+            return 0;
+        }
+        KhachHang customer = customerService.getCustomerByEmail(username);
+        return cartItemRepository.deleteByIdsAndCustomerId(cartItemIds,customer.getIdKhachHang());
+    }
+
+    @Override
+    @Transactional
+    public CartResponse updateCartItem(String username, Integer cartItemId,CartItemRequest cartItemRequest) {
+        KhachHang customer = customerService.getCustomerByEmail(username);
+        GioHangChiTiet cartItem = cartItemRepository.findByIdItemAndIdCustomer(cartItemId,customer.getIdKhachHang())
+                .orElseThrow(()->new AppException(ErrorCode.ITEM_NOT_FOUND));
+        Book book = bookService.getBookByIds(cartItem.getSach().getIdSach());
+        GioHang cart = cartService.getCartById(customer.getIdKhachHang());
+       if (cartItemRequest.getQuantity()>book.getSoLuong()) {
+           throw new AppException(ErrorCode.BOOK_OUT_OF_STOCK);
+       }
+       if(cartItemRequest.getQuantity()<=0){
+           cartItemRepository.delete(cartItem);
+
+           cart.getChiTietGioHang().remove(cartItem);
+           return cartMapper.toCartResponse(cart);
+       }
+        cartItem.setSoLuong(cartItemRequest.getQuantity());
+        return  cartMapper.toCartResponse(cart);
+    }
+
+    @Override
+    public void deleteAllItem(Integer customerId, List<Integer> idCartItem) {
+         cartItemRepository.deleteByIdsAndCustomerId(idCartItem,customerId);
+    }
+
+
 }
