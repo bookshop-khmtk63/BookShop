@@ -7,9 +7,12 @@ import com.example.backend.dto.response.OrderItemResponse;
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
+import com.example.backend.model.DonHang;
+import com.example.backend.model.KhachHang;
 import com.example.backend.repository.DonHangChiTietRepository;
 import com.example.backend.repository.DonHangRepository;
 import com.example.backend.service.BookReviewService;
+import com.example.backend.service.CustomerService;
 import com.example.backend.service.OrderDetailService;
 import com.example.backend.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ public class OrderServiceImplement implements OrderService {
     private final DonHangRepository orderRepository;
     private final OrderDetailService orderDetailService;
     private final BookReviewService bookReviewService;
+    private final CustomerService customerService;
     @Override
     public PageResponse<OrderDetailResponse> getAllOrder(Integer idKhachHang, Pageable pageable) {
         List<TrangThaiDonHang> listOrder  = List.of(TrangThaiDonHang.HOAN_THANH);
@@ -42,6 +46,12 @@ public class OrderServiceImplement implements OrderService {
         Page<OrderDetailResponse> orderDetailResponses = orderRepository.findByOderByCustomerIdAndStatus(idKhachHang,pageable, listOrder);
         return enrichOrdersWithItems(orderDetailResponses,null);
     }
+
+    @Override
+    public void saveOrder(DonHang order) {
+        orderRepository.save(order);
+    }
+
 
     private PageResponse<OrderDetailResponse> enrichOrdersWithItems(Page<OrderDetailResponse> orderDetailResponses,Integer idKhachHang) {
         if (orderDetailResponses.getContent().isEmpty()) {

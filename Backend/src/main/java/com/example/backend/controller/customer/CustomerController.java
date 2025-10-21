@@ -2,6 +2,7 @@ package com.example.backend.controller.customer;
 
 import com.example.backend.dto.request.CartItemRequest;
 import com.example.backend.dto.request.CreateReviewRequest;
+import com.example.backend.dto.request.DeleteCartItemRequest;
 import com.example.backend.dto.request.UserUpdateRequest;
 import com.example.backend.dto.response.*;
 import com.example.backend.mapper.CustomerMapper;
@@ -80,6 +81,34 @@ public class CustomerController {
       ResponseData<CartItemResponse> responseData = new ResponseData<>(200,"success",cart);
       return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
+    @PostMapping("/update-Cart-item/{cartItemId}")
+    public ResponseEntity<ResponseData<CartResponse>> updateCartItem(@AuthenticationPrincipal CustomUserDetails userDetails,@PathVariable Integer cartItemId, @RequestBody CartItemRequest cartItemRequest) {
+      CartResponse cartResponse = cartItemService.updateCartItem(userDetails.getUsername(),cartItemId,cartItemRequest);
+      ResponseData<CartResponse> responseData = new ResponseData<>(200,"success",cartResponse);
+      return new ResponseEntity<>(responseData, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/cart-item")
+    public ResponseEntity<ResponseData<?>> deleteItem(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody DeleteCartItemRequest deleteCartItemRequest) {
+      int deletedCount  =  cartItemService.deleteItem(userDetails.getUsername(),deleteCartItemRequest.getCartItemIds());
+        if (deletedCount > 0) {
+            ResponseData<?> responseData = new ResponseData<>(200, "Đã xóa thành công " + deletedCount + " sản phẩm.", null);
+            return new ResponseEntity<>(responseData, HttpStatus.OK);
+        } else {
+            ResponseData<?> responseData = new ResponseData<>(204, "xóa thất bại " , null);
+            return new ResponseEntity<>(responseData, HttpStatus.OK);
+        }
+    }
+    @PostMapping("/pay-order")
+    public ResponseEntity<ResponseData<OrderDetailResponse>> payOrder(@AuthenticationPrincipal CustomUserDetails userDetails){
+      OrderDetailResponse orderDetailResponse = cartService.payOrder(userDetails.getUsername());
+      ResponseData<OrderDetailResponse> responseData = new ResponseData<>(200,"success",orderDetailResponse);
+      return new ResponseEntity<>(responseData, HttpStatus.OK);
+    }
+
+
+
+
 
 
 

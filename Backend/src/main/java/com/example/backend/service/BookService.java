@@ -37,4 +37,7 @@ public interface BookService {
     Book getBookByIds(@NotNull(message = "ID sách không được để trống") Integer bookId);
 
 
+    void save(Book book);
+
+    Book getBookByIdForUpdate(Integer idSach);
 }

@@ -32,7 +32,11 @@ public enum ErrorCode {
     BOOK_NOT_PURCHASE_AND_RECEIVED(2021,"Không tìm thấy sách trạng thái đã giao trong đơn hàng" ,HttpStatus.NOT_FOUND ),
     REVIEW_ALREADY_EXISTS(2022,"Đơn hàng đã được đánh giá" ,HttpStatus.CONFLICT ),
     CART_NOT_FOUND(2023,"Không tìm thấy giỏ hàng" ,HttpStatus.NOT_FOUND ),
-    BOOK_OUT_OF_STOCK(2024,"Sách hêt hàng" ,HttpStatus.BAD_REQUEST );
+    BOOK_OUT_OF_STOCK(2024,"Sách hêt hàng" ,HttpStatus.BAD_REQUEST ),
+    ITEM_NOT_FOUND(2025,"Không tìm thấy sản phẩm trong giỏ hàng" ,HttpStatus.NOT_FOUND ),
+
+    ADDRESS_REQUIRED(2026,"Bạn chưa cập nhạt địa chỉ" ,HttpStatus.BAD_REQUEST ),
+    PHONE_NUMBER_REQUIED(2027,"Banj chưa cập nhật sdt" ,HttpStatus.BAD_REQUEST );
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;
