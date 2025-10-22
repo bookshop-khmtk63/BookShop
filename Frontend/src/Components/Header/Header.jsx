@@ -39,6 +39,7 @@ export default function Header() {
         </Link>
       </div>
 
+      {/* 🔍 Thanh tìm kiếm */}
       <form className="search-bar" onSubmit={handleSubmit}>
         <input
           type="text"
@@ -51,13 +52,21 @@ export default function Header() {
         </button>
       </form>
 
+      {/* 🧩 Icon người dùng + giỏ hàng */}
       <div className="icons">
-        <FaShoppingCart className="cart-icon" />
+        {/* 🛒 Giỏ hàng — chuyển hướng khi click */}
+        <FaShoppingCart
+          className="cart-icon"
+          onClick={() => navigate("/cart")}
+          title="Xem giỏ hàng"
+        />
+
         {isLoggedIn ? (
           <div className="user-menu-wrapper" ref={menuRef}>
             <FaUser
               className="user-icon"
               onClick={() => setShowMenu((prev) => !prev)}
+              title="Tài khoản"
             />
             {showMenu && (
               <div className="user-menu">

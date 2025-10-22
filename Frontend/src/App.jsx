@@ -27,6 +27,7 @@ import ResendConfirmation from "./pages/ResendConfirmation/ResendConfirmation";
 import OrderTracking from "./Components/OrderTracking/OrderTracking";
 import OrderHistory from "./Components/OrderHistory/OrderHistory";
 import ReviewProduct from "./Components/ReviewProduct/ReviewProduct";
+import Cart from "./Components/Cart/Cart"; // ✅ Thêm trang giỏ hàng mới
 
 // 🧩 Route bảo vệ
 import ProtectedRoute from "./routes/ProtectedRoute/ProtectedRoute";
@@ -55,6 +56,7 @@ function MainLayout() {
     "/order-history",
     "/profile",
     "/review",
+    "/cart", // ✅ Ẩn Sidebar trong giỏ hàng
   ];
 
   const hideSidebar = hideSidebarPaths.some((path) =>
@@ -92,6 +94,16 @@ function MainLayout() {
 
             {/* 🔍 Trang tìm kiếm */}
             <Route path="/search" element={<SearchPage />} />
+
+            {/* 🛒 Trang giỏ hàng */}
+            <Route
+              path="/cart"
+              element={
+                <ProtectedRoute>
+                  <Cart />
+                </ProtectedRoute>
+              }
+            />
 
             {/* 👤 Hồ sơ cá nhân */}
             <Route
