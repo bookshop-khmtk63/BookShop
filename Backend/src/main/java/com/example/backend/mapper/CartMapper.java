@@ -22,6 +22,7 @@ public class CartMapper {
                 .idBook(cartItem.getSach().getIdSach())
                 .idCartItem(cartItem.getId())
                 .quantity(cartItem.getSoLuong())
+                .nameBook(cartItem.getSach().getTenSach())
                 .totalPrice(totalPrice(cartItem))
                 .price(cartItem.getSach().getGia())
                 .thumbnail(cartItem.getSach().getAnhSach())
