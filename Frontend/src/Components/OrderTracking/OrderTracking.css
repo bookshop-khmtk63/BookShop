@@ -1,113 +1,240 @@
 .order-tracking-page {
-  padding: 20px 40px;
+  padding: 40px 60px;
+  background-color: #fff;
+  color: #222;
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .page-title {
   font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  color: #222;
+  font-weight: 600;
+  margin-bottom: 25px;
 }
 
 .order-block {
-  border: 1px solid #e5e7eb;
+  background-color: #fafafa;
+  border: 1px solid #ddd;
   border-radius: 10px;
-  margin-bottom: 25px;
-  padding: 20px;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  padding: 20px 25px;
+  margin-bottom: 35px;
+  transition: 0.3s ease;
 }
 
+.order-block:hover {
+  transform: translateY(-3px);
+}
+
+/* --- Header --- */
 .order-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  flex-wrap: wrap;
 }
 
 .order-status {
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 4px 10px;
+  border-radius: 20px;
   font-weight: 600;
+  font-size: 13px;
+}
+
+.order-status.completed {
+  background-color: #27ae60;
   color: #fff;
 }
 
 .order-status.shipping {
-  background: #007bff;
-}
-
-.order-status.completed {
-  background: #28a745;
+  background-color: #f1c40f;
+  color: #fff;
 }
 
 .order-status.pending {
-  background: #ffc107;
-  color: #000;
+  background-color: #95a5a6;
+  color: #fff;
 }
 
+/* --- Bảng sản phẩm --- */
 .order-table {
-  width: 100%;
-  border-collapse: collapse;
+  margin-top: 10px;
 }
 
 .order-header-row,
 .order-row {
   display: grid;
-  grid-template-columns: 100px 2fr 1fr 1fr;
+  grid-template-columns: 120px 2fr 1fr 1fr;
   align-items: center;
-  text-align: left;
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
+  text-align: center;
 }
 
 .order-header-row {
-  font-weight: bold;
-  color: #333;
+  background-color: #e0e0e0;
+  font-weight: 600;
+  border-radius: 8px 8px 0 0;
+  padding: 10px 0;
 }
 
+.order-row {
+  border-bottom: 1px solid #eee;
+  background-color: #fff;
+  padding: 12px 0;
+}
+
+.order-row:hover {
+  background-color: #f9f9f9;
+}
+
+/* --- Hình ảnh --- */
 .order-image img {
-  width: 70px;
-  height: 70px;
-  object-fit: cover;
+  width: 80px;
+  height: 100px;
   border-radius: 6px;
+  object-fit: cover;
 }
 
+/* --- Tổng tiền --- */
 .order-total {
   text-align: right;
   margin-top: 10px;
-  font-weight: bold;
-  color: #333;
+  font-weight: 600;
+  font-size: 16px;
+  color: #2c3e50;
 }
 
-/* === PHÂN TRANG === */
+/* --- Pagination --- */
 .pagination {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 16px;
-  margin-top: 30px;
+  margin: 30px 0;
 }
 
 .btn-page {
-  background: #ffffff;
-  color: #222;
+  background-color: #fff;
   border: 1px solid #ddd;
-  padding: 8px 16px;
   border-radius: 6px;
+  padding: 8px 16px;
   cursor: pointer;
+  transition: 0.2s;
   font-weight: 600;
-  transition: all 0.2s ease-in-out;
 }
 
 .btn-page:hover {
-  background: #f7f7f7;
-  border-color: #ccc;
+  background-color: #f0f0f0;
 }
 
-.btn-page:disabled {
-  background: #fafafa;
-  color: #b0b0b0;
-  border-color: #eee;
-  opacity: 0.7;
-  cursor: not-allowed;
+.btn-page.inactive {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.page-info {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* 🌗 Dark Mode tự theo thiết bị */
+@media (prefers-color-scheme: dark) {
+  .order-tracking-page {
+    background-color: #121212;
+    color: #eee;
+  }
+
+  .order-block {
+    background-color: #1e1e1e;
+    border-color: #333;
+  }
+
+  .order-header-row {
+    background-color: #2c2c2c;
+    color: #f5f5f5;
+  }
+
+  .order-row {
+    background-color: #181818;
+    border-bottom: 1px solid #333;
+  }
+
+  .order-row:hover {
+    background-color: #222;
+  }
+
+  .order-total {
+    color: #f0f0f0;
+  }
+
+  .btn-page {
+    background-color: #1c1c1c;
+    color: #eaeaea;
+    border-color: #444;
+  }
+
+  .btn-page:hover {
+    background-color: #333;
+  }
+}
+
+/* 📱 Responsive */
+@media (max-width: 768px) {
+  .order-header-row {
+    display: none;
+  }
+
+  .order-row {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "image name"
+      "price quantity";
+    text-align: left;
+    gap: 6px;
+  }
+
+  .order-image img {
+    width: 70px;
+    height: 90px;
+  }
+
+  .order-name {
+    font-size: 14px;
+  }
+
+  .btn-page {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .page-info {
+    font-size: 13px;
+  }
+}
+
+/* ✨ Hiệu ứng */
+.fade-in {
+  animation: fadeIn 0.4s ease;
+}
+
+.fade-slide {
+  animation: fadeSlide 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

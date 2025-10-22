@@ -10,12 +10,11 @@ export default function OrderTracking() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 3; // hiển thị 3 đơn mỗi trang
 
-  // ✅ Hàm chuẩn hóa dữ liệu trả về từ API
+  // ✅ Giữ nguyên phần chuẩn hóa dữ liệu
   const normalizeOrdersResponse = (res) => {
     if (!res) return [];
-
     if (Array.isArray(res)) return res;
 
     const d1 = res?.data;
@@ -34,24 +33,34 @@ export default function OrderTracking() {
     return [];
   };
 
-  // 🧩 Gọi API theo dõi đơn hàng
-  const fetchOrders = async (pageNum = 0) => {
+  // ✅ Lấy toàn bộ đơn hàng từ backend (tất cả các trang)
+  const fetchAllOrders = async () => {
     setLoading(true);
     setError("");
-
     try {
-      const res = await callApiWithToken(
-        `${API_URL}/api/customer/tracking-order?page=${pageNum}&size=3`
+      // 1️⃣ Gọi trang đầu để biết tổng số trang
+      const firstRes = await callApiWithToken(
+        `${API_URL}/api/customer/tracking-order?page=0&size=${pageSize}`
       );
 
-      console.log("📦 Full API Response:", res);
+      console.log("📦 Trang đầu tiên:", firstRes);
+      const meta = firstRes?.data?.data;
+      const totalPages = meta?.totalPages || 1;
 
-      // ✅ Chuẩn hóa dữ liệu để luôn trả về mảng
-      const normalizedOrders = normalizeOrdersResponse(res);
-      console.log("✅ Parsed orders:", normalizedOrders);
+      // Lấy dữ liệu trang đầu tiên qua hàm chuẩn hóa
+      let allOrders = normalizeOrdersResponse(firstRes);
 
-      setOrders(normalizedOrders);
-      setTotalPages(res?.data?.data?.totalPages || 1);
+      // 2️⃣ Gọi các trang tiếp theo (nếu có)
+      for (let i = 1; i < totalPages; i++) {
+        const nextRes = await callApiWithToken(
+          `${API_URL}/api/customer/tracking-order?page=${i}&size=${pageSize}`
+        );
+        const nextOrders = normalizeOrdersResponse(nextRes);
+        allOrders = [...allOrders, ...nextOrders];
+      }
+
+      console.log("✅ Tất cả đơn hàng:", allOrders);
+      setOrders(allOrders);
     } catch (err) {
       console.error("❌ Lỗi khi tải đơn hàng:", err);
       setError("Không thể tải danh sách đơn hàng. Vui lòng thử lại.");
@@ -60,22 +69,36 @@ export default function OrderTracking() {
     }
   };
 
-  // 🚀 Gọi API khi load / đổi trang
   useEffect(() => {
-    fetchOrders(page);
-  }, [page]);
+    fetchAllOrders();
+  }, []);
 
+  // ✅ Phân trang client-side
+  const totalPagesClient = Math.ceil(orders.length / pageSize);
+  const startIndex = page * pageSize;
+  const endIndex = startIndex + pageSize;
+  const currentOrders = orders.slice(startIndex, endIndex);
+
+  const handlePrevPage = () => {
+    if (page > 0) setPage(page - 1);
+  };
+
+  const handleNextPage = () => {
+    if (page < totalPagesClient - 1) setPage(page + 1);
+  };
+
+  // 🧭 Giao diện hiển thị
   if (loading) return <p className="loading">⏳ Đang tải danh sách đơn hàng...</p>;
   if (error) return <p className="error">{error}</p>;
   if (!orders || orders.length === 0)
-    return <p className="no-orders"> Bạn chưa có đơn hàng nào .</p>;
+    return <p className="no-orders">Bạn chưa có đơn hàng nào.</p>;
 
   return (
-    <div className="order-tracking-page">
+    <div className="order-tracking-page fade-in">
       <h2 className="page-title">Theo dõi đơn hàng</h2>
 
-      {orders.map((order) => (
-        <div key={order.idOrder} className="order-block">
+      {currentOrders.map((order) => (
+        <div key={order.idOrder} className="order-block fade-slide">
           {/* --- Header đơn hàng --- */}
           <div className="order-header">
             <h3 className="order-id">📦 Mã đơn hàng: {order.idOrder}</h3>
@@ -105,7 +128,7 @@ export default function OrderTracking() {
               <div>Số lượng</div>
             </div>
 
-            {order.items.map((item) => (
+            {(order.items ?? []).map((item) => (
               <div key={item.bookId} className="order-row">
                 <div className="order-image">
                   <img src={item.thumbnail} alt={item.bookName} />
@@ -121,7 +144,7 @@ export default function OrderTracking() {
 
           {/* --- Tổng tiền --- */}
           <div className="order-total">
-            <strong>Tổng tiền: </strong>
+            <strong>Tổng tiền:</strong>{" "}
             {Number(order.totalPrice).toLocaleString("vi-VN")} ₫
           </div>
         </div>
@@ -130,21 +153,19 @@ export default function OrderTracking() {
       {/* --- Phân trang --- */}
       <div className="pagination">
         <button
-          className="btn-page"
-          disabled={page === 0}
-          onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+          onClick={handlePrevPage}
+          className={`btn-page ${page === 0 ? "inactive" : ""}`}
         >
           ⬅ Trang trước
         </button>
 
         <span className="page-info">
-          Trang <b>{page + 1}</b> / {totalPages}
+          Trang {page + 1} / {totalPagesClient}
         </span>
 
         <button
-          className="btn-page"
-          disabled={page + 1 >= totalPages}
-          onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
+          onClick={handleNextPage}
+          className={`btn-page ${page >= totalPagesClient - 1 ? "inactive" : ""}`}
         >
           Trang sau ➡
         </button>
