@@ -75,21 +75,24 @@ public class CustomerController {
       return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
     @PostMapping("/cart-add/{bookId}")
-    public ResponseEntity<ResponseData<CartItemResponse>> addItem(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody CartItemRequest cartItemRequest,
+    public ResponseEntity<ResponseData<CartItemResponse>> addItem(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                  @RequestBody CartItemRequest cartItemRequest,
                                                                   @PathVariable Integer bookId) {
       CartItemResponse cart = cartItemService.addItem(cartItemRequest,userDetails.getUsername(),bookId);
       ResponseData<CartItemResponse> responseData = new ResponseData<>(200,"success",cart);
       return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
     @PostMapping("/update-Cart-item/{cartItemId}")
-    public ResponseEntity<ResponseData<CartResponse>> updateCartItem(@AuthenticationPrincipal CustomUserDetails userDetails,@PathVariable Integer cartItemId, @RequestBody CartItemRequest cartItemRequest) {
+    public ResponseEntity<ResponseData<CartResponse>> updateCartItem(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                     @PathVariable Integer cartItemId, @RequestBody CartItemRequest cartItemRequest) {
       CartResponse cartResponse = cartItemService.updateCartItem(userDetails.getUsername(),cartItemId,cartItemRequest);
       ResponseData<CartResponse> responseData = new ResponseData<>(200,"success",cartResponse);
       return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
 
     @DeleteMapping("/cart-item")
-    public ResponseEntity<ResponseData<?>> deleteItem(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody DeleteCartItemRequest deleteCartItemRequest) {
+    public ResponseEntity<ResponseData<?>> deleteItem(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                      @RequestBody DeleteCartItemRequest deleteCartItemRequest) {
       int deletedCount  =  cartItemService.deleteItem(userDetails.getUsername(),deleteCartItemRequest.getCartItemIds());
         if (deletedCount > 0) {
             ResponseData<?> responseData = new ResponseData<>(200, "Đã xóa thành công " + deletedCount + " sản phẩm.", null);

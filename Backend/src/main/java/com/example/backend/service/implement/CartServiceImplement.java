@@ -108,7 +108,7 @@ public class CartServiceImplement implements CartService {
                     .build();
             orderDetail.add(orders);
             quantity=quantity+cartIem.getSoLuong();
-            totalPrice = totalPrice.add(book.getGia().multiply(BigDecimal.valueOf(book.getSoLuong())));
+            totalPrice = totalPrice.add(book.getGia().multiply(BigDecimal.valueOf(cartIem.getSoLuong())));
 
             book.setSoLuong(book.getSoLuong()-cartIem.getSoLuong());
         }

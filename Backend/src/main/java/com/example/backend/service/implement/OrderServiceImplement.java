@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -61,7 +62,7 @@ public class OrderServiceImplement implements OrderService {
         log.info("id  don hang: {}", idOrder );
 
         List<OrderItemResponse> orderItemResponses = orderDetailService.findByOderItemByOrderID(idOrder);
-
+        orderItemResponses.forEach(item -> {item.setLinePrice(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));});
         //Kiểm tra trạng thái xem sách đã đươcj đánh giá chưa
         if(!orderItemResponses.isEmpty() && idKhachHang!=null) {
             //Lấy danh sách idbook trong history
@@ -77,7 +78,8 @@ public class OrderServiceImplement implements OrderService {
 
         }
 
-        Map<Integer,List<OrderItemResponse>> listMap = orderItemResponses.stream().collect(Collectors.groupingBy(item-> findOrderIdForItem(item, orderDetailResponses.getContent())));
+        Map<Integer,List<OrderItemResponse>> listMap = orderItemResponses.stream()
+                .collect(Collectors.groupingBy(item-> findOrderIdForItem(item, orderDetailResponses.getContent())));
 
         List<OrderDetailResponse> listOrder = orderDetailResponses.getContent().stream().map(summary ->{
             return OrderDetailResponse.builder()
