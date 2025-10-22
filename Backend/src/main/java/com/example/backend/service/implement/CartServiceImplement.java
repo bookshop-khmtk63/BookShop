@@ -91,6 +91,7 @@ public class CartServiceImplement implements CartService {
         orderService.saveOrder(order);
         List<DonHangChiTiet> orderDetail = new ArrayList<>();
         List<Integer> idCartItem = new ArrayList<>();
+        int quantity = 0;
         for (GioHangChiTiet cartIem : cart.getChiTietGioHang()) {
 //            Book book = cartIem.getSach();
             //Pessimistic Locking
@@ -102,11 +103,13 @@ public class CartServiceImplement implements CartService {
             DonHangChiTiet orders = DonHangChiTiet.builder()
                     .sach(book)
                     .gia(book.getGia())
-                    .soLuong(book.getSoLuong())
+                    .soLuong(cartIem.getSoLuong())
                     .donHang(order)
                     .build();
             orderDetail.add(orders);
+            quantity=quantity+cartIem.getSoLuong();
             totalPrice = totalPrice.add(book.getGia().multiply(BigDecimal.valueOf(book.getSoLuong())));
+
             book.setSoLuong(book.getSoLuong()-cartIem.getSoLuong());
         }
         orderDetailService.save(orderDetail);
@@ -114,8 +117,9 @@ public class CartServiceImplement implements CartService {
         order.setNgayDat(Instant.now());
         order.setChiTietDonHang(new HashSet<>(orderDetail));
         cartItemRepository.deleteByIdsAndCustomerId(idCartItem,customer.getIdKhachHang());
-
-        return orderMapper.toOrderDetailResponse(order);
+        OrderDetailResponse orderDetailResponse = orderMapper.toOrderDetailResponse(order);
+        orderDetailResponse.setAmount(quantity);
+        return orderDetailResponse;
     }
 
 
