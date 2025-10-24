@@ -12,6 +12,7 @@ export function AuthProvider({ children }) {
   const [user, setUserState] = useState(null);
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [cartCount, setCartCount] = useState(0);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -188,6 +189,34 @@ export function AuthProvider({ children }) {
       throw err;
     }
   };
+   // ✅ Lấy tổng số lượng sản phẩm trong giỏ hàng (chuẩn backend)
+const updateCartCount = async () => {
+  if (!token) {
+    setCartCount(0);
+    return;
+  }
+
+  try {
+    const res = await callApiWithToken(`${API_URL}/api/customer/get-cart`);
+
+    // Backend trả { data: { totalQuantity, items: [...] } }
+    const cartData = res?.data || res; // đề phòng backend thay đổi format
+
+    if (cartData?.items !== undefined) {
+      setCartCount(cartData.items.length);
+    } else if (Array.isArray(cartData?.items)) {
+      const total = cartData.items.reduce((sum, i) => sum + (i.quantity || 1), 0);
+      setCartCount(total);
+    } else {
+      setCartCount(0);
+    }
+
+  } catch (error) {
+    console.error("❌ Không thể lấy giỏ hàng:", error);
+    setCartCount(0);
+  }
+};
+
 
   // ==================== Provider ====================
   return (
@@ -201,6 +230,9 @@ export function AuthProvider({ children }) {
         callApiWithToken,
         setUser,
         isLoading,
+        cartCount,
+        setCartCount,
+        updateCartCount,
       }}
     >
       {children}

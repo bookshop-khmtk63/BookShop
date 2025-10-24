@@ -6,11 +6,12 @@ import logo from "../Assets/logo.png";
 import "./Header.css";
 
 export default function Header() {
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, logout, cartCount, updateCartCount, token, callApiWithToken } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL;
 
   // 🔹 Ẩn menu khi click ra ngoài
   useEffect(() => {
@@ -23,6 +24,11 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // 🔹 Tải lại số lượng giỏ hàng khi login
+  useEffect(() => {
+    if (token) updateCartCount(API_URL, callApiWithToken);
+  }, [token]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
@@ -33,6 +39,7 @@ export default function Header() {
 
   return (
     <header className="header">
+      {/* LOGO */}
       <div className="logo">
         <Link to="/">
           <img src={logo} alt="Logo" />
@@ -54,13 +61,13 @@ export default function Header() {
 
       {/* 🧩 Icon người dùng + giỏ hàng */}
       <div className="icons">
-        {/* 🛒 Giỏ hàng — chuyển hướng khi click */}
-        <FaShoppingCart
-          className="cart-icon"
-          onClick={() => navigate("/cart")}
-          title="Xem giỏ hàng"
-        />
+        {/* 🛒 Giỏ hàng */}
+        <div className="cart-wrapper" onClick={() => navigate("/cart")} title="Xem giỏ hàng">
+          <FaShoppingCart className="cart-icon" />
+          {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+        </div>
 
+        {/* 👤 Tài khoản */}
         {isLoggedIn ? (
           <div className="user-menu-wrapper" ref={menuRef}>
             <FaUser

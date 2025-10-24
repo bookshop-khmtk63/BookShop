@@ -4,7 +4,7 @@ import AddToCartPopup from "../AddToCartPopup/AddToCartPopup";
 import "./Cart.css";
 
 export default function Cart() {
-  const { callApiWithToken } = useAuth();
+  const { callApiWithToken, updateCartCount } = useAuth();
   const API_URL = import.meta.env.VITE_API_URL;
 
   const [cart, setCart] = useState(null);
@@ -18,12 +18,12 @@ export default function Cart() {
     try {
       const data = await callApiWithToken(`${API_URL}/api/customer/get-cart`);
 
-      // 🔹 Gọi thêm API lấy tồn kho từng sách (song song)
+      // 🔹 Lấy thêm tồn kho từng sách
       const itemsWithStock = await Promise.all(
         data.items.map(async (item) => {
           try {
             const bookData = await callApiWithToken(`${API_URL}/api/book/${item.idBook}`);
-            return { ...item, stock: bookData.number }; // gắn tồn kho
+            return { ...item, stock: bookData.number };
           } catch {
             return { ...item, stock: null };
           }
@@ -44,16 +44,42 @@ export default function Cart() {
   }, [API_URL]);
 
   // 🧾 Cập nhật số lượng
-  const updateQuantity = async (cartItemId, newQuantity) => {
-    if (newQuantity < 1) return;
+  const updateQuantity = async (cartItemId, newQuantity, stock) => {
+    if (newQuantity < 0) return; // Không cho âm
+
     try {
       setUpdatingItemId(cartItemId);
+
+      // ⚠️ Nếu vượt quá tồn kho → cảnh báo
+      if (stock && newQuantity > stock) {
+        setPopup({
+          message: `⚠️ Chỉ còn ${stock} sản phẩm trong kho!`,
+          type: "warn",
+        });
+        setTimeout(() => setPopup(null), 1500);
+        return;
+      }
+
+      // 🧮 Nếu trừ về 0 → xóa khỏi giỏ hàng
+      if (newQuantity === 0) {
+        await callApiWithToken(`${API_URL}/api/customer/cart-item`, {
+          method: "DELETE",
+          data: { cartItemIds: [cartItemId] },
+        });
+        setPopup({ message: "🗑️ Sản phẩm đã bị xóa khỏi giỏ hàng!", type: "success" });
+        await fetchCart();
+        await updateCartCount();
+        return;
+      }
+
+      // ✅ Nếu > 0 → cập nhật số lượng
       await callApiWithToken(`${API_URL}/api/customer/update-Cart-item/${cartItemId}`, {
         method: "POST",
         data: { quantity: newQuantity },
       });
-      setPopup({ message: "✅ Cập nhật số lượng thành công!", type: "success" });
+
       await fetchCart();
+      await updateCartCount();
     } catch (err) {
       console.error("❌ Lỗi khi cập nhật số lượng:", err);
       setPopup({
@@ -76,6 +102,7 @@ export default function Cart() {
 
       setPopup({ message: "🗑️ Đã xóa sản phẩm khỏi giỏ hàng!", type: "success" });
       await fetchCart();
+      await updateCartCount();
     } catch (err) {
       console.error("❌ Lỗi khi xóa sản phẩm:", err);
       setPopup({
@@ -87,14 +114,17 @@ export default function Cart() {
     }
   };
 
-  // 🧾 Thanh toán giỏ hàng
+  // 💳 Thanh toán giỏ hàng
   const handlePayOrder = async () => {
     try {
       await callApiWithToken(`${API_URL}/api/customer/pay-order`, { method: "POST" });
+      await updateCartCount();
+
       setPopup({
         message: "✅ Thanh toán thành công! Đơn hàng đang được xử lý.",
         type: "success",
       });
+
       setTimeout(() => {
         setPopup(null);
         fetchCart();
@@ -108,13 +138,15 @@ export default function Cart() {
     }
   };
 
-  // 🧮 Trạng thái loading / lỗi
+  // 🧮 Loading / Error
   if (loading) return <div className="cart-loading">Đang tải giỏ hàng...</div>;
   if (error) return <div className="cart-error">{error}</div>;
   if (!cart || !cart.items || cart.items.length === 0)
     return <div className="empty-cart">Giỏ hàng của bạn đang trống.</div>;
 
-  const subtotal = cart.totalPrice || 0;
+  // ✅ Tính tổng realtime
+  const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const totalQuantity = cart.items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <>
@@ -154,32 +186,38 @@ export default function Cart() {
               </div>
 
               <div className="cart-quantity">
+                {/* Nút trừ */}
                 <button
-                  disabled={item.quantity <= 1 || updatingItemId === item.idCartItem}
-                  onClick={() => updateQuantity(item.idCartItem, item.quantity - 1)}
+                  disabled={updatingItemId === item.idCartItem}
+                  onClick={() =>
+                    updateQuantity(item.idCartItem, item.quantity - 1, item.stock)
+                  }
                 >
                   -
                 </button>
 
                 <span>{item.quantity}</span>
 
+                {/* Nút cộng */}
                 <button
                   disabled={
                     updatingItemId === item.idCartItem ||
                     (item.stock && item.quantity >= item.stock)
                   }
-                  onClick={() => updateQuantity(item.idCartItem, item.quantity + 1)}
+                  onClick={() =>
+                    updateQuantity(item.idCartItem, item.quantity + 1, item.stock)
+                  }
                 >
                   +
                 </button>
               </div>
 
               <div className="cart-total">
-                {(item.totalPrice || item.price * item.quantity).toLocaleString("vi-VN")} ₫
+                {(item.price * item.quantity).toLocaleString("vi-VN")} ₫
               </div>
 
               <button className="btn-remove" onClick={() => deleteItem(item.idCartItem)}>
-                 Xóa
+                Xóa
               </button>
             </div>
           ))}
@@ -191,7 +229,7 @@ export default function Cart() {
           <hr />
           <div className="summary-row">
             <span>Tổng sản phẩm</span>
-            <span>{cart.totalQuantity}</span>
+            <span>{totalQuantity}</span>
           </div>
           <div className="summary-row">
             <span>Tạm tính</span>

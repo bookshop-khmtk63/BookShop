@@ -5,7 +5,7 @@ import "./ProductDetail.css";
 
 export default function ProductDetail() {
   const { id } = useParams();
-  const { callApiWithToken } = useAuth();
+  const { callApiWithToken,token,isLoggedIn } = useAuth();
   const [book, setBook] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [reviews, setReviews] = useState([]);
@@ -70,8 +70,12 @@ export default function ProductDetail() {
 
   // 🛒 Thêm sản phẩm vào giỏ hàng
   const handleAddToCart = async () => {
+    
     if (!book) return;
-
+    if (!isLoggedIn || !token) {
+      showMessage("⚠️ Vui lòng đăng nhập để thêm sản phẩm!", "warn");
+      return;
+    }
     if (book.stock <= 0) {
       showMessage("⚠️ Sản phẩm đã hết hàng!", "error");
       return;
