@@ -15,6 +15,7 @@ select gh from GioHang gh
 left join fetch gh.chiTietGioHang ctgh
 left join fetch ctgh.sach b
 where gh.khachHang.idKhachHang =:idCustomer
+order by ctgh.ngayCapNhat desc
 """)
     Optional< GioHang> findByCustomerIdWithDetails(@Param("idCustomer") Integer idCustomer);
 

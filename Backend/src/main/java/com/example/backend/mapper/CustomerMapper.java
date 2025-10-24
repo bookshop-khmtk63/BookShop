@@ -44,4 +44,10 @@ public class CustomerMapper {
                 .expiration(LocalDateTime.ofInstant(customer.getNgayDangKy(), ZoneId.systemDefault()))
                 .build();
     }
+    public List<UserResponse> toUserResponseList(List<KhachHang> users) {
+        if (users == null) {
+            return null;
+        }
+        return users.stream().map(this::toUserResponse).collect(Collectors.toList());
+    }
 }

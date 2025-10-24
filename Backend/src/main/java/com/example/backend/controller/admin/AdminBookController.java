@@ -5,11 +5,13 @@ import com.example.backend.dto.request.UpdateBookRequest;
 import com.example.backend.dto.response.*;
 import com.example.backend.service.AuthorService;
 import com.example.backend.service.BookService;
+import com.example.backend.service.CustomerService;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.sql.Update;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,8 +28,9 @@ import java.util.List;
 public class AdminBookController {
     private final BookService bookService;
     private final AuthorService authorService;
+    private final CustomerService customerService;
     @GetMapping("/get-all-book")
-    public ResponseEntity<ResponseData<PageResponse<BookAdminResponse>>> getAllBook(@PageableDefault(size = 6,sort = "idSach") Pageable pageable) {
+    public ResponseEntity<ResponseData<PageResponse<BookAdminResponse>>> getAllBook(@PageableDefault(page = 0,size = 6,sort = "idSach") Pageable pageable) {
         PageResponse<BookAdminResponse> bookAdminResponse = bookService.AdmingetAllBook(pageable);
         ResponseData<PageResponse<BookAdminResponse>> bookAdminResponseResponseData = new ResponseData<>(200,"success",bookAdminResponse);
         return ResponseEntity.ok(bookAdminResponseResponseData);
@@ -59,6 +62,15 @@ public class AdminBookController {
         ResponseData<List<AuthorResponse>> authorResponseData = new ResponseData<>(200,"success",authorResponse);
         return ResponseEntity.ok(authorResponseData);
     }
+    @GetMapping("/get-all-user")
+    public ResponseEntity<ResponseData<PageResponse<UserResponse>>> getAllUser(@PageableDefault(page = 0,size = 8,sort = "ngayDangKy",direction = Sort.Direction.DESC)
+                                                                                   Pageable pageable) {
+        PageResponse<UserResponse> listUser =customerService.getAllUser(pageable);
+        ResponseData<PageResponse<UserResponse>> userResponseData = new ResponseData<>(200,"success",listUser);
+        return ResponseEntity.ok(userResponseData);
+    }
+    
+    
 
 
 }

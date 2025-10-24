@@ -3,12 +3,11 @@ package com.example.backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
+import org.w3c.dom.stylesheets.LinkStyle;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Getter
@@ -34,7 +33,7 @@ public class GioHang {
     @OneToMany(mappedBy = "gioHang", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     @Builder.Default
-    private Set<GioHangChiTiet> chiTietGioHang = new HashSet<>();
+    private List<GioHangChiTiet> chiTietGioHang = new ArrayList<>();
 
     @Override
     public final boolean equals(Object o) {
