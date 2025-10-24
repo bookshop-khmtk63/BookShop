@@ -39,12 +39,6 @@ public class CustomerController {
       ResponseData<CustomerResponse> responseData = new ResponseData<>(200,"success",customerResponse);
       return new ResponseEntity<>(responseData, HttpStatus.OK);
   }
-  @GetMapping("/me")
-  public ResponseEntity<ResponseData<CustomerResponse>> getCustomer(@AuthenticationPrincipal UserDetails userDetails) {
-      KhachHang customer = customerService.getCustomerByEmail(userDetails.getUsername());
-      ResponseData<CustomerResponse> responseData = new ResponseData<>(200,"success",customerMapper.toCustomerResponse(customer));
-      return new ResponseEntity<>(responseData, HttpStatus.OK);
-  }
   @GetMapping("/history-order")
     public ResponseEntity<ResponseData<PageResponse<OrderDetailResponse>>> getHistoryOrder(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                                            @PageableDefault(page = 0,size = 3,sort ="ngayDat",direction = Sort.Direction.DESC)

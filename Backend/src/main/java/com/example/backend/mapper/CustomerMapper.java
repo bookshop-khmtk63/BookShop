@@ -24,6 +24,7 @@ public class CustomerMapper {
                 .email(customer.getEmail())
                 .fullName(customer.getHoTen())
                 .address(customer.getDiaChi())
+                .role(customer.getRole())
                 .build();
     }
     public List<CustomerResponse> toCustomerResponseList(List<KhachHang> customers) {
