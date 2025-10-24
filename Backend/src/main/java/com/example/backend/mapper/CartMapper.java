@@ -25,6 +25,7 @@ public class CartMapper {
                 .nameBook(cartItem.getSach().getTenSach())
                 .totalPrice(totalPrice(cartItem))
                 .price(cartItem.getSach().getGia())
+                .quantityBook(cartItem.getSach().getSoLuong())
                 .thumbnail(cartItem.getSach().getAnhSach())
                 .build();
 
