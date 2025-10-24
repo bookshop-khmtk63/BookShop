@@ -16,5 +16,6 @@ public class CartItemResponse {
     private String thumbnail;
     private BigDecimal totalPrice;
     private BigDecimal price;
+    private Integer quantityBook;
     private Integer quantity;
 }
