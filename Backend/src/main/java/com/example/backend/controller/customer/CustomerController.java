@@ -83,7 +83,7 @@ public class CustomerController {
       return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
     @PostMapping("/update-Cart-item/{cartItemId}")
-    public ResponseEntity<ResponseData<CartResponse>> updateCartItem(@AuthenticationPrincipal CustomUserDetails userDetails,
+    public ResponseEntity<ResponseData<?>> updateCartItem(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                      @PathVariable Integer cartItemId, @RequestBody CartItemRequest cartItemRequest) {
       CartResponse cartResponse = cartItemService.updateCartItem(userDetails.getUsername(),cartItemId,cartItemRequest);
       ResponseData<CartResponse> responseData = new ResponseData<>(200,"success",cartResponse);

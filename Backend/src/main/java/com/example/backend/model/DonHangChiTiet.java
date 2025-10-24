@@ -39,6 +39,8 @@ public class DonHangChiTiet {
     @Column(name = "gia", nullable = false, precision = 12, scale = 2)
     private BigDecimal gia;
 
+
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;

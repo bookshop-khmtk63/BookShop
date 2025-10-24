@@ -2,8 +2,10 @@ package com.example.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.proxy.HibernateProxy;
 
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -34,6 +36,10 @@ public class GioHangChiTiet {
 
     @Column(name = "so_luong", nullable = false)
     private int soLuong;
+
+    @UpdateTimestamp // <-- Cải tiến quan trọng!
+    @Column(name = "ngay_cap_nhat")
+    private Instant ngayCapNhat;
 
     @Override
     public final boolean equals(Object o) {

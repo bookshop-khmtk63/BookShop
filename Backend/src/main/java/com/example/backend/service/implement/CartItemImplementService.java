@@ -92,18 +92,17 @@ public class CartItemImplementService implements CartItemService {
         GioHangChiTiet cartItem = cartItemRepository.findByIdItemAndIdCustomer(cartItemId,customer.getIdKhachHang())
                 .orElseThrow(()->new AppException(ErrorCode.ITEM_NOT_FOUND));
         Book book = bookService.getBookByIds(cartItem.getSach().getIdSach());
-        GioHang cart = cartService.getCartById(customer.getIdKhachHang());
-       if (cartItemRequest.getQuantity()>book.getSoLuong()) {
-           throw new AppException(ErrorCode.BOOK_OUT_OF_STOCK);
-       }
-       if(cartItemRequest.getQuantity()<=0){
-           cartItemRepository.delete(cartItem);
-
-           cart.getChiTietGioHang().remove(cartItem);
-           return cartMapper.toCartResponse(cart);
-       }
-        cartItem.setSoLuong(cartItemRequest.getQuantity());
-        return  cartMapper.toCartResponse(cart);
+        int newQuantity = cartItemRequest.getQuantity();
+        if(newQuantity<=0){
+            log.info("Xóa sách  trong giỏ hàng do số lượng nhỏ hơn 0: {}", cartItem.getSach().getTenSach());
+            cartItemRepository.deleteById(cartItemId);
+        }else {
+            if(newQuantity>book.getSoLuong()){
+                throw new AppException(ErrorCode.BOOK_OUT_OF_STOCK);
+            }
+            cartItem.setSoLuong(newQuantity);
+        }
+        return cartService.getCart(customer.getIdKhachHang());
     }
 
     @Override
