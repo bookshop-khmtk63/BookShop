@@ -4,22 +4,22 @@ import "./BookList.css";
 
 export default function BookList({ categoryQuery, filters }) {
   const [books, setBooks] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0); // ⚙️ Backend pageNumber bắt đầu từ 0
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
   const [sortOrder, setSortOrder] = useState("asc");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const itemsPerPage = 6;
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // 🔹 Chuyển giá sang số để sắp xếp
   const parsePrice = (p) => {
     if (typeof p === "number") return p;
     if (typeof p === "string") return Number(p.replace(/[^\d]/g, "")) || 0;
     return 0;
   };
 
-  // ⚙️ Fetch danh sách sách (chỉ dùng /all hoặc /filter)
+  // ⚙️ Gọi API backend có phân trang thật
   useEffect(() => {
     const fetchBooks = async () => {
       setLoading(true);
@@ -35,37 +35,28 @@ export default function BookList({ categoryQuery, filters }) {
           });
         }
 
-        // Lọc trạng thái (nếu có)
+        // Lọc trạng thái
         if (filters.status === "available") params.push("filters=soLuong>0");
         else if (filters.status === "outofstock") params.push("filters=soLuong<=0");
 
         // Chọn API phù hợp
-        let baseUrl =
+        const baseUrl =
           params.length > 0
             ? `${API_URL}/api/books/filter`
             : `${API_URL}/api/books/all`;
 
-        let allBooks = [];
-        let page = 0;
-        let totalPages = 1;
+        // ✅ Gọi đúng trang hiện tại
+        const url = `${baseUrl}?page=${currentPage}${params.length ? "&" + params.join("&") : ""}`;
+        console.log("📡 Fetching:", url);
 
-        // Gọi tất cả các trang (tránh giới hạn page size)
-        while (page < totalPages) {
-          const url = `${baseUrl}?page=${page}${params.length ? "&" + params.join("&") : ""}`;
-          console.log("📡 Fetching page:", page, url);
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
 
-          const res = await fetch(url);
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const pageData = json.data;
+        const allBooks = pageData?.data || [];
 
-          const json = await res.json();
-          const data = json.data?.data || json.data?.content || [];
-
-          allBooks = [...allBooks, ...data];
-          totalPages = json.data?.totalPages || 1;
-          page++;
-        }
-
-        // ✅ Không cần gọi API chi tiết nữa
+        // ✅ Chuyển đổi dữ liệu
         const mapped = allBooks.map((b) => ({
           id: b.id,
           title: b.nameBook,
@@ -73,13 +64,13 @@ export default function BookList({ categoryQuery, filters }) {
           price: b.price || 0,
           image: b.thumbnail,
           rating: parseFloat(b.averageRating) || 0,
-          stock: 1, // 🔹 Giả sử mặc định còn hàng
-          status: "Còn hàng",
-          categories: [],
+          stock: b.soLuong ?? 1,
+          status: b.soLuong > 0 ? "Còn hàng" : "Hết hàng",
         }));
 
         setBooks(mapped);
-        console.log("✅ Đã tải sách:", mapped.length);
+        setTotalPages(pageData.totalPages || 1);
+        setTotalElements(pageData.totalElements || mapped.length);
       } catch (err) {
         console.error("❌ Lỗi tải sách:", err);
         setError("Không thể tải dữ liệu sách, vui lòng thử lại sau.");
@@ -89,48 +80,25 @@ export default function BookList({ categoryQuery, filters }) {
     };
 
     fetchBooks();
-  }, [categoryQuery, filters.status, filters.stock, API_URL]);
+  }, [categoryQuery, filters.status, API_URL, currentPage]);
 
-  // 🔹 Lọc phía frontend
-  const filteredBooks = books.filter((book) => {
-    if (filters.search && !book.title.toLowerCase().includes(filters.search.toLowerCase()))
-      return false;
-
-    if (filters.price === "under100" && parsePrice(book.price) >= 100000) return false;
-
-    if (
-      filters.price === "100-500" &&
-      (parsePrice(book.price) < 100000 || parsePrice(book.price) > 500000)
-    )
-      return false;
-
-    if (filters.rating && book.rating < Number(filters.rating)) return false;
-
-    return true;
-  });
-
-  // 🔹 Sắp xếp theo giá
-  const sortedBooks = [...filteredBooks].sort((a, b) =>
+  // 🔹 Sắp xếp (client-side)
+  const sortedBooks = [...books].sort((a, b) =>
     sortOrder === "asc"
       ? parsePrice(a.price) - parsePrice(b.price)
       : parsePrice(b.price) - parsePrice(a.price)
   );
 
-  // 🔹 Phân trang
-  const indexOfLast = currentPage * itemsPerPage;
-  const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentBooks = sortedBooks.slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil(filteredBooks.length / itemsPerPage);
-
-  const getPageNumbers = (currentPage, totalPages, delta = 1) => {
+  // 🔹 Tạo danh sách số trang
+  const getPageNumbers = (current, total, delta = 1) => {
     const pages = [];
     const range = [];
-    for (let i = 1; i <= totalPages; i++) {
-      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+    for (let i = 0; i < total; i++) {
+      if (i === 0 || i === total - 1 || (i >= current - delta && i <= current + delta)) {
         range.push(i);
       }
     }
-    let lastPage = 0;
+    let lastPage = -1;
     for (let i of range) {
       if (i - lastPage > 1) pages.push("dots");
       pages.push(i);
@@ -148,7 +116,7 @@ export default function BookList({ categoryQuery, filters }) {
           value={sortOrder}
           onChange={(e) => {
             setSortOrder(e.target.value);
-            setCurrentPage(1);
+            setCurrentPage(0);
           }}
         >
           <option value="asc">Giá thấp → cao</option>
@@ -158,14 +126,14 @@ export default function BookList({ categoryQuery, filters }) {
 
       {loading && <p>Đang tải sách...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {!loading && !error && filteredBooks.length === 0 && (
+      {!loading && !error && books.length === 0 && (
         <p className="no-books">Không tìm thấy sách phù hợp</p>
       )}
 
       <div className="grid">
         {!loading &&
           !error &&
-          currentBooks.map((b) => (
+          sortedBooks.map((b) => (
             <BookCard
               key={b.id}
               id={b.id}
@@ -178,9 +146,13 @@ export default function BookList({ categoryQuery, filters }) {
           ))}
       </div>
 
+      {/* --- Phân trang thật dựa trên backend --- */}
       {!loading && !error && totalPages > 1 && (
         <div className="pagination">
-          <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}>
+          <button
+            disabled={currentPage === 0}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
             &lt;
           </button>
 
@@ -193,19 +165,22 @@ export default function BookList({ categoryQuery, filters }) {
                 className={currentPage === p ? "active" : ""}
                 onClick={() => setCurrentPage(p)}
               >
-                {p}
+                {p + 1}
               </button>
             )
           )}
 
           <button
-            disabled={currentPage === totalPages}
+            disabled={currentPage === totalPages - 1}
             onClick={() => setCurrentPage((p) => p + 1)}
           >
             &gt;
           </button>
         </div>
       )}
+
+      
+        
     </main>
   );
 }

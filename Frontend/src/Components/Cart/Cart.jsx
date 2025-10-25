@@ -4,7 +4,7 @@ import AddToCartPopup from "../AddToCartPopup/AddToCartPopup";
 import "./Cart.css";
 
 export default function Cart() {
-  const { callApiWithToken, updateCartCount } = useAuth();
+  const { callApiWithToken, updateCartCount, user } = useAuth();
   const API_URL = import.meta.env.VITE_API_URL;
 
   const [cart, setCart] = useState(null);
@@ -13,18 +13,19 @@ export default function Cart() {
   const [popup, setPopup] = useState(null);
   const [updatingItemId, setUpdatingItemId] = useState(null);
 
-  // 🧩 Lấy dữ liệu giỏ hàng từ API (1 request duy nhất)
+  // 🧩 Lấy dữ liệu giỏ hàng ban đầu
   const fetchCart = async () => {
     try {
       const data = await callApiWithToken(`${API_URL}/api/customer/get-cart`);
-
-      // ✅ Dữ liệu backend trả về đã có quantityBook (tồn kho)
       const itemsWithStock = data.items.map((item) => ({
         ...item,
-        stock: item.quantityBook ?? 0, // Lấy trực tiếp từ backend
+        stock: item.quantityBook ?? 0,
       }));
-
       setCart({ ...data, items: itemsWithStock });
+
+      // ✅ Cập nhật số lượng đếm ở icon giỏ hàng
+      const total = data.totalQuantity ?? data.items?.reduce((s, i) => s + i.quantity, 0);
+      updateCartCount(total);
     } catch (err) {
       console.error("❌ Lỗi khi lấy giỏ hàng:", err);
       setError("Không thể tải giỏ hàng.");
@@ -34,17 +35,17 @@ export default function Cart() {
   };
 
   useEffect(() => {
-    fetchCart();
+    fetchCart(); // ✅ Chỉ gọi 1 lần khi vào trang
   }, [API_URL]);
 
-  // 🧾 Cập nhật số lượng
+  // 🧾 Cập nhật số lượng nhanh
   const updateQuantity = async (cartItemId, newQuantity, stock) => {
     if (newQuantity < 0) return;
 
     try {
       setUpdatingItemId(cartItemId);
 
-      // ⚠️ Kiểm tra tồn kho
+      // ⚠️ Nếu vượt quá kho → chỉ hiện cảnh báo
       if (stock && newQuantity > stock) {
         setPopup({
           message: `⚠️ Chỉ còn ${stock} sản phẩm trong kho!`,
@@ -54,39 +55,53 @@ export default function Cart() {
         return;
       }
 
-      // 🧮 Nếu trừ về 0 → xóa
+      // 🗑️ Nếu = 0 → xóa sản phẩm
       if (newQuantity === 0) {
         await callApiWithToken(`${API_URL}/api/customer/cart-item`, {
           method: "DELETE",
           data: { cartItemIds: [cartItemId] },
         });
-        setPopup({ message: "🗑️ Đã xóa sản phẩm khỏi giỏ hàng!", type: "success" });
-        await fetchCart();
-        await updateCartCount();
+
+        // ✅ Cập nhật UI ngay
+        setCart((prevCart) => ({
+          ...prevCart,
+          items: prevCart.items.filter((i) => i.idCartItem !== cartItemId),
+        }));
+
+        // ✅ Cập nhật lại tổng số lượng hiển thị
+        updateCartCount((prev) => Math.max(prev - 1, 0));
         return;
       }
 
-      // ✅ Cập nhật số lượng
+      // ✅ Gửi request cập nhật backend
       await callApiWithToken(`${API_URL}/api/customer/update-Cart-item/${cartItemId}`, {
         method: "POST",
         data: { quantity: newQuantity },
       });
 
-      await fetchCart();
-      await updateCartCount();
+      // ✅ Cập nhật nhanh UI
+      setCart((prevCart) => ({
+        ...prevCart,
+        items: prevCart.items.map((i) =>
+          i.idCartItem === cartItemId ? { ...i, quantity: newQuantity } : i
+        ),
+      }));
+
+      // ✅ Cập nhật tổng số lượng
+      const total = cart.items.reduce(
+        (sum, i) =>
+          i.idCartItem === cartItemId ? sum + newQuantity : sum + i.quantity,
+        0
+      );
+      updateCartCount(total);
     } catch (err) {
       console.error("❌ Lỗi khi cập nhật số lượng:", err);
-      setPopup({
-        message: "❌ Không thể cập nhật số lượng sản phẩm!",
-        type: "error",
-      });
     } finally {
       setUpdatingItemId(null);
-      setTimeout(() => setPopup(null), 1500);
     }
   };
 
-  // 🗑️ Xóa sản phẩm
+  // 🗑️ Xóa sản phẩm nhanh
   const deleteItem = async (cartItemId) => {
     try {
       await callApiWithToken(`${API_URL}/api/customer/cart-item`, {
@@ -94,9 +109,14 @@ export default function Cart() {
         data: { cartItemIds: [cartItemId] },
       });
 
+      setCart((prevCart) => ({
+        ...prevCart,
+        items: prevCart.items.filter((i) => i.idCartItem !== cartItemId),
+      }));
+
+      updateCartCount((prev) => Math.max(prev - 1, 0));
+
       setPopup({ message: "🗑️ Đã xóa sản phẩm khỏi giỏ hàng!", type: "success" });
-      await fetchCart();
-      await updateCartCount();
     } catch (err) {
       console.error("❌ Lỗi khi xóa sản phẩm:", err);
       setPopup({
@@ -108,27 +128,47 @@ export default function Cart() {
     }
   };
 
+  // ⚙️ Kiểm tra thông tin người dùng trước thanh toán
+  const validateUserInfo = () => {
+    if (!user) return false;
+
+    const requiredFields = ["fullName", "phoneNumber", "address", "email"];
+    const missing = requiredFields.filter((key) => !user[key] || user[key].trim() === "");
+
+    if (missing.length > 0) {
+      setPopup({
+        message: `⚠️ Vui lòng cập nhật đầy đủ thông tin cá nhân trước khi thanh toán (thiếu: ${missing.join(", ")})`,
+        type: "warn",
+      });
+      setTimeout(() => setPopup(null), 3000);
+      return false;
+    }
+    return true;
+  };
+
   // 💳 Thanh toán
   const handlePayOrder = async () => {
+    if (!validateUserInfo()) return;
+
     try {
       await callApiWithToken(`${API_URL}/api/customer/pay-order`, { method: "POST" });
-      await updateCartCount();
+
+      // ✅ Xóa giỏ hàng tại chỗ
+      setCart({ items: [] });
+      updateCartCount(0);
 
       setPopup({
         message: "✅ Thanh toán thành công! Đơn hàng đang được xử lý.",
         type: "success",
       });
-
-      setTimeout(() => {
-        setPopup(null);
-        fetchCart();
-      }, 2000);
     } catch (err) {
       console.error("❌ Lỗi thanh toán:", err);
       setPopup({
         message: "❌ Thanh toán thất bại. Vui lòng thử lại sau!",
         type: "error",
       });
+    } finally {
+      setTimeout(() => setPopup(null), 2000);
     }
   };
 
@@ -182,9 +222,7 @@ export default function Cart() {
               <div className="cart-quantity">
                 <button
                   disabled={updatingItemId === item.idCartItem}
-                  onClick={() =>
-                    updateQuantity(item.idCartItem, item.quantity - 1, item.stock)
-                  }
+                  onClick={() => updateQuantity(item.idCartItem, item.quantity - 1, item.stock)}
                 >
                   -
                 </button>
@@ -196,9 +234,7 @@ export default function Cart() {
                     updatingItemId === item.idCartItem ||
                     (item.stock && item.quantity >= item.stock)
                   }
-                  onClick={() =>
-                    updateQuantity(item.idCartItem, item.quantity + 1, item.stock)
-                  }
+                  onClick={() => updateQuantity(item.idCartItem, item.quantity + 1, item.stock)}
                 >
                   +
                 </button>
