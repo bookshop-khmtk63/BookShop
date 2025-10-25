@@ -13,22 +13,16 @@ export default function Cart() {
   const [popup, setPopup] = useState(null);
   const [updatingItemId, setUpdatingItemId] = useState(null);
 
-  // 🧩 Lấy dữ liệu giỏ hàng từ API
+  // 🧩 Lấy dữ liệu giỏ hàng từ API (1 request duy nhất)
   const fetchCart = async () => {
     try {
       const data = await callApiWithToken(`${API_URL}/api/customer/get-cart`);
 
-      // 🔹 Lấy thêm tồn kho từng sách
-      const itemsWithStock = await Promise.all(
-        data.items.map(async (item) => {
-          try {
-            const bookData = await callApiWithToken(`${API_URL}/api/book/${item.idBook}`);
-            return { ...item, stock: bookData.number };
-          } catch {
-            return { ...item, stock: null };
-          }
-        })
-      );
+      // ✅ Dữ liệu backend trả về đã có quantityBook (tồn kho)
+      const itemsWithStock = data.items.map((item) => ({
+        ...item,
+        stock: item.quantityBook ?? 0, // Lấy trực tiếp từ backend
+      }));
 
       setCart({ ...data, items: itemsWithStock });
     } catch (err) {
@@ -45,12 +39,12 @@ export default function Cart() {
 
   // 🧾 Cập nhật số lượng
   const updateQuantity = async (cartItemId, newQuantity, stock) => {
-    if (newQuantity < 0) return; // Không cho âm
+    if (newQuantity < 0) return;
 
     try {
       setUpdatingItemId(cartItemId);
 
-      // ⚠️ Nếu vượt quá tồn kho → cảnh báo
+      // ⚠️ Kiểm tra tồn kho
       if (stock && newQuantity > stock) {
         setPopup({
           message: `⚠️ Chỉ còn ${stock} sản phẩm trong kho!`,
@@ -60,19 +54,19 @@ export default function Cart() {
         return;
       }
 
-      // 🧮 Nếu trừ về 0 → xóa khỏi giỏ hàng
+      // 🧮 Nếu trừ về 0 → xóa
       if (newQuantity === 0) {
         await callApiWithToken(`${API_URL}/api/customer/cart-item`, {
           method: "DELETE",
           data: { cartItemIds: [cartItemId] },
         });
-        setPopup({ message: "🗑️ Sản phẩm đã bị xóa khỏi giỏ hàng!", type: "success" });
+        setPopup({ message: "🗑️ Đã xóa sản phẩm khỏi giỏ hàng!", type: "success" });
         await fetchCart();
         await updateCartCount();
         return;
       }
 
-      // ✅ Nếu > 0 → cập nhật số lượng
+      // ✅ Cập nhật số lượng
       await callApiWithToken(`${API_URL}/api/customer/update-Cart-item/${cartItemId}`, {
         method: "POST",
         data: { quantity: newQuantity },
@@ -114,7 +108,7 @@ export default function Cart() {
     }
   };
 
-  // 💳 Thanh toán giỏ hàng
+  // 💳 Thanh toán
   const handlePayOrder = async () => {
     try {
       await callApiWithToken(`${API_URL}/api/customer/pay-order`, { method: "POST" });
@@ -186,7 +180,6 @@ export default function Cart() {
               </div>
 
               <div className="cart-quantity">
-                {/* Nút trừ */}
                 <button
                   disabled={updatingItemId === item.idCartItem}
                   onClick={() =>
@@ -198,7 +191,6 @@ export default function Cart() {
 
                 <span>{item.quantity}</span>
 
-                {/* Nút cộng */}
                 <button
                   disabled={
                     updatingItemId === item.idCartItem ||

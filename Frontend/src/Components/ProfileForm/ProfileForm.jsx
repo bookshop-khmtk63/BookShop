@@ -24,7 +24,7 @@ export default function ProfileForm() {
   // ==========================
   const fetchUserData = async () => {
     try {
-      const data = await callApiWithToken(`${API_URL}/api/customer/me`);
+      const data = await callApiWithToken(`${API_URL}/api/auth/me`);
       if (data) {
         setUser(data);
         setForm({

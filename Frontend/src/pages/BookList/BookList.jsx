@@ -19,13 +19,13 @@ export default function BookList({ categoryQuery, filters }) {
     return 0;
   };
 
+  // ⚙️ Fetch danh sách sách (chỉ dùng /all hoặc /filter)
   useEffect(() => {
     const fetchBooks = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        let url = `${API_URL}/api/books/all?page=0&size=1000`;
         const params = [];
 
         // Lọc thể loại
@@ -35,72 +35,51 @@ export default function BookList({ categoryQuery, filters }) {
           });
         }
 
-        // Lọc trạng thái (còn / hết hàng)
-        if (filters.status === "available") {
-          params.push("filters=soLuong>0");
-        } else if (filters.status === "outofstock") {
-          params.push("filters=soLuong<=0");
+        // Lọc trạng thái (nếu có)
+        if (filters.status === "available") params.push("filters=soLuong>0");
+        else if (filters.status === "outofstock") params.push("filters=soLuong<=0");
+
+        // Chọn API phù hợp
+        let baseUrl =
+          params.length > 0
+            ? `${API_URL}/api/books/filter`
+            : `${API_URL}/api/books/all`;
+
+        let allBooks = [];
+        let page = 0;
+        let totalPages = 1;
+
+        // Gọi tất cả các trang (tránh giới hạn page size)
+        while (page < totalPages) {
+          const url = `${baseUrl}?page=${page}${params.length ? "&" + params.join("&") : ""}`;
+          console.log("📡 Fetching page:", page, url);
+
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+          const json = await res.json();
+          const data = json.data?.data || json.data?.content || [];
+
+          allBooks = [...allBooks, ...data];
+          totalPages = json.data?.totalPages || 1;
+          page++;
         }
 
-        // Lọc thủ công theo tồn kho
-        if (filters.stock === "in") {
-          params.push("filters=soLuong>0");
-        } else if (filters.stock === "out") {
-          params.push("filters=soLuong<=0");
-        }
+        // ✅ Không cần gọi API chi tiết nữa
+        const mapped = allBooks.map((b) => ({
+          id: b.id,
+          title: b.nameBook,
+          author: b.author || "Không rõ",
+          price: b.price || 0,
+          image: b.thumbnail,
+          rating: parseFloat(b.averageRating) || 0,
+          stock: 1, // 🔹 Giả sử mặc định còn hàng
+          status: "Còn hàng",
+          categories: [],
+        }));
 
-        if (params.length > 0) {
-          url = `${API_URL}/api/books/filter?page=0&size=1000&${params.join("&")}`;
-        }
-
-        console.log("📡 Fetching books:", url);
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-
-        const json = await response.json();
-        const rawBooks = json.data?.data || json.data?.content || [];
-
-        // ✅ Gọi chi tiết từng sách để lấy tồn kho (vì API filter không trả về "number")
-        const mapped = await Promise.all(
-          rawBooks.map(async (b) => {
-            try {
-              const detailRes = await fetch(`${API_URL}/api/books/${b.id}`);
-              if (!detailRes.ok) throw new Error("Lỗi lấy chi tiết sách");
-              const detailJson = await detailRes.json();
-              const d = detailJson.data || {};
-
-              const stockValue = d.number ?? 0;
-
-              return {
-                id: d.id || b.id,
-                title: d.nameBook || b.nameBook,
-                author: d.author || "Không rõ",
-                price: d.price || b.price || 0,
-                image: d.thumbnail || b.thumbnail,
-                rating: d.averageRating || parseFloat(b.averageRating) || 0,
-                stock: stockValue,
-                status: stockValue === 0 ? "Hết hàng" : "Còn hàng",
-                categories: (d.category || []).map((c) => c.name),
-              };
-            } catch (error) {
-              console.error("⚠️ Lỗi chi tiết sách:", error);
-              return {
-                id: b.id,
-                title: b.nameBook,
-                author: "Không rõ",
-                price: b.price || 0,
-                image: b.thumbnail,
-                rating: parseFloat(b.averageRating) || 0,
-                stock: 0,
-                status: "Hết hàng",
-                categories: [],
-              };
-            }
-          })
-        );
-
-        console.table(mapped.map((b) => ({ title: b.title, stock: b.stock })));
         setBooks(mapped);
+        console.log("✅ Đã tải sách:", mapped.length);
       } catch (err) {
         console.error("❌ Lỗi tải sách:", err);
         setError("Không thể tải dữ liệu sách, vui lòng thử lại sau.");
@@ -130,7 +109,7 @@ export default function BookList({ categoryQuery, filters }) {
     return true;
   });
 
-  // 🔹 Sắp xếp
+  // 🔹 Sắp xếp theo giá
   const sortedBooks = [...filteredBooks].sort((a, b) =>
     sortOrder === "asc"
       ? parsePrice(a.price) - parsePrice(b.price)
@@ -179,7 +158,6 @@ export default function BookList({ categoryQuery, filters }) {
 
       {loading && <p>Đang tải sách...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
-
       {!loading && !error && filteredBooks.length === 0 && (
         <p className="no-books">Không tìm thấy sách phù hợp</p>
       )}
@@ -187,17 +165,15 @@ export default function BookList({ categoryQuery, filters }) {
       <div className="grid">
         {!loading &&
           !error &&
-          filteredBooks.length > 0 &&
           currentBooks.map((b) => (
             <BookCard
               key={b.id}
               id={b.id}
               title={b.title}
-              author={b.author}
               price={b.price}
               image={b.image}
               rating={b.rating}
-              number={b.stock} // ✅ đúng prop — BookCard dùng "number"
+              number={b.stock}
             />
           ))}
       </div>
