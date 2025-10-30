@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import "./Sidebar.css";
 
 export default function Sidebar({ onCategoryChange, onFilterChange }) {
-  const [categories, setCategories] = useState([]); // ✅ Mảng nhiều thể loại
+  const [categories, setCategories] = useState([]);
   const [filters, setFilters] = useState({
-    price: "",
+    minPrice: "",
+    maxPrice: "",
     status: "",
     rating: "",
   });
@@ -35,18 +36,43 @@ export default function Sidebar({ onCategoryChange, onFilterChange }) {
     setCategories(updated);
   };
 
-  // ✅ Cập nhật filter tạm thời
+  // ✅ Cập nhật filter
   const handleFilterChange = (key, value) => {
-    const newFilters = { ...filters, [key]: value };
+    const newFilters = { ...filters };
+
+    if (key === "price") {
+      // ✅ Chuyển từ "under100" / "100-500" / "over500" sang min/max tương ứng
+      if (value === "under100") {
+        newFilters.minPrice = "";
+        newFilters.maxPrice = "100000";
+      } else if (value === "100-500") {
+        newFilters.minPrice = "100000";
+        newFilters.maxPrice = "500000";
+      } else if (value === "over500") {
+        newFilters.minPrice = "500000";
+        newFilters.maxPrice = "";
+      } else {
+        newFilters.minPrice = "";
+        newFilters.maxPrice = "";
+      }
+    } else {
+      newFilters[key] = value;
+    }
+
     setFilters(newFilters);
   };
 
   // ✅ Reset toàn bộ bộ lọc
   const handleReset = () => {
     setCategories([]);
-    const cleared = { price: "", status: "", rating: "" };
+    const cleared = {
+      minPrice: "",
+      maxPrice: "",
+      status: "",
+      rating: "",
+    };
     setFilters(cleared);
-    onCategoryChange([]); // gửi mảng rỗng
+    onCategoryChange([]);
     onFilterChange(cleared);
   };
 
@@ -79,11 +105,13 @@ export default function Sidebar({ onCategoryChange, onFilterChange }) {
         <label>
           <input
             type="checkbox"
-            checked={filters.price === "under100"}
+            checked={filters.maxPrice === "100000" && !filters.minPrice}
             onChange={() =>
               handleFilterChange(
                 "price",
-                filters.price === "under100" ? "" : "under100"
+                filters.maxPrice === "100000" && !filters.minPrice
+                  ? ""
+                  : "under100"
               )
             }
           />
@@ -92,15 +120,34 @@ export default function Sidebar({ onCategoryChange, onFilterChange }) {
         <label>
           <input
             type="checkbox"
-            checked={filters.price === "100-500"}
+            checked={
+              filters.minPrice === "100000" && filters.maxPrice === "500000"
+            }
             onChange={() =>
               handleFilterChange(
                 "price",
-                filters.price === "100-500" ? "" : "100-500"
+                filters.minPrice === "100000" && filters.maxPrice === "500000"
+                  ? ""
+                  : "100-500"
               )
             }
           />
           100k - 500k
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={filters.minPrice === "500000" && !filters.maxPrice}
+            onChange={() =>
+              handleFilterChange(
+                "price",
+                filters.minPrice === "500000" && !filters.maxPrice
+                  ? ""
+                  : "over500"
+              )
+            }
+          />
+          Trên 500k
         </label>
       </div>
 

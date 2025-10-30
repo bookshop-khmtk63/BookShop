@@ -4,7 +4,7 @@ import "./BookList.css";
 
 export default function BookList({ categoryQuery, filters }) {
   const [books, setBooks] = useState([]);
-  const [currentPage, setCurrentPage] = useState(0); // ⚙️ Backend pageNumber bắt đầu từ 0
+  const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
   const [sortOrder, setSortOrder] = useState("asc");
@@ -19,7 +19,11 @@ export default function BookList({ categoryQuery, filters }) {
     return 0;
   };
 
-  // ⚙️ Gọi API backend có phân trang thật
+  // ✅ Reset về trang đầu mỗi khi filter hoặc category đổi
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [categoryQuery, filters]);
+
   useEffect(() => {
     const fetchBooks = async () => {
       setLoading(true);
@@ -28,26 +32,48 @@ export default function BookList({ categoryQuery, filters }) {
       try {
         const params = [];
 
-        // Lọc thể loại
+        // --- Lọc thể loại ---
         if (Array.isArray(categoryQuery) && categoryQuery.length > 0) {
           categoryQuery.forEach((cat) => {
             params.push(`filters=theLoai:${encodeURIComponent(cat)}`);
           });
         }
 
-        // Lọc trạng thái
+        // --- Lọc giá ---
+        const min = parseInt(filters.minPrice);
+        const max = parseInt(filters.maxPrice);
+
+        if (!isNaN(min) && min > 0) {
+          params.push(`filters=gia>=${min}`);
+        }
+        if (!isNaN(max) && max > 0) {
+          params.push(`filters=gia<=${max}`);
+        }
+
+        // --- Lọc tình trạng ---
         if (filters.status === "available") params.push("filters=soLuong>0");
         else if (filters.status === "outofstock") params.push("filters=soLuong<=0");
 
-        // Chọn API phù hợp
-        const baseUrl =
-          params.length > 0
-            ? `${API_URL}/api/books/filter`
-            : `${API_URL}/api/books/all`;
+        // --- Lọc đánh giá ---
+ // --- Lọc đánh giá ---
+if (filters.rating && !isNaN(filters.rating)) {
+  
+  params.push(`filters=diemTrungBinh>=${filters.rating}`);
+}
 
-        // ✅ Gọi đúng trang hiện tại
-        const url = `${baseUrl}?page=${currentPage}${params.length ? "&" + params.join("&") : ""}`;
-        console.log("📡 Fetching:", url);
+        // --- Sắp xếp ---
+        const sortParam = `sort=gia,${sortOrder}`;
+
+        // --- Xác định endpoint ---
+        const hasFilter = params.length > 0;
+        let url = hasFilter
+  ? `${API_URL}/api/books/filter?page=${currentPage}&size=6&${params.join("&")}&${sortParam}`
+  : `${API_URL}/api/books/all?page=${currentPage}&size=6&${sortParam}`;
+        
+
+        console.log("📡 Gọi API:", url);
+        console.log("🎯 categoryQuery:", categoryQuery);
+        console.log("🎯 filters:", filters);
 
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -56,7 +82,6 @@ export default function BookList({ categoryQuery, filters }) {
         const pageData = json.data;
         const allBooks = pageData?.data || [];
 
-        // ✅ Chuyển đổi dữ liệu
         const mapped = allBooks.map((b) => ({
           id: b.id,
           title: b.nameBook,
@@ -80,16 +105,25 @@ export default function BookList({ categoryQuery, filters }) {
     };
 
     fetchBooks();
-  }, [categoryQuery, filters.status, API_URL, currentPage]);
+  }, [
+    categoryQuery,
+    filters.minPrice,
+    filters.maxPrice,
+    filters.status,
+    filters.rating,
+    sortOrder,
+    API_URL,
+    currentPage,
+  ]);
 
-  // 🔹 Sắp xếp (client-side)
+  // --- Sắp xếp client-side fallback ---
   const sortedBooks = [...books].sort((a, b) =>
     sortOrder === "asc"
       ? parsePrice(a.price) - parsePrice(b.price)
       : parsePrice(b.price) - parsePrice(a.price)
   );
 
-  // 🔹 Tạo danh sách số trang
+  // --- Tạo danh sách số trang ---
   const getPageNumbers = (current, total, delta = 1) => {
     const pages = [];
     const range = [];
@@ -107,7 +141,6 @@ export default function BookList({ categoryQuery, filters }) {
     return pages;
   };
 
-  // ==================== JSX ====================
   return (
     <main className="book-list">
       <div className="sort">
@@ -146,7 +179,6 @@ export default function BookList({ categoryQuery, filters }) {
           ))}
       </div>
 
-      {/* --- Phân trang thật dựa trên backend --- */}
       {!loading && !error && totalPages > 1 && (
         <div className="pagination">
           <button
@@ -178,9 +210,6 @@ export default function BookList({ categoryQuery, filters }) {
           </button>
         </div>
       )}
-
-      
-        
     </main>
   );
 }
