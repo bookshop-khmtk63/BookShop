@@ -20,4 +20,7 @@ public interface OrderService {
 
     RevenueStatisticsResponse getRevenueStatistics(LocalDate startDate, LocalDate endDate, String period);
 
+    PageResponse<OrderDetailResponse> getAllOrderAdmin(Integer idKhachHang, Pageable pageable);
+
+    OrderDetailResponse updateOrderStatus(Integer orderId, @NotNull(message = "Trạng thái mới không được để trống") TrangThaiDonHang newStatus);
 }

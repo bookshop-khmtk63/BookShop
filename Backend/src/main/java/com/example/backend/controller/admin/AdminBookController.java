@@ -113,5 +113,23 @@ public class AdminBookController {
         return ResponseEntity.ok(responseData);
     }
 
+    @GetMapping("/all-order")
+    public ResponseEntity<ResponseData<PageResponse<OrderDetailResponse>>> getHistoryOrder(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                                           @PageableDefault(page = 0,size = 6,sort ="ngayDat",direction = Sort.Direction.DESC)
+                                                                                           Pageable pageable) {
+        PageResponse<OrderDetailResponse> order = orderService.getAllOrderAdmin(userDetails.getUser().getIdKhachHang(),pageable);
+        ResponseData<PageResponse<OrderDetailResponse>> response = new ResponseData<>(200,"success",order);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<ResponseData<OrderDetailResponse>> updateOrderStatus(
+            @PathVariable Integer orderId,
+            @Valid @RequestBody UpdateOrderStatusRequest request) {
+
+        OrderDetailResponse updatedOrder = orderService.updateOrderStatus(orderId, request.getNewStatus());
+
+        ResponseData<OrderDetailResponse> responseData = new ResponseData<>(200, "Cập nhật trạng thái đơn hàng thành công", updatedOrder);
+        return ResponseEntity.ok(responseData);
+    }
 
 }
