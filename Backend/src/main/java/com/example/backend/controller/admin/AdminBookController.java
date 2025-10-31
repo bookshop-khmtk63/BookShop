@@ -102,6 +102,16 @@ public class AdminBookController {
         ResponseData<?> responseData = new ResponseData<>(200,"Xóa thành công review",null);
         return ResponseEntity.ok(responseData);
     }
+    @GetMapping("/statistics/revenue")
+    public ResponseEntity<ResponseData<RevenueStatisticsResponse>> getRevenueStatistics(
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "daily") String period) {
+
+        RevenueStatisticsResponse response = orderService.getRevenueStatistics(startDate, endDate, period);
+        ResponseData<RevenueStatisticsResponse> responseData = new ResponseData<>(200,"success",response);
+        return ResponseEntity.ok(responseData);
+    }
 
 
 }
