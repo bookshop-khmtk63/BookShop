@@ -13,4 +13,8 @@ public interface BookReviewService {
 
 
     Set<Integer> findReviewBookIdAndCustomer(Set<Integer> bookIds, Integer idKhachHang);
+
+    void deleteReview(Integer id);
+
+    PageResponse<BookReviewResponse> getAllReview(Pageable pageable);
 }
