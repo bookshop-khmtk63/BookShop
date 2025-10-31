@@ -62,4 +62,19 @@ public class BookReviewServiceImplement implements BookReviewService {
 
         return bookReviewRepository.findReviewBookIdAndCustomer(bookIds,idKhachHang);
     }
+
+    @Override
+    @Transactional
+    public void deleteReview(Integer id) {
+        DanhGiaSach bookReview = bookReviewRepository.findById(id)
+                .orElseThrow(()-> new AppException(ErrorCode.REVIEW_NOT_FOUND));
+        bookReviewRepository.delete(bookReview);
+    }
+
+    @Override
+    public PageResponse<BookReviewResponse> getAllReview(Pageable pageable) {
+        Page<BookReviewResponse> bookReviewResponses= bookReviewRepository.findAllReview(pageable);
+        List<BookReviewResponse> bookReviewResponseList=bookReviewResponses.getContent();
+        return PageResponse.from(bookReviewResponses,bookReviewResponseList);
+    }
 }

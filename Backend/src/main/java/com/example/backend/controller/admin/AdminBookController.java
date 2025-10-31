@@ -88,8 +88,20 @@ public class AdminBookController {
         return ResponseEntity.ok(responseData);
     }
 
+    @GetMapping("/review-all")
+    public ResponseEntity<ResponseData<PageResponse<BookReviewResponse>>> getAllReview(@PageableDefault (page = 0,size = 10,sort = "ngayDanhGia",direction = Sort.Direction.DESC) Pageable pageable) {
+            PageResponse<BookReviewResponse> reviewResponsePageResponse = bookReviewService.getAllReview(pageable);
+            ResponseData<PageResponse<BookReviewResponse>> reviewResponseData = new ResponseData<>(200,"success",reviewResponsePageResponse);
+            return ResponseEntity.ok(reviewResponseData);
 
-    
+    }
+
+    @DeleteMapping("/review/{id}")
+    public ResponseEntity<ResponseData<?>> DeleteReview(@PathVariable Integer id) {
+        bookReviewService.deleteReview(id);
+        ResponseData<?> responseData = new ResponseData<>(200,"Xóa thành công review",null);
+        return ResponseEntity.ok(responseData);
+    }
 
 
 }
