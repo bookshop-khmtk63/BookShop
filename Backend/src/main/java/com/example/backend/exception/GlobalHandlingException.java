@@ -10,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -81,6 +82,7 @@ public class GlobalHandlingException {
     /**
      * Xử lý tất cả các lỗi không được định nghĩa khác
      */
+    @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUncategorizedException(Exception ex, WebRequest request) {
 
         log.error("Đã xảy ra ngoại lệ chưa phân loại: ", ex);
@@ -96,5 +98,18 @@ public class GlobalHandlingException {
                 .build();
         return ResponseEntity.status(errorCode.getHttpStatus()).body(errorResponse);
     }
+//    @ExceptionHandler(NoResourceFoundException.class)
+//    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex, WebRequest request) {
+//        ErrorCode errorCode = ErrorCode.RESOURCE_NOT_FOUND;
+//        ErrorResponse errorResponse = ErrorResponse.builder()
+//                .timestamp(LocalDateTime.now())
+//                .status(errorCode.getHttpStatus().value())
+//                .code(errorCode.getCode())
+//                .error(errorCode.getHttpStatus().getReasonPhrase())
+//                .message("Không tìm thấy endpoint được yêu cầu.")
+//                .path(request.getDescription(false).replace("uri=", ""))
+//                .build();
+//        return ResponseEntity.status(errorCode.getHttpStatus()).body(errorResponse);
+//    }
 
 }

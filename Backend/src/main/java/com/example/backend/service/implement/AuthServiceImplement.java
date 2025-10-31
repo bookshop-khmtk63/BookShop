@@ -99,9 +99,14 @@ public class AuthServiceImplement implements AuthService {
     public void logout(HttpServletRequest request, HttpServletResponse response) {
         String authHarder = request.getHeader("Authorization");
         if(authHarder!=null && !authHarder.isBlank() && authHarder.startsWith("Bearer ")) {
+
             String token = authHarder.substring(7);
-            if (jwtTokenUtils.getRemainingExpiration(token) > 0) {
-                redisService.saveToken(token, jwtTokenUtils.getRemainingExpiration(token));
+            try {
+                if (jwtTokenUtils.getRemainingExpiration(token) > 0)
+                    redisService.saveToken(token, jwtTokenUtils.getRemainingExpiration(token));
+
+            } catch (Exception e) {
+                throw new AppException(ErrorCode.AUTHENTICATION_EXCEPTION);
             }
         }
             Optional.ofNullable(getRefreshTokenFromCookie(request)).ifPresent(tokensService::deleteRefreshToken);
@@ -162,7 +167,7 @@ public class AuthServiceImplement implements AuthService {
     }
 
 
-    //Lấy accset-token bằng
+    //Lấy access-token bằng refreshToken
     @Override
     public RefreshTokenResponse refreshToken(String refreshToken) {
         return tokensService.finByToken(refreshToken)

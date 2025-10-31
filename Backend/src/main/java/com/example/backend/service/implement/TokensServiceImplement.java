@@ -98,11 +98,13 @@ public class TokensServiceImplement implements TokensService {
             throw new AppException(ErrorCode.INVALID_TOKEN);
         }
         if (token.isUsed()) {
+            log.warn("Token đã được kịchs hoạt {}",tokenString);
             throw new AppException(ErrorCode.TOKEN_ALREADY_USED);
         }
 
         if (token.getExpiryDate().isBefore(Instant.now())) {
-            throw new AppException(ErrorCode.TOKEN_EXPIRED);
+            log.warn("Token hêt hạn");
+            throw new AppException(ErrorCode.REFRESHTOKEN_EXPIRED);
         }
 
         return token;

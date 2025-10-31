@@ -20,7 +20,7 @@ public class BookReviewMapper {
         return BookReviewResponse.builder()
                 .id(review.getIdDanhGia())
                 .rating(review.getDiemXepHang())
-                .timestamp(LocalDateTime.ofInstant(review.getNgayDanhGia(), ZoneId.of("Asia/Ho_Chi_Minh")))
+                .timestamp(review.getNgayDanhGia())
                 .comment(review.getBinhLuan())
                 .fullName(review.getKhachHang().getHoTen())
                 .userId(review.getKhachHang().getIdKhachHang())

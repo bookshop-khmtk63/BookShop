@@ -212,7 +212,7 @@ class BackendApplicationTests {
             // Lấy tất cả điểm của sách này và tính trung bình
             List<DanhGiaSach> reviewsForBook = danhGiaSachRepository.findBySach(randomSach);
             double averageRating = reviewsForBook.stream()
-                    .mapToInt(DanhGiaSach::getDiemXepHang)
+                    .mapToDouble(DanhGiaSach::getDiemXepHang)
                     .average()
                     .orElse(0.0);
 

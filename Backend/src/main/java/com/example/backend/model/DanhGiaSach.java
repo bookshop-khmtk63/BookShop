@@ -35,7 +35,7 @@ public class DanhGiaSach {
     private Book sach;
 
     @Column(name = "diem_xep_hang", nullable = false)
-    private int diemXepHang; // Từ 1 đến 5
+    private double diemXepHang; // Từ 1 đến 5
 
     @Lob
     @Column(name = "binh_luan")

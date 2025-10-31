@@ -17,4 +17,8 @@ public interface CustomerService {
     CustomerResponse getCustomerByAuthHeader(String authHeader);
 
     PageResponse<UserResponse> getAllUser(Pageable pageable);
+
+    void lockUser(Integer userId);
+
+    void unLock(Integer userId);
 }

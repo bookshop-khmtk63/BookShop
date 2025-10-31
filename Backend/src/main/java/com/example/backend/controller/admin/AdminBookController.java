@@ -2,10 +2,10 @@ package com.example.backend.controller.admin;
 
 import com.example.backend.dto.request.CreateBookRequest;
 import com.example.backend.dto.request.UpdateBookRequest;
+import com.example.backend.dto.request.UpdateOrderStatusRequest;
 import com.example.backend.dto.response.*;
-import com.example.backend.service.AuthorService;
-import com.example.backend.service.BookService;
-import com.example.backend.service.CustomerService;
+import com.example.backend.model.CustomUserDetails;
+import com.example.backend.service.*;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +13,16 @@ import org.hibernate.sql.Update;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -29,6 +33,8 @@ public class AdminBookController {
     private final BookService bookService;
     private final AuthorService authorService;
     private final CustomerService customerService;
+    private final BookReviewService bookReviewService;
+    private final OrderService orderService;
     @GetMapping("/get-all-book")
     public ResponseEntity<ResponseData<PageResponse<BookAdminResponse>>> getAllBook(@PageableDefault(page = 0,size = 6,sort = "idSach") Pageable pageable) {
         PageResponse<BookAdminResponse> bookAdminResponse = bookService.AdmingetAllBook(pageable);
@@ -69,6 +75,19 @@ public class AdminBookController {
         ResponseData<PageResponse<UserResponse>> userResponseData = new ResponseData<>(200,"success",listUser);
         return ResponseEntity.ok(userResponseData);
     }
+    @PutMapping ("/locked/{userId}")
+    public ResponseEntity<ResponseData<?>> lockUser(@PathVariable Integer userId) {
+        customerService.lockUser(userId);
+        ResponseData<?> responseData = new ResponseData<>(200,"Bạn đã khóa tài khoản thành công",null);
+        return ResponseEntity.ok(responseData);
+    }
+    @PutMapping("/unlock/{userId}")
+    public ResponseEntity<ResponseData<?>> unlockUser(@PathVariable Integer userId) {
+        customerService.unLock(userId);
+        ResponseData<?> responseData =  new ResponseData<>(200,"Bạn đã mở khóa tài khoản thành công",null);
+        return ResponseEntity.ok(responseData);
+    }
+
 
     
 
