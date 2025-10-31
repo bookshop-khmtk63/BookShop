@@ -111,6 +111,23 @@ public class OrderServiceImplement implements OrderService {
         return enrichOrdersWithItems(orderDetailResponsePage,null);
     }
 
+    @Override
+    @Transactional
+    public OrderDetailResponse updateOrderStatus(Integer orderId, TrangThaiDonHang newStatus) {
+        DonHang order = orderRepository.findById(orderId).orElseThrow(()->new AppException(ErrorCode.NOT_FOUND_ORDER_ID));
+        Set<TrangThaiDonHang> statusOrder = Set.of(TrangThaiDonHang.HOAN_THANH,TrangThaiDonHang.DANG_GIAO,TrangThaiDonHang.DA_HUY);
+        if (!statusOrder.contains(newStatus)) {
+            throw new AppException(ErrorCode.INVALID_STATUS_UPDATE);
+        }
+        TrangThaiDonHang status = order.getTrangThai();
+        if(status==TrangThaiDonHang.HOAN_THANH || status==TrangThaiDonHang.DA_HUY){
+            throw new AppException(ErrorCode.STATUS_UPDATE_NOT_ALLOWED);
+        }
+        order.setTrangThai(newStatus);
+        DonHang updatedOrder = orderRepository.save(order);
+        return orderMapper.toOrderDetailResponse(updatedOrder);
+    }
+
 
     private PageResponse<OrderDetailResponse> enrichOrdersWithItems(Page<OrderDetailResponse> orderDetailResponses,Integer idKhachHang) {
         if (orderDetailResponses.getContent().isEmpty()) {
