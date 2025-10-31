@@ -87,4 +87,29 @@ public class CustomerImplementService implements CustomerService {
         List<UserResponse> listUserResponse = customerMapper.toUserResponseList(listUser.getContent());
         return PageResponse.from(listUser,listUserResponse);
     }
+
+    @Override
+    @Transactional
+    public void lockUser(Integer userId) {
+        KhachHang customer = khachHangRepository.findById(userId)
+                .orElseThrow(()->new AppException(ErrorCode.USER_NOT_FOUND));
+        if(customer.isLocked()){
+           return;
+        }
+        customer.setLocked(true);
+        khachHangRepository.save(customer);
+
+    }
+
+    @Override
+    @Transactional
+    public void unLock(Integer userId) {
+        KhachHang customer = khachHangRepository.findById(userId)
+                .orElseThrow(()->new AppException(ErrorCode.USER_NOT_FOUND));
+        if(!customer.isLocked()){
+            return;
+        }
+        customer.setLocked(false);
+        khachHangRepository.save(customer);
+    }
 }

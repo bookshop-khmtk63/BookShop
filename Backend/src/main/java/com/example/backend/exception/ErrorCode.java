@@ -21,7 +21,7 @@ public enum ErrorCode {
     TOKEN_EXPIRED(2010,"Token hết hạn" ,HttpStatus.BAD_REQUEST ),
     PASSWORD_CONFIRMATION_MISMATCH(2011,"Mật khẩu và xác nhận mật khẩu không khớp." ,HttpStatus.BAD_REQUEST ),
     BAD_CREDENTIALS(2012,"Sai tài khoản hoặc mật khẩu" ,HttpStatus.BAD_REQUEST ),
-    REFRESHTOKEN_EXPIRED(2013,"Refresh token hết hạn, bạn hãy bắt đầu với phiên đăng nhập mới" ,HttpStatus.UNAUTHORIZED ),
+    REFRESHTOKEN_EXPIRED(2013,"Refresh token hết hạn, bạn hãy bắt đầu với phiên đăng nhập mới" ,HttpStatus.BAD_REQUEST ),
     USER_ALREADY_ACTIVATED(2014,"Taì khoản đã được kích hoạt" ,HttpStatus.CONFLICT ),
     INVALID_TOKEN(2015,"loai token không hợp lệ" ,HttpStatus.BAD_REQUEST ),
     EMAIL_SEND_FAILURE(2016,"Không gửi được gmail" ,HttpStatus.BAD_REQUEST),
@@ -36,7 +36,12 @@ public enum ErrorCode {
     ITEM_NOT_FOUND(2025,"Không tìm thấy sản phẩm trong giỏ hàng" ,HttpStatus.NOT_FOUND ),
 
     ADDRESS_REQUIRED(2026,"Bạn chưa cập nhạt địa chỉ" ,HttpStatus.BAD_REQUEST ),
-    PHONE_NUMBER_REQUIED(2027,"Banj chưa cập nhật sdt" ,HttpStatus.BAD_REQUEST );
+    PHONE_NUMBER_REQUIED(2027,"Banj chưa cập nhật sdt" ,HttpStatus.BAD_REQUEST ),
+    USER_UNLOCKER(2028,"Taì khoản không bị khóa" ,HttpStatus.BAD_REQUEST ),
+    REVIEW_NOT_FOUND(2029,"Không tìm thấy đánh giá" ,HttpStatus.NOT_FOUND ),
+    RESOURCE_NOT_FOUND(2030,"không tìm thấy enpoin được yêu cầu " ,HttpStatus.NOT_FOUND ),
+    INVALID_STATUS_UPDATE(2031,"Trangj thái update đơn hàng không hợp lệ" ,HttpStatus.BAD_REQUEST ),
+    STATUS_UPDATE_NOT_ALLOWED(2032," Không thể thay đổi trạng thái của đơn hàng đã hoàn thành hoặc đã hủy.",HttpStatus.BAD_REQUEST ),;
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

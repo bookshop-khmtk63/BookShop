@@ -40,6 +40,7 @@ public class CustomerMapper {
         return UserResponse.builder()
                 .id(customer.getIdKhachHang())
                 .active(customer.isActive())
+                .locked(customer.isLocked())
                 .username(customer.getEmail())
                 .email(customer.getEmail())
                 .expiration(LocalDateTime.ofInstant(customer.getNgayDangKy(), ZoneId.systemDefault()))

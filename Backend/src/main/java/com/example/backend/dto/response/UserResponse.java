@@ -20,4 +20,5 @@ public class UserResponse {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime expiration;
     private boolean active;
+    private boolean locked;
 }

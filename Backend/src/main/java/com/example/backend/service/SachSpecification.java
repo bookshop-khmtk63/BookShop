@@ -75,6 +75,7 @@ public class SachSpecification {
                     // Ghi log lỗi chi tiết hơn
                     log.error("Bỏ qua bộ lọc cho key '{}'. Lỗi: {}", key, e.getMessage(), e);
 
+
                 }
             }
 
