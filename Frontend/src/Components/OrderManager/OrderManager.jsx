@@ -1,66 +1,72 @@
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../../Context/Context"; // ⚠️ Đảm bảo đúng đường dẫn
 import "./OrderManager.css";
 
 export default function OrderManager() {
+  const { callApiWithToken } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState(null); // ✅ Modal hiển thị đơn đang chọn
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 6;
 
-  // 🧭 Dữ liệu mẫu
-  useEffect(() => {
-    setTimeout(() => {
-      setOrders([
-        {
-          id: 1,
-          code: "abcd1234",
-          name: "Đơn hàng sách A",
-          status: "DONE",
-          items: [
-            { id: 1, bookName: "Dế Mèn Phiêu Lưu Ký", quantity: 2, price: 75000 },
-            { id: 2, bookName: "Harry Potter", quantity: 1, price: 120000 },
-          ],
-          total: 270000,
-          address: "123 Đường ABC, TP. HCM",
-          customer: "Nguyễn Văn A",
-        },
-        {
-          id: 2,
-          code: "xyz7890",
-          name: "Đơn hàng sách B",
-          status: "PENDING",
-          items: [
-            { id: 3, bookName: "Lão Hạc", quantity: 1, price: 45000 },
-            { id: 4, bookName: "Tắt Đèn", quantity: 3, price: 60000 },
-          ],
-          total: 225000,
-          address: "456 Trần Hưng Đạo, Hà Nội",
-          customer: "Trần Thị B",
-        },
-      ]);
+  // ✅ Lấy danh sách đơn hàng
+  const fetchOrders = async (page = 0) => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await callApiWithToken(
+        `/api/admin/all-order?page=${page}&size=${pageSize}`
+      );
+
+      if (res?.data) {
+        setOrders(res.data);
+        setTotalPages(res.totalPages || 1);
+      } else {
+        throw new Error("Dữ liệu trả về không đúng định dạng!");
+      }
+    } catch (err) {
+      console.error("❌ Lỗi khi lấy danh sách đơn hàng:", err);
+      setError("Không thể tải danh sách đơn hàng. Vui lòng thử lại.");
+    } finally {
       setLoading(false);
-    }, 600);
-  }, []);
-
-  // ✅ Cập nhật trạng thái (demo)
-  const handleStatusChange = (orderId, newStatus) => {
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.id === orderId ? { ...order, status: newStatus } : order
-      )
-    );
+    }
   };
 
-  // ✅ Mở modal
-  const openModal = (order) => {
-    setSelectedOrder(order);
-  };
+  useEffect(() => {
+    fetchOrders(currentPage);
+  }, [currentPage]);
 
-  // ✅ Đóng modal
-  const closeModal = () => {
-    setSelectedOrder(null);
+  // ✅ Mở / Đóng modal chi tiết
+  const openModal = (order) => setSelectedOrder(order);
+  const closeModal = () => setSelectedOrder(null);
+
+  // ✅ Cập nhật trạng thái đơn hàng
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      // Gọi API PATCH thật
+      const res = await callApiWithToken(`/api/admin/${orderId}/status`, {
+        method: "PATCH",
+        data: { newStatus: newStatus },
+      });
+
+      // ✅ Nếu cập nhật thành công thì update UI
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.idOrder === orderId ? { ...order, status: newStatus } : order
+        )
+      );
+
+      console.log(`✅ Cập nhật đơn #${orderId} thành công: ${newStatus}`);
+    } catch (error) {
+      console.error("❌ Lỗi khi đổi trạng thái đơn hàng:", error);
+    }
   };
 
   if (loading) return <p className="loading">⏳ Đang tải đơn hàng...</p>;
+  if (error) return <p className="error">{error}</p>;
 
   return (
     <div className="order-manager">
@@ -72,24 +78,26 @@ export default function OrderManager() {
             <tr>
               <th>STT</th>
               <th>Mã đơn hàng</th>
-              <th>Tên đơn hàng</th>
-              <th>Chi tiết đơn hàng</th>
-              <th>Trạng thái đơn hàng</th>
+              <th>Địa chỉ</th>
+              <th>Tổng tiền</th>
+              <th>Chi tiết</th>
+              <th>Trạng thái</th>
             </tr>
           </thead>
           <tbody>
             {orders.length === 0 ? (
               <tr>
-                <td colSpan="5" style={{ textAlign: "center" }}>
+                <td colSpan="6" style={{ textAlign: "center" }}>
                   😕 Chưa có đơn hàng nào.
                 </td>
               </tr>
             ) : (
               orders.map((order, index) => (
-                <tr key={order.id}>
-                  <td>{index + 1}</td>
-                  <td>{order.code}</td>
-                  <td>{order.name}</td>
+                <tr key={order.idOrder}>
+                  <td>{currentPage * pageSize + index + 1}</td>
+                  <td>#{order.idOrder}</td>
+                  <td>{order.address}</td>
+                  <td>{order.totalPrice.toLocaleString("vi-VN")} ₫</td>
                   <td>
                     <button
                       className="detail-btn"
@@ -102,13 +110,13 @@ export default function OrderManager() {
                     <select
                       value={order.status}
                       onChange={(e) =>
-                        handleStatusChange(order.id, e.target.value)
+                        handleStatusChange(order.idOrder, e.target.value)
                       }
                       className={`status-select ${order.status.toLowerCase()}`}
                     >
-                      <option value="PENDING">Pending</option>
-                      <option value="SHIPPING">Shipping</option>
-                      <option value="DONE">Done</option>
+                      <option value="CHO_XU_LY">CHO_XU_LY</option>
+                      <option value="DANG_GIAO">DANG_GIAO</option>
+                      <option value="HOAN_THANH">HOAN_THANH</option>
                     </select>
                   </td>
                 </tr>
@@ -121,42 +129,49 @@ export default function OrderManager() {
       {/* 🪟 Modal chi tiết đơn hàng */}
       {selectedOrder && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div
-            className="modal-content"
-            onClick={(e) => e.stopPropagation()} // Ngăn tắt khi click bên trong
-          >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>📋 Chi tiết đơn hàng</h3>
-            <p><strong>Mã đơn hàng:</strong> {selectedOrder.code}</p>
-            <p><strong>Khách hàng:</strong> {selectedOrder.customer}</p>
-            <p><strong>Địa chỉ giao hàng:</strong> {selectedOrder.address}</p>
+            <p>
+              <strong>Mã đơn hàng:</strong> #{selectedOrder.idOrder}
+            </p>
+            <p>
+              <strong>Địa chỉ:</strong> {selectedOrder.address}
+            </p>
+            <p>
+              <strong>Tổng tiền:</strong>{" "}
+              {selectedOrder.totalPrice.toLocaleString("vi-VN")} ₫
+            </p>
 
             <table className="modal-table">
               <thead>
                 <tr>
                   <th>#</th>
+                  <th>Ảnh</th>
                   <th>Tên sách</th>
                   <th>Số lượng</th>
-                  <th>Giá</th>
+                  <th>Đơn giá</th>
+                  <th>Thành tiền</th>
                 </tr>
               </thead>
               <tbody>
                 {selectedOrder.items.map((item, i) => (
-                  <tr key={item.id}>
+                  <tr key={item.orderDetailId}>
                     <td>{i + 1}</td>
+                    <td>
+                      <img
+                        src={item.thumbnail}
+                        alt={item.bookName}
+                        className="book-thumb"
+                      />
+                    </td>
                     <td>{item.bookName}</td>
                     <td>{item.quantity}</td>
-                    <td>
-                      {item.price.toLocaleString("vi-VN")} ₫
-                    </td>
+                    <td>{item.unitPrice.toLocaleString("vi-VN")} ₫</td>
+                    <td>{item.linePrice.toLocaleString("vi-VN")} ₫</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-
-            <div className="modal-total">
-              <strong>Tổng tiền:</strong>{" "}
-              {selectedOrder.total.toLocaleString("vi-VN")} ₫
-            </div>
 
             <div className="modal-actions">
               <button onClick={closeModal} className="close-btn">
@@ -166,6 +181,37 @@ export default function OrderManager() {
           </div>
         </div>
       )}
+
+      {/* --- Phân trang --- */}
+      <div className="pagination">
+        <button
+          className="page-btn"
+          onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+          disabled={currentPage === 0}
+        >
+          ❮
+        </button>
+
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i}
+            className={`page-number ${currentPage === i ? "active" : ""}`}
+            onClick={() => setCurrentPage(i)}
+          >
+            {i + 1}
+          </button>
+        ))}
+
+        <button
+          className="page-btn"
+          onClick={() =>
+            setCurrentPage((p) => Math.min(totalPages - 1, p + 1))
+          }
+          disabled={currentPage + 1 === totalPages}
+        >
+          ❯
+        </button>
+      </div>
     </div>
   );
 }

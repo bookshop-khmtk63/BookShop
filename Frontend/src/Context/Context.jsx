@@ -49,22 +49,26 @@ export function AuthProvider({ children }) {
     setIsLoading(false);
   }, []);
 
-  // ==================== Login / Logout ====================
-  const login = (accessToken, userData) => {
+  // ==================== Login ====================
+  const login = (accessToken, userData, refreshToken) => {
     setIsLoggedIn(true);
     setToken(accessToken);
     setUser(userData);
 
+    // ✅ Lưu cả access token và refresh token
     localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refresh_token", refreshToken);
+
     Cookies.set("token", accessToken, {
-      expires: 7,
+      expires: 0.5, // 12 giờ
       secure: true,
-      sameSite: "Strict",
+      sameSite: "None",
     });
 
     console.log("🍪 Token đã lưu:", accessToken);
   };
 
+  // ==================== Logout ====================
   const logout = async () => {
     try {
       await axios.post(`${API_URL}/api/auth/logout`, {}, { withCredentials: true });
@@ -85,7 +89,7 @@ export function AuthProvider({ children }) {
   // ==================== Axios Instance ====================
   const axiosInstance = axios.create({
     baseURL: API_URL,
-    withCredentials: true, // BẮT BUỘC: để gửi cookie refresh_token
+    withCredentials: true,
   });
 
   axiosInstance.interceptors.request.use(
@@ -100,13 +104,44 @@ export function AuthProvider({ children }) {
     (error) => Promise.reject(error)
   );
 
-  // ==================== Refresh Token (chuẩn theo ảnh) ====================
+  // ==================== Refresh Token ====================
+  const refreshAccessToken = async () => {
+    try {
+      const storedRefresh = localStorage.getItem("refresh_token");
+      if (!storedRefresh) throw new Error("Không tìm thấy refresh token!");
+
+      const refreshResponse = await axios.post(
+        `${API_URL}/api/auth/refresh-token`,
+        { refresh_token: storedRefresh }, // 👈 gửi trong body
+        { withCredentials: true }
+      );
+
+      const newAccessToken = refreshResponse.data.access_token;
+      if (!newAccessToken) throw new Error("Không có access token mới!");
+
+      Cookies.set("token", newAccessToken, {
+        expires: 0.5,
+        secure: true,
+        sameSite: "None",
+      });
+      localStorage.setItem("accessToken", newAccessToken);
+      setToken(newAccessToken);
+
+      console.log("✅ Token mới đã được refresh thành công.");
+      return newAccessToken;
+    } catch (error) {
+      console.error("❌ Refresh thất bại:", error);
+      await logout();
+      throw error;
+    }
+  };
+
+  // ==================== Axios Response Interceptor ====================
   axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
       const originalRequest = error.config;
 
-      // Nếu token hết hạn → gọi refresh token
       if (error.response?.status === 401 && !originalRequest._retry) {
         if (originalRequest.url.includes("/auth/refresh-token")) {
           console.warn("🚫 Refresh token 401 — logout.");
@@ -115,44 +150,12 @@ export function AuthProvider({ children }) {
         }
 
         originalRequest._retry = true;
-        console.log("🔄 401 detected → Refreshing token (qua cookie)...");
+        console.log("🔄 401 detected → Refreshing token...");
 
         try {
-          // ✅ Trình duyệt sẽ tự gửi cookie refresh_token
-          const refreshResponse = await axios.post(
-            `${API_URL}/api/auth/refresh-token`,
-            {},
-            { withCredentials: true }
-          );
-
-          // ✅ Backend trả về access_token mới
-          const newAccessToken =
-            refreshResponse.data.access_token ||
-            refreshResponse.data.token ||
-            refreshResponse.data.data?.accessToken;
-
-          if (!newAccessToken) throw new Error("Không có access token mới!");
-
-          // ✅ Cập nhật token
-          Cookies.set("token", newAccessToken, {
-            expires: 7,
-            secure: true,
-            sameSite: "Strict",
-          });
-          localStorage.setItem("accessToken", newAccessToken);
-          setToken(newAccessToken);
-
-          // ✅ Cập nhật lại headers
-          axiosInstance.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${newAccessToken}`;
-          originalRequest.headers[
-            "Authorization"
-          ] = `Bearer ${newAccessToken}`;
-
-          console.log("✅ Token mới đã được refresh thành công.");
-
-          // 🔁 Thử lại request ban đầu
+          const newAccessToken = await refreshAccessToken();
+          axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
+          originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
           return axiosInstance(originalRequest);
         } catch (refreshError) {
           console.error("❌ Refresh thất bại:", refreshError);
@@ -189,34 +192,31 @@ export function AuthProvider({ children }) {
       throw err;
     }
   };
-   // ✅ Lấy tổng số lượng sản phẩm trong giỏ hàng (chuẩn backend)
-const updateCartCount = async () => {
-  if (!token) {
-    setCartCount(0);
-    return;
-  }
 
-  try {
-    const res = await callApiWithToken(`${API_URL}/api/customer/get-cart`);
-
-    // Backend trả { data: { totalQuantity, items: [...] } }
-    const cartData = res?.data || res; // đề phòng backend thay đổi format
-
-    if (cartData?.items !== undefined) {
-      setCartCount(cartData.items.length);
-    } else if (Array.isArray(cartData?.items)) {
-      const total = cartData.items.reduce((sum, i) => sum + (i.quantity || 1), 0);
-      setCartCount(total);
-    } else {
+  // ==================== Lấy tổng sản phẩm giỏ hàng ====================
+  const updateCartCount = async () => {
+    if (!token) {
       setCartCount(0);
+      return;
     }
 
-  } catch (error) {
-    console.error("❌ Không thể lấy giỏ hàng:", error);
-    setCartCount(0);
-  }
-};
+    try {
+      const res = await callApiWithToken(`${API_URL}/api/customer/get-cart`);
+      const cartData = res?.data || res;
 
+      if (cartData?.items !== undefined) {
+        setCartCount(cartData.items.length);
+      } else if (Array.isArray(cartData?.items)) {
+        const total = cartData.items.reduce((sum, i) => sum + (i.quantity || 1), 0);
+        setCartCount(total);
+      } else {
+        setCartCount(0);
+      }
+    } catch (error) {
+      console.error("❌ Không thể lấy giỏ hàng:", error);
+      setCartCount(0);
+    }
+  };
 
   // ==================== Provider ====================
   return (

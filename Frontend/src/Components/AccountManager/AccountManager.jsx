@@ -1,84 +1,81 @@
 import React, { useEffect, useState } from "react";
 import { FaLock, FaUnlock } from "react-icons/fa";
+import { useAuth } from "../../Context/Context";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./AccountManager.css";
 
 export default function AccountManager() {
+  const { callApiWithToken } = useAuth();
+
   const [accounts, setAccounts] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const itemsPerPage = 8;
 
-  // 🔹 Dữ liệu mẫu (sau này có thể thay bằng API thật)
-  const mockData = [
-    {
-      id: 1,
-      name: "Nguyễn Tuấn",
-      email: "tuan@gmail.com",
-      phone: "0987654321",
-      address: "123 Nguyễn Trãi, Hà Nội",
-      active: true,
-    },
-    {
-      id: 2,
-      name: "Lê Minh",
-      email: "minh@yahoo.com",
-      phone: "0912345678",
-      address: "456 Lê Lợi, TP.HCM",
-      active: false,
-    },
-    {
-      id: 3,
-      name: "Trần Hoa",
-      email: "hoa@gmail.com",
-      phone: "0909999999",
-      address: "789 Hai Bà Trưng, Đà Nẵng",
-      active: true,
-    },
-    {
-      id: 4,
-      name: "Phạm Duy",
-      email: "duy@gmail.com",
-      phone: "0912121212",
-      address: "Tân Bình, TP.HCM",
-      active: true,
-    },
-    {
-      id: 5,
-      name: "Ngô Huy",
-      email: "huy@gmail.com",
-      phone: "0988123456",
-      address: "Cầu Giấy, Hà Nội",
-      active: false,
-    },
-    {
-      id: 6,
-      name: "Trịnh Hà",
-      email: "ha@gmail.com",
-      phone: "0909090909",
-      address: "Quảng Nam",
-      active: true,
-    },
-  ];
-
+  // 🔹 Gọi API lấy danh sách người dùng
+  const fetchAccounts = async (page = 0) => {
+    setLoading(true);
+    try {
+      const res = await callApiWithToken(
+        `/api/admin/get-all-user?page=${page}&size=${itemsPerPage}`
+      );
+  
+      // ✅ callApiWithToken() trả về trực tiếp phần "data" nên không cần .data.data
+      const pageData = res;
+      if (pageData && Array.isArray(pageData.data)) {
+        console.log("✅ Dữ liệu user:", pageData.data);
+        setAccounts(pageData.data);
+        setTotalPages(pageData.totalPages || 1);
+      } else {
+        console.error("⚠️ Sai format dữ liệu:", res);
+        toast.error("Lỗi định dạng dữ liệu người dùng!");
+      }
+    } catch (err) {
+      console.error("❌ Lỗi khi gọi API người dùng:", err);
+      toast.error("Không thể tải danh sách tài khoản!");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   useEffect(() => {
-    setAccounts(mockData);
-  }, []);
+    fetchAccounts(currentPage);
+  }, [currentPage]);
 
-  // 🔹 Tính toán phân trang
-  const totalPages = Math.ceil(accounts.length / itemsPerPage);
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const currentData = accounts.slice(startIdx, startIdx + itemsPerPage);
+  // 🔹 Khóa / Mở khóa tài khoản
+  const toggleAccountStatus = async (id, isLocked) => {
+    try {
+      const endpoint = isLocked
+        ? `/api/admin/unlock/${id}` // đang bị khóa thì mở khóa
+        : `/api/admin/locked/${id}`; // đang mở thì khóa lại
 
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+      const res = await callApiWithToken(endpoint, { method: "PUT" });
+
+      const message =
+        res?.data?.message ||
+        (isLocked
+          ? "Mở khóa tài khoản thành công!"
+          : "Khóa tài khoản thành công!");
+
+      toast.success(message);
+
+      // ✅ Cập nhật giao diện ngay lập tức
+      setAccounts((prev) =>
+        prev.map((acc) =>
+          acc.id === id ? { ...acc, locked: !isLocked } : acc
+        )
+      );
+    } catch (error) {
+      console.error("❌ Lỗi khi đổi trạng thái tài khoản:", error);
+      toast.error("Không thể thay đổi trạng thái tài khoản!");
+    }
   };
 
-  // 🔹 Khóa/Mở khóa tài khoản
-  const toggleAccountStatus = (id) => {
-    setAccounts((prev) =>
-      prev.map((acc) =>
-        acc.id === id ? { ...acc, active: !acc.active } : acc
-      )
-    );
+  // 🔹 Chuyển trang
+  const handlePageChange = (page) => {
+    if (page >= 0 && page < totalPages) setCurrentPage(page);
   };
 
   return (
@@ -86,49 +83,70 @@ export default function AccountManager() {
       <h2 className="page-title">📋 Danh sách tài khoản</h2>
 
       <div className="table-wrapper">
-        <table className="account-table">
-          <thead>
-            <tr>
-              <th>STT</th>
-              <th>Tên người dùng</th>
-              <th>Email</th>
-              <th>SĐT</th>
-              <th>Địa chỉ</th>
-              <th>Trạng thái tài khoản</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentData.length === 0 ? (
+        {loading ? (
+          <p style={{ textAlign: "center" }}>⏳ Đang tải dữ liệu...</p>
+        ) : (
+          <table className="account-table">
+            <thead>
               <tr>
-                <td colSpan="6" style={{ textAlign: "center" }}>
-                  😕 Không có tài khoản nào.
-                </td>
+                <th>STT</th>
+                <th>Tên người dùng</th>
+                <th>Email</th>
+                <th>Ngày đăng kí</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
               </tr>
-            ) : (
-              currentData.map((acc, index) => (
-                <tr key={acc.id}>
-                  <td>{startIdx + index + 1}</td>
-                  <td>{acc.name}</td>
-                  <td>{acc.email}</td>
-                  <td>{acc.phone}</td>
-                  <td>{acc.address}</td>
-                  <td>
-                    <button
-                      className="status-btn"
-                      onClick={() => toggleAccountStatus(acc.id)}
-                    >
-                      {acc.active ? (
-                        <FaUnlock className="unlock" />
-                      ) : (
-                        <FaLock className="lock" />
-                      )}
-                    </button>
+            </thead>
+            <tbody>
+              {accounts.length === 0 ? (
+                <tr>
+                  <td colSpan="6" style={{ textAlign: "center" }}>
+                    😕 Không có tài khoản nào.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                accounts.map((acc, index) => (
+                  <tr key={acc.id}>
+                    <td>{currentPage * itemsPerPage + index + 1}</td>
+                    <td>{acc.username}</td>
+                    <td>{acc.email}</td>
+                    <td>{acc.expiration || "Không rõ"}</td>
+                    <td>
+                      {acc.locked ? (
+                        <span className="status-inactive">Đã khóa</span>
+                      ) : acc.active ? (
+                        <span className="status-active">Hoạt động</span>
+                      ) : (
+                        <span className="status-inactive">
+                          Không hoạt động
+                        </span>
+                      )}
+                    </td>
+                    <td>
+  <button
+    className="status-btn"
+    onClick={() => toggleAccountStatus(acc.id, acc.locked)}
+  >
+    {acc.locked ? (
+      <FaLock
+        className="lock"
+        title="Tài khoản đã bị khóa"
+      />
+    ) : (
+      <FaUnlock
+        className="unlock"
+        title="Tài khoản đang hoạt động"
+      />
+    )}
+  </button>
+</td>
+
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
 
       {/* --- Phân trang --- */}
@@ -136,25 +154,25 @@ export default function AccountManager() {
         <button
           className="page-btn"
           onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
+          disabled={currentPage === 0}
         >
           ❮
         </button>
+
         {Array.from({ length: totalPages }, (_, i) => (
           <button
             key={i}
-            className={`page-number ${
-              currentPage === i + 1 ? "active" : ""
-            }`}
-            onClick={() => handlePageChange(i + 1)}
+            className={`page-number ${currentPage === i ? "active" : ""}`}
+            onClick={() => handlePageChange(i)}
           >
             {i + 1}
           </button>
         ))}
+
         <button
           className="page-btn"
           onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
+          disabled={currentPage + 1 === totalPages}
         >
           ❯
         </button>
