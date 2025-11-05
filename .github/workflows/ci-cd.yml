@@ -23,7 +23,7 @@ jobs:
         id: build_front
         run: |
           echo "🧱 Building FRONTEND Docker image..."
-          docker build -f Dockerfile.front -t myapp-frontend:latest Frontend
+          docker build -f Frontend/Dockerfile.front -t myapp-frontend:latest Frontend
 
       - name: Deploy Frontend to Render (only if build succeeded)
         if: github.ref_name == 'frontend' && success()
