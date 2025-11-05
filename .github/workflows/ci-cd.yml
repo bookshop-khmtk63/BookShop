@@ -1,0 +1,48 @@
+name: CI/CD to Render (Front & Back)
+
+on:
+  push:
+    branches:
+      - frontend
+      - backend
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ========== FRONTEND ==========
+      - name: Build Frontend Docker image
+        if: github.ref_name == 'frontend'
+        id: build_front
+        run: |
+          echo "🧱 Building FRONTEND Docker image..."
+          docker build -f Front/Dockerfile.front -t myapp-frontend:latest Front
+
+      - name: Deploy Frontend to Render (only if build succeeded)
+        if: github.ref_name == 'frontend' && success()
+        run: |
+          echo "🚀 Triggering Render deploy (frontend)..."
+          curl -X POST ${{ secrets.RENDER_DEPLOY_FRONT_URL }}
+          echo "✅ Render frontend deployment triggered!"
+
+      # ========== BACKEND ==========
+      - name: Build Backend Docker image
+        if: github.ref_name == 'backend'
+        id: build_back
+        run: |
+          echo "🧱 Building BACKEND Docker image..."
+          docker build -f Backend/Dockerfile -t myapp-backend:latest Backend
+
+      - name: Deploy Backend to Render (only if build succeeded)
+        if: github.ref_name == 'backend' && success()
+        run: |
+          echo "🚀 Triggering Render deploy (backend)..."
+          curl -X POST ${{ secrets.RENDER_DEPLOY_BACK_URL }}
+          echo "✅ Render backend deployment triggered!"
