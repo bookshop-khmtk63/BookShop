@@ -46,7 +46,6 @@ export default function OrderManager() {
   // ✅ Cập nhật trạng thái đơn hàng
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      // Gọi API PATCH thật
       const res = await callApiWithToken(`/api/admin/${orderId}/status`, {
         method: "PATCH",
         data: { newStatus: newStatus },
@@ -107,18 +106,31 @@ export default function OrderManager() {
                     </button>
                   </td>
                   <td>
-                  <select
-  value={order.status}
-  onChange={(e) =>
-    handleStatusChange(order.idOrder, e.target.value)
-  }
-  disabled={order.status === "HOAN_THANH"}
-  className={`status-select ${order.status.toLowerCase()}`}
->
+                    <select
+                      value={order.status}
+                      onChange={(e) =>
+                        handleStatusChange(order.idOrder, e.target.value)
+                      }
+                      disabled={order.status === "HOAN_THANH"}
+                      className={`status-select ${order.status.toLowerCase()}`}
+                    >
+                      {order.status === "CHO_XU_LY" && (
+                        <>
+                          <option value="CHO_XU_LY">CHO_XU_LY</option>
+                          <option value="DANG_GIAO">DANG_GIAO</option>
+                        </>
+                      )}
 
-                      <option value="CHO_XU_LY">CHO_XU_LY</option>
-                      <option value="DANG_GIAO">DANG_GIAO</option>
-                      <option value="HOAN_THANH">HOAN_THANH</option>
+                      {order.status === "DANG_GIAO" && (
+                        <>
+                          <option value="DANG_GIAO">DANG_GIAO</option>
+                          <option value="HOAN_THANH">HOAN_THANH</option>
+                        </>
+                      )}
+
+                      {order.status === "HOAN_THANH" && (
+                        <option value="HOAN_THANH">HOAN_THANH</option>
+                      )}
                     </select>
                   </td>
                 </tr>
