@@ -107,13 +107,15 @@ export default function OrderManager() {
                     </button>
                   </td>
                   <td>
-                    <select
-                      value={order.status}
-                      onChange={(e) =>
-                        handleStatusChange(order.idOrder, e.target.value)
-                      }
-                      className={`status-select ${order.status.toLowerCase()}`}
-                    >
+                  <select
+  value={order.status}
+  onChange={(e) =>
+    handleStatusChange(order.idOrder, e.target.value)
+  }
+  disabled={order.status === "HOAN_THANH"}
+  className={`status-select ${order.status.toLowerCase()}`}
+>
+
                       <option value="CHO_XU_LY">CHO_XU_LY</option>
                       <option value="DANG_GIAO">DANG_GIAO</option>
                       <option value="HOAN_THANH">HOAN_THANH</option>
