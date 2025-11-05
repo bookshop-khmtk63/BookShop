@@ -23,7 +23,7 @@ jobs:
         id: build_front
         run: |
           echo "🧱 Building FRONTEND Docker image..."
-          docker build -f Front/Dockerfile.front -t myapp-frontend:latest Front
+          docker build -f Front/Dockerfile.front -t myapp-frontend:latest Frontend
 
       - name: Deploy Frontend to Render (only if build succeeded)
         if: github.ref_name == 'frontend' && success()
@@ -38,7 +38,7 @@ jobs:
         id: build_back
         run: |
           echo "🧱 Building BACKEND Docker image..."
-          docker build -f Backend/Dockerfile -t myapp-backend:latest Backend
+          docker build -t myapp-backend:latest Backend
 
       - name: Deploy Backend to Render (only if build succeeded)
         if: github.ref_name == 'backend' && success()
