@@ -38,7 +38,7 @@ jobs:
         id: build_back
         run: |
           echo "🧱 Building BACKEND Docker image..."
-          docker build -t myapp-backend:latest Backend
+          docker build -f Backend/Dockerfile -t myapp-backend:latest Backend
 
       - name: Deploy Backend to Render (only if build succeeded)
         if: github.ref_name == 'backend' && success()
