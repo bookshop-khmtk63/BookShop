@@ -12,6 +12,7 @@ export function AuthProvider({ children }) {
   const [user, setUserState] = useState(null);
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUserReady, setIsUserReady] = useState(false); // 🧠 Trạng thái riêng cho user
   const [cartCount, setCartCount] = useState(0);
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -28,44 +29,82 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // ==================== Lấy thông tin người dùng ====================
+  const fetchUserInfo = async () => {
+    try {
+      const currentToken = Cookies.get("token") || localStorage.getItem("accessToken");
+      if (!currentToken) {
+        setIsUserReady(true);
+        return;
+      }
+
+      const res = await axios.get(`${API_URL}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${currentToken}` },
+        withCredentials: true,
+      });
+
+      if (res.data?.data) {
+        setUser(res.data.data);
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+        setUser(null);
+      }
+    } catch (err) {
+      console.error("⚠️ Không thể tải thông tin người dùng:", err);
+      setIsLoggedIn(false);
+      setUser(null);
+      Cookies.remove("token");
+    } finally {
+      setIsUserReady(true);
+    }
+  };
+
+  // ==================== Khởi tạo context khi app load ====================
   useEffect(() => {
-    const storedToken =
-      Cookies.get("token") || localStorage.getItem("accessToken");
+    const storedToken = Cookies.get("token") || localStorage.getItem("accessToken");
     const storedUser = Cookies.get("user") || localStorage.getItem("user");
 
-    if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUserState(JSON.parse(storedUser));
-        setIsLoggedIn(true);
-      } catch (err) {
-        console.error("❌ Lỗi khi parse user:", err);
-        localStorage.clear();
-        Cookies.remove("token");
-        Cookies.remove("user");
+    if (storedToken) {
+      setToken(storedToken);
+      setIsLoggedIn(true);
+
+      if (storedUser) {
+        try {
+          setUserState(JSON.parse(storedUser));
+        } catch (err) {
+          console.error("❌ Lỗi parse user:", err);
+        }
       }
+
+      // 🔁 Luôn tải lại user mới nhất từ server
+      fetchUserInfo();
+    } else {
+      setIsLoggedIn(false);
+      setUser(null);
+      setIsUserReady(true);
     }
 
     setIsLoading(false);
   }, []);
 
   // ==================== Login ====================
-  const login = (accessToken, userData, refreshToken) => {
+  const login = async (accessToken, userData, refreshToken) => {
     setIsLoggedIn(true);
     setToken(accessToken);
     setUser(userData);
 
-    // ✅ Lưu cả access token và refresh token
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refresh_token", refreshToken);
 
     Cookies.set("token", accessToken, {
-      expires: 0.5, // 12 giờ
+      expires: 0.5, // 12h
       secure: true,
       sameSite: "None",
     });
 
     console.log("🍪 Token đã lưu:", accessToken);
+    await fetchUserInfo(); // ✅ Gọi ngay sau đăng nhập
   };
 
   // ==================== Logout ====================
@@ -94,8 +133,7 @@ export function AuthProvider({ children }) {
 
   axiosInstance.interceptors.request.use(
     (config) => {
-      const currentToken =
-        Cookies.get("token") || localStorage.getItem("accessToken");
+      const currentToken = Cookies.get("token") || localStorage.getItem("accessToken");
       if (currentToken) {
         config.headers["Authorization"] = `Bearer ${currentToken}`;
       }
@@ -112,7 +150,7 @@ export function AuthProvider({ children }) {
 
       const refreshResponse = await axios.post(
         `${API_URL}/api/auth/refresh-token`,
-        { refresh_token: storedRefresh }, // 👈 gửi trong body
+        { refresh_token: storedRefresh },
         { withCredentials: true }
       );
 
@@ -171,8 +209,7 @@ export function AuthProvider({ children }) {
   // ==================== API Call Wrapper ====================
   const callApiWithToken = async (endpoint, options = {}) => {
     try {
-      const currentToken =
-        Cookies.get("token") || localStorage.getItem("accessToken");
+      const currentToken = Cookies.get("token") || localStorage.getItem("accessToken");
       const response = await axiosInstance({
         url: endpoint,
         method: options.method || "GET",
@@ -204,9 +241,7 @@ export function AuthProvider({ children }) {
       const res = await callApiWithToken(`${API_URL}/api/customer/get-cart`);
       const cartData = res?.data || res;
 
-      if (cartData?.items !== undefined) {
-        setCartCount(cartData.items.length);
-      } else if (Array.isArray(cartData?.items)) {
+      if (Array.isArray(cartData?.items)) {
         const total = cartData.items.reduce((sum, i) => sum + (i.quantity || 1), 0);
         setCartCount(total);
       } else {
@@ -230,6 +265,7 @@ export function AuthProvider({ children }) {
         callApiWithToken,
         setUser,
         isLoading,
+        isUserReady, // 🧠 Cho phép biết khi user đã sẵn sàng
         cartCount,
         setCartCount,
         updateCartCount,
