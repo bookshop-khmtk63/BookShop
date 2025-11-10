@@ -48,54 +48,35 @@ export default function Cart() {
     if (newQuantity < 0) return;
     try {
       setUpdatingItemId(cartItemId);
-
-      // ⚠️ Nếu vượt kho
+  
       if (stock && newQuantity > stock) {
         setPopup({ message: `⚠️ Chỉ còn ${stock} sản phẩm trong kho!`, type: "warn" });
         setTimeout(() => setPopup(null), 1500);
         return;
       }
-
-      // 🗑️ Nếu = 0 thì xóa
+  
       if (newQuantity === 0) {
         await callApiWithToken(`${API_URL}/api/customer/cart-item`, {
           method: "DELETE",
           data: { cartItemIds: [cartItemId] },
         });
-        setCart((prev) => ({
-          ...prev,
-          items: prev.items.filter((i) => i.idCartItem !== cartItemId),
-        }));
-        updateCartCount((prev) => Math.max(prev - 1, 0));
         return;
       }
-
-      // ✅ Cập nhật backend
+  
       await callApiWithToken(`${API_URL}/api/customer/update-Cart-item/${cartItemId}`, {
         method: "POST",
         data: { quantity: newQuantity },
       });
-
-      // ✅ Cập nhật UI
-      setCart((prevCart) => ({
-        ...prevCart,
-        items: prevCart.items.map((i) =>
-          i.idCartItem === cartItemId ? { ...i, quantity: newQuantity } : i
-        ),
-      }));
-
-      const total = cart.items.reduce(
-        (sum, i) =>
-          i.idCartItem === cartItemId ? sum + newQuantity : sum + i.quantity,
-        0
-      );
-      updateCartCount(total);
+  
+      // ✅ Gọi lại API để đồng bộ dữ liệu và cập nhật icon
+      await fetchCart();
     } catch (err) {
       console.error("❌ Lỗi khi cập nhật số lượng:", err);
     } finally {
       setUpdatingItemId(null);
     }
   };
+  
 
   // 🗑️ Xóa sản phẩm
   const deleteItem = async (cartItemId) => {
@@ -104,11 +85,10 @@ export default function Cart() {
         method: "DELETE",
         data: { cartItemIds: [cartItemId] },
       });
-      setCart((prev) => ({
-        ...prev,
-        items: prev.items.filter((i) => i.idCartItem !== cartItemId),
-      }));
-      updateCartCount((prev) => Math.max(prev - 1, 0));
+  
+      // ✅ Tự động cập nhật lại giỏ hàng và icon
+      await fetchCart();
+  
       setPopup({ message: "🗑️ Đã xóa sản phẩm khỏi giỏ hàng!", type: "success" });
     } catch (err) {
       console.error("❌ Lỗi khi xóa sản phẩm:", err);
@@ -117,8 +97,8 @@ export default function Cart() {
       setTimeout(() => setPopup(null), 1500);
     }
   };
-
-  // ⚙️ Kiểm tra thông tin người dùng trước thanh toán
+  
+  //  Kiểm tra thông tin người dùng trước thanh toán
   const validateUserInfo = () => {
     if (!user) {
       setPopup({
@@ -161,12 +141,11 @@ export default function Cart() {
   // 💳 Thanh toán
   const handlePayOrder = async () => {
     if (!validateUserInfo()) return;
-
+  
     try {
       await callApiWithToken(`${API_URL}/api/customer/pay-order`, { method: "POST" });
-      setCart({ items: [] });
-      updateCartCount(0);
-
+  
+      await fetchCart(); // ✅ làm mới giỏ hàng và icon
       setPopup({
         message: "✅ Thanh toán thành công! Đơn hàng đang được xử lý.",
         type: "success",
@@ -181,6 +160,7 @@ export default function Cart() {
       setTimeout(() => setPopup(null), 2000);
     }
   };
+  
 
   // 🧮 Loading / Error
   if (!isUserReady) return <div className="cart-loading">Đang tải thông tin người dùng...</div>;

@@ -12,12 +12,12 @@ export function AuthProvider({ children }) {
   const [user, setUserState] = useState(null);
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isUserReady, setIsUserReady] = useState(false); // 🧠 Trạng thái riêng cho user
+  const [isUserReady, setIsUserReady] = useState(false);
   const [cartCount, setCartCount] = useState(0);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // ==================== Helpers ====================
+  // ==================== Helper ====================
   const setUser = (userData) => {
     setUserState(userData);
     if (userData) {
@@ -60,7 +60,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // ==================== Khởi tạo context khi app load ====================
+  // ==================== Khởi tạo khi load app ====================
   useEffect(() => {
     const storedToken = Cookies.get("token") || localStorage.getItem("accessToken");
     const storedUser = Cookies.get("user") || localStorage.getItem("user");
@@ -98,13 +98,13 @@ export function AuthProvider({ children }) {
     localStorage.setItem("refresh_token", refreshToken);
 
     Cookies.set("token", accessToken, {
-      expires: 0.5, // 12h
+      expires: 0.5, // 12 giờ
       secure: true,
       sameSite: "None",
     });
 
     console.log("🍪 Token đã lưu:", accessToken);
-    await fetchUserInfo(); // ✅ Gọi ngay sau đăng nhập
+    await fetchUserInfo();
   };
 
   // ==================== Logout ====================
@@ -118,6 +118,7 @@ export function AuthProvider({ children }) {
     setIsLoggedIn(false);
     setToken(null);
     setUser(null);
+    setCartCount(0);
     localStorage.clear();
     Cookies.remove("token");
     Cookies.remove("refresh_token");
@@ -206,7 +207,7 @@ export function AuthProvider({ children }) {
     }
   );
 
-  // ==================== API Call Wrapper ====================
+  // ==================== API Wrapper ====================
   const callApiWithToken = async (endpoint, options = {}) => {
     try {
       const currentToken = Cookies.get("token") || localStorage.getItem("accessToken");
@@ -230,8 +231,15 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // ==================== Lấy tổng sản phẩm giỏ hàng ====================
-  const updateCartCount = async () => {
+  // ==================== Cập nhật số lượng giỏ hàng ====================
+  const updateCartCount = async (newCount) => {
+    // ✅ Nếu đã biết tổng mới (ví dụ từ Cart.jsx)
+    if (typeof newCount === "number") {
+      setCartCount(newCount);
+      return;
+    }
+
+    // 🔁 Nếu chưa biết → gọi API để lấy
     if (!token) {
       setCartCount(0);
       return;
@@ -265,7 +273,7 @@ export function AuthProvider({ children }) {
         callApiWithToken,
         setUser,
         isLoading,
-        isUserReady, // 🧠 Cho phép biết khi user đã sẵn sàng
+        isUserReady,
         cartCount,
         setCartCount,
         updateCartCount,
