@@ -40,7 +40,7 @@ public enum ErrorCode {
     USER_UNLOCKER(2028,"Taì khoản không bị khóa" ,HttpStatus.BAD_REQUEST ),
     REVIEW_NOT_FOUND(2029,"Không tìm thấy đánh giá" ,HttpStatus.NOT_FOUND ),
     RESOURCE_NOT_FOUND(2030,"không tìm thấy enpoin được yêu cầu " ,HttpStatus.NOT_FOUND ),
-    INVALID_STATUS_UPDATE(2031,"Trangj thái update đơn hàng không hợp lệ" ,HttpStatus.BAD_REQUEST ),
+    INVALID_STATUS_UPDATE(2031,"Trạng thái update đơn hàng không hợp lệ" ,HttpStatus.BAD_REQUEST ),
     STATUS_UPDATE_NOT_ALLOWED(2032," Không thể thay đổi trạng thái của đơn hàng đã hoàn thành hoặc đã hủy.",HttpStatus.BAD_REQUEST ),;
     private final int code;
     private final String message;

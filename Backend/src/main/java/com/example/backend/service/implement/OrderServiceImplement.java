@@ -5,7 +5,9 @@ import com.example.backend.dto.response.*;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.mapper.OrderMapper;
+import com.example.backend.model.Book;
 import com.example.backend.model.DonHang;
+import com.example.backend.model.DonHangChiTiet;
 import com.example.backend.model.KhachHang;
 import com.example.backend.repository.DonHangChiTietRepository;
 import com.example.backend.repository.DonHangRepository;
@@ -123,8 +125,19 @@ public class OrderServiceImplement implements OrderService {
         if(status==TrangThaiDonHang.HOAN_THANH || status==TrangThaiDonHang.DA_HUY){
             throw new AppException(ErrorCode.STATUS_UPDATE_NOT_ALLOWED);
         }
+        if (newStatus == TrangThaiDonHang.DA_HUY) {
+            for (DonHangChiTiet detail : order.getChiTietDonHang()) {
+                Book book = detail.getSach();
+                int returnedQuantity = detail.getSoLuong();
+
+                // Cộng lại số lượng vào kho
+                book.setSoLuong(book.getSoLuong() + returnedQuantity);
+
+            }
+        }
         order.setTrangThai(newStatus);
         DonHang updatedOrder = orderRepository.save(order);
+
         return orderMapper.toOrderDetailResponse(updatedOrder);
     }
 
