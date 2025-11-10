@@ -27,7 +27,7 @@ public enum ErrorCode {
     EMAIL_SEND_FAILURE(2016,"Không gửi được gmail" ,HttpStatus.BAD_REQUEST),
     CATEGORY_NOT_FOUND(2017,"Không tìm thấy thể loại" ,HttpStatus.NOT_FOUND ),
     FILE_UPLOAD_ERROR(2018,"Lỗi upload file" ,HttpStatus.BAD_REQUEST ),
-    AUTHOR_NOT_FOUND(2019,"Không thìm thấy tác giả" ,HttpStatus.NOT_FOUND ),
+    AUTHOR_NOT_FOUND(2019,"Không tìm thấy tác giả" ,HttpStatus.NOT_FOUND ),
     NOT_FOUND_ORDER_ID(2020,"Khồng tim thấy đơn hàng",HttpStatus.NOT_FOUND ),
     BOOK_NOT_PURCHASE_AND_RECEIVED(2021,"Không tìm thấy sách trạng thái đã giao trong đơn hàng" ,HttpStatus.NOT_FOUND ),
     REVIEW_ALREADY_EXISTS(2022,"Đơn hàng đã được đánh giá" ,HttpStatus.CONFLICT ),
@@ -36,7 +36,7 @@ public enum ErrorCode {
     ITEM_NOT_FOUND(2025,"Không tìm thấy sản phẩm trong giỏ hàng" ,HttpStatus.NOT_FOUND ),
 
     ADDRESS_REQUIRED(2026,"Bạn chưa cập nhạt địa chỉ" ,HttpStatus.BAD_REQUEST ),
-    PHONE_NUMBER_REQUIED(2027,"Banj chưa cập nhật sdt" ,HttpStatus.BAD_REQUEST ),
+    PHONE_NUMBER_REQUIED(2027,"Bạn chưa cập nhật sdt" ,HttpStatus.BAD_REQUEST ),
     USER_UNLOCKER(2028,"Taì khoản không bị khóa" ,HttpStatus.BAD_REQUEST ),
     REVIEW_NOT_FOUND(2029,"Không tìm thấy đánh giá" ,HttpStatus.NOT_FOUND ),
     RESOURCE_NOT_FOUND(2030,"không tìm thấy enpoin được yêu cầu " ,HttpStatus.NOT_FOUND ),
