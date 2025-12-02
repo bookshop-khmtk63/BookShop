@@ -47,7 +47,12 @@ export default function Login() {
       // Nếu login thành công
       const { accessToken, email: userEmail, role } = data.data;
       login(accessToken, { email: userEmail, role });
-      navigate("/");
+      if (role === "ADMIN") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
+      
     } catch (err) {
       console.error("❌ Lỗi fetch:", err);
       setError("Không thể kết nối tới server!");

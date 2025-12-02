@@ -208,13 +208,7 @@ export default function AuthPassword() {
                     {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                   </span>
                 </div>
-                <button type="submit" className="submit-btn" disabled={loading}>
-                  {loading ? "Đang đặt lại..." : "Đặt lại mật khẩu"}
-                </button>
-              </form>
-
-              {/* ✅ danh sách rule */}
-              <ul className="password-rules">
+                <ul className="password-rules">
                 <li className={passwordChecks.length ? "valid" : "invalid"}>Ít nhất 8 ký tự</li>
                 <li className={passwordChecks.lowercase ? "valid" : "invalid"}>Có chữ thường (a-z)</li>
                 <li className={passwordChecks.uppercase ? "valid" : "invalid"}>Có chữ hoa (A-Z)</li>
@@ -222,6 +216,13 @@ export default function AuthPassword() {
                 <li className={passwordChecks.special ? "valid" : "invalid"}>Có ký tự đặc biệt (@#$%^&+=!)</li>
                 <li className={passwordChecks.noSpace ? "valid" : "invalid"}>Không chứa khoảng trắng</li>
               </ul>
+                <button type="submit" className="submit-btn" disabled={loading}>
+                  {loading ? "Đang đặt lại..." : "Đặt lại mật khẩu"}
+                </button>
+              </form>
+
+              {/* ✅ danh sách rule */}
+              
             </>
           )}
 

@@ -71,29 +71,53 @@
     gap: 8px;
   }
   
-  .quantity {
-    display: flex;
-    align-items: center;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  .quantity button {
-    background: #f0f0f0;
-    border: none;
-    padding: 4px 8px;
-    cursor: pointer;
-    font-size: 12px;
-  }
-  
-  .quantity input {
-    width: 32px;
-    text-align: center;
-    border: none;
-    outline: none;
-    font-size: 12px;
-  }
-  
+  /* Ô chứa số lượng */
+.quantity {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* Nút - và + */
+.quantity button {
+  border: none;
+  padding: 6px 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Nút trừ (-) */
+.quantity button:first-child {
+  background-color: #f0f0f0;
+  color: black;
+}
+.quantity button:first-child:hover {
+  background-color: #d97706;
+}
+
+/* ✅ Nút cộng (+) — màu cam nổi bật */
+.quantity button:last-child {
+  background-color: #f0f0f0;
+  color: black;
+}
+.quantity button:last-child:hover {
+  background-color: #d97706;
+}
+
+/* Ô input */
+.quantity input {
+  width: 40px;
+  text-align: center;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background-color: white;
+}
+
   .add-to-cart {
     background: #f59e0b;
     color: white;
@@ -204,6 +228,34 @@
 .review-form button:hover {
   background-color: #005fcc;
 }
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.pagination button {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #f0f0f0;
+}
+
+.pagination button:disabled {
+  background: #fafafa;
+  color: #b0b0b0;
+  border-color: #eee;
+  cursor: not-allowed;
+}
 
 /* Responsive nhỏ */
 @media (max-width: 768px) {
@@ -232,4 +284,43 @@
     font-size: 14px;
     cursor: pointer;
   }
-  
+  /* 🔔 Thông báo hiển thị dưới nút */
+.inline-message {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  width: fit-content;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.inline-message.success {
+  color: #065f46;
+  background-color: #d1fae5;
+  border: 1px solid #10b981;
+}
+
+.inline-message.error {
+  color: #991b1b;
+  background-color: #fee2e2;
+  border: 1px solid #ef4444;
+}
+
+.inline-message.warn {
+  color: #92400e;
+  background-color: #fef3c7;
+  border: 1px solid #f59e0b;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
