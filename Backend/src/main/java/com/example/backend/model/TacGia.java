@@ -29,7 +29,7 @@ public class TacGia {
     private String quocTich;
     @OneToMany(mappedBy = "tacGia",cascade = CascadeType.ALL,orphanRemoval = false,fetch = FetchType.LAZY)
     @ToString.Exclude
-    private Set<Sach> sach=new HashSet<>();
+    private Set<Book> sach=new HashSet<>();
 
     @Override
     public final boolean equals(Object o) {

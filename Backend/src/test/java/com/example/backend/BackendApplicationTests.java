@@ -1,15 +1,16 @@
 package com.example.backend;
 
-import com.example.backend.common.EventType;
+import com.example.backend.common.PhuongThucThanhToan;
 import com.example.backend.common.Role;
 //import com.example.backend.event.BookSyncEvent;
+import com.example.backend.common.TrangThaiDonHang;
 import com.example.backend.mapper.BookMapper;
 import com.example.backend.model.*;
 import com.example.backend.repository.*;
 //import com.example.backend.service.KafkaProducerService;
 import com.github.javafaker.Faker;
-import lombok.RequiredArgsConstructor;
 //import org.apache.kafka.clients.producer.KafkaProducer;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +18,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootTest
 class BackendApplicationTests {
@@ -53,6 +58,8 @@ class BackendApplicationTests {
     //private BookElasticsearchRepository bookElasticsearchRepository;
     private final Faker faker = new Faker();
 
+    @Autowired
+    private DonHangRepository donHangRepository;
     @Test
     @Order(1) // Chạy đầu tiên
     void generate_fake_the_loai() {
@@ -79,7 +86,7 @@ class BackendApplicationTests {
     @Order(2) // Chạy thứ hai
     void generate_fake_khach_hang() {
         System.out.println("Generating customers...");
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 10; i++) {
             String email;
             do {
                 email = faker.internet().emailAddress();
@@ -117,7 +124,7 @@ class BackendApplicationTests {
             return;
         }
 
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 50; i++) {
             String tenSach = faker.book().title();
             String tenTacGia = faker.book().author();
 
@@ -125,7 +132,7 @@ class BackendApplicationTests {
             int categoryCount = faker.number().numberBetween(1, 4);
             Set<TheLoai> danhSachTheLoai = new HashSet<>(allTheLoai.subList(0, Math.min(categoryCount, allTheLoai.size())));
             TacGia randomTacGia = allTacGia.get(faker.number().numberBetween(0, allTacGia.size()));
-            Sach sachToSave = Sach.builder()
+            Book sachToSave = Book.builder()
                     .tenSach(tenSach)
                     .gia(new BigDecimal(faker.commerce().price(50000, 500000)))
                     .soLuong(faker.number().numberBetween(0, 30))
@@ -138,7 +145,7 @@ class BackendApplicationTests {
 
             // Bước 1: Lưu 'Sach' vào DB. Phương thức save() sẽ trả về
             // đối tượng Sach đã được cập nhật với ID.
-            Sach savedSach = sachRepository.save(sachToSave);
+            Book savedSach = sachRepository.save(sachToSave);
 
             // Bước 2: BÂY GIỜ savedSach.getIdSach() đã có giá trị.
             // Sử dụng đối tượng đã được lưu để mapping.
@@ -158,7 +165,7 @@ class BackendApplicationTests {
     @Order(3) // CHẠY ĐẦU TIÊN
     void generate_fake_tac_gia() {
         System.out.println("Generating authors...");
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 20; i++) {
             if (tacGiaRepository.count() >= 50) break;
             TacGia tacGia = new TacGia();
             tacGia.setTenTacGia(faker.book().author());
@@ -172,16 +179,16 @@ class BackendApplicationTests {
     void generate_fake_danh_gia_sach_and_update_ratings() {
         System.out.println("Generating reviews and updating ratings...");
         List<KhachHang> allKhachHang = khachHangRepository.findAll();
-        List<Sach> allSach = sachRepository.findAll();
+        List<Book> allSach = sachRepository.findAll();
 
         if (allKhachHang.isEmpty() || allSach.isEmpty()) {
             System.out.println("No customers or books found. Skipping review generation.");
             return;
         }
 
-        int reviewsToGenerate = 300;
+        int reviewsToGenerate = 100;
         for (int i = 0; i < reviewsToGenerate; i++) {
-            Sach randomSach;
+            Book randomSach;
             KhachHang randomKhachHang;
             String reviewKey;
 
@@ -205,7 +212,7 @@ class BackendApplicationTests {
             // Lấy tất cả điểm của sách này và tính trung bình
             List<DanhGiaSach> reviewsForBook = danhGiaSachRepository.findBySach(randomSach);
             double averageRating = reviewsForBook.stream()
-                    .mapToInt(DanhGiaSach::getDiemXepHang)
+                    .mapToDouble(DanhGiaSach::getDiemXepHang)
                     .average()
                     .orElse(0.0);
 
@@ -217,5 +224,75 @@ class BackendApplicationTests {
         }
         System.out.println("Generated " + reviewsToGenerate + " reviews and updated ratings successfully!");
     }
+    @Test
+    @Order(6) // Chạy sau khi đã có Khách hàng, Sách, và Đánh giá
+    void generate_fake_don_hang() {
+        System.out.println("Generating orders...");
+        List<KhachHang> allKhachHang = khachHangRepository.findAll();
+        List<Book> allSach = sachRepository.findAll();
+
+        if (allKhachHang.isEmpty() || allSach.isEmpty()) {
+            System.out.println("No customers or books found. Skipping order generation.");
+            return;
+        }
+
+        int ordersToGenerate = 50; // Tạo 100 đơn hàng mẫu
+
+        for (int i = 0; i < ordersToGenerate; i++) {
+            // 1. Chọn một khách hàng ngẫu nhiên
+            KhachHang randomKhachHang = allKhachHang.get(faker.number().numberBetween(0, allKhachHang.size()));
+
+            // 2. Tạo các chi tiết đơn hàng (sản phẩm trong giỏ)
+            Set<DonHangChiTiet> chiTietSet = new HashSet<>();
+            Set<Book> booksInThisOrder = new HashSet<>(); // Để đảm bảo không có sách trùng lặp
+            int itemsInOrder = faker.number().numberBetween(1, 6); // Mỗi đơn có từ 1-5 sản phẩm
+
+            for (int j = 0; j < itemsInOrder; j++) {
+                Book randomSach;
+                // Vòng lặp để chọn một sách chưa có trong đơn hàng này
+                do {
+                    randomSach = allSach.get(faker.number().numberBetween(0, allSach.size()));
+                } while (booksInThisOrder.contains(randomSach));
+
+                booksInThisOrder.add(randomSach);
+
+                DonHangChiTiet chiTiet = DonHangChiTiet.builder()
+                        .sach(randomSach)
+                        .soLuong(faker.number().numberBetween(1, 4)) // Mua từ 1-3 cuốn
+                        .gia(randomSach.getGia()) // Lưu lại giá tại thời điểm mua
+                        .build();
+                chiTietSet.add(chiTiet);
+            }
+
+            // 3. Tính tổng tiền cho đơn hàng
+            BigDecimal tongTien = chiTietSet.stream()
+                    .map(item -> item.getGia().multiply(BigDecimal.valueOf(item.getSoLuong())))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            // 4. Tạo đối tượng DonHang chính
+            DonHang donHang = DonHang.builder()
+                    .khachHang(randomKhachHang)
+                    .ngayDat(faker.date().past(365, TimeUnit.DAYS).toInstant()) // Ngày đặt trong vòng 1 năm qua
+                    .tongTien(tongTien)
+                    .trangThai(TrangThaiDonHang.values()[faker.number().numberBetween(0, TrangThaiDonHang.values().length)])
+                    .diaChiGiaoHang(randomKhachHang.getDiaChi()) // Lấy địa chỉ của khách hàng
+                    .phuongThucThanhToan(PhuongThucThanhToan.values()[faker.number().numberBetween(0, PhuongThucThanhToan.values().length)])
+                    .ghiChu(faker.lorem().sentence())
+                    .build();
+
+            // 5. Thiết lập mối quan hệ hai chiều và lưu
+            // Gán lại donHang cho từng chi tiết
+            for (DonHangChiTiet chiTiet : chiTietSet) {
+                chiTiet.setDonHang(donHang);
+            }
+            donHang.setChiTietDonHang(chiTietSet);
+
+            // Chỉ cần lưu DonHang, các DonHangChiTiet sẽ được lưu tự động nhờ CascadeType.ALL
+            donHangRepository.save(donHang);
+        }
+
+        System.out.println("Generated " + ordersToGenerate + " orders successfully!");
+    }
+
 }
 

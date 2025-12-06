@@ -2,8 +2,10 @@ package com.example.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.proxy.HibernateProxy;
 
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -19,6 +21,7 @@ import java.util.Objects;
 public class GioHangChiTiet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_gio_hang_chi_tiet")
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -29,10 +32,14 @@ public class GioHangChiTiet {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_sach")
     @ToString.Exclude
-    private Sach sach;
+    private Book sach;
 
     @Column(name = "so_luong", nullable = false)
     private int soLuong;
+
+    @UpdateTimestamp // <-- Cải tiến quan trọng!
+    @Column(name = "ngay_cap_nhat")
+    private Instant ngayCapNhat;
 
     @Override
     public final boolean equals(Object o) {

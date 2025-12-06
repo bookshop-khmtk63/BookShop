@@ -10,8 +10,6 @@ import lombok.Getter;
 
 @Getter
 public class ForgotPassword {
-
-
     @NotBlank(message = "Email không được để trống")
     @Email(message = "Email không đúng định dạng")
     private String email;

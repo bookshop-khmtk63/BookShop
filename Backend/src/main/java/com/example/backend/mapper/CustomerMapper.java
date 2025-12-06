@@ -24,6 +24,7 @@ public class CustomerMapper {
                 .email(customer.getEmail())
                 .fullName(customer.getHoTen())
                 .address(customer.getDiaChi())
+                .role(customer.getRole())
                 .build();
     }
     public List<CustomerResponse> toCustomerResponseList(List<KhachHang> customers) {
@@ -39,9 +40,16 @@ public class CustomerMapper {
         return UserResponse.builder()
                 .id(customer.getIdKhachHang())
                 .active(customer.isActive())
+                .locked(customer.isLocked())
                 .username(customer.getEmail())
                 .email(customer.getEmail())
                 .expiration(LocalDateTime.ofInstant(customer.getNgayDangKy(), ZoneId.systemDefault()))
                 .build();
+    }
+    public List<UserResponse> toUserResponseList(List<KhachHang> users) {
+        if (users == null) {
+            return null;
+        }
+        return users.stream().map(this::toUserResponse).collect(Collectors.toList());
     }
 }

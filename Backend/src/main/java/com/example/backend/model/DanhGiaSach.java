@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -31,17 +32,17 @@ public class DanhGiaSach {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_sach")
     @ToString.Exclude
-    private Sach sach;
+    private Book sach;
 
     @Column(name = "diem_xep_hang", nullable = false)
-    private int diemXepHang; // Từ 1 đến 5
+    private double diemXepHang; // Từ 1 đến 5
 
     @Lob
     @Column(name = "binh_luan")
     private String binhLuan;
 
     @Column(name = "ngay_danh_gia", insertable = false, updatable = false)
-    private Timestamp ngayDanhGia;
+    private Instant ngayDanhGia;
 
     @Override
     public final boolean equals(Object o) {

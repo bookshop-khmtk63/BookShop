@@ -18,9 +18,9 @@ import org.springframework.stereotype.Service;
 public class UserDetailsServiceImplement implements UserDetailsService {
     private final KhachHangRepository userRepository;
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String username)  {
         log.info("--- BẮT ĐẦU QUÁ TRÌNH XÁC THỰC CHO USER: {}", username);
-        KhachHang user = userRepository.findByEmail(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        KhachHang user = userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng: " + username));
         log.info("--- TÌM THẤY USER: {}. Mật khẩu đã mã hóa trong DB là: {}", username, user.getMatKhau());
         log.info("--- TRẠNG THÁI TÀI KHOẢN: active={}, locked={}", user.isActive(), user.isLocked());
         return new CustomUserDetails(user);

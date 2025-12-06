@@ -20,6 +20,7 @@ import java.util.Objects;
 public class DonHangChiTiet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_don_hang_chi_tiet")
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -31,13 +32,15 @@ public class DonHangChiTiet {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_sach")
     @ToString.Exclude
-    private Sach sach;
+    private Book sach;
 
     @Column(name = "so_luong", nullable = false)
     private int soLuong;
 
     @Column(name = "gia", nullable = false, precision = 12, scale = 2)
     private BigDecimal gia;
+
+
 
     @Override
     public final boolean equals(Object o) {

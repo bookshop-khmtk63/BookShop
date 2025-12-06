@@ -31,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -85,7 +86,6 @@ public class AuthServiceImplement implements AuthService {
         }
 
         log.info("Xác thực thành công cho user '{}'", loginRequest.getEmail());
-
         SecurityContextHolder.getContext().setAuthentication(authentication);
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
@@ -99,9 +99,14 @@ public class AuthServiceImplement implements AuthService {
     public void logout(HttpServletRequest request, HttpServletResponse response) {
         String authHarder = request.getHeader("Authorization");
         if(authHarder!=null && !authHarder.isBlank() && authHarder.startsWith("Bearer ")) {
+
             String token = authHarder.substring(7);
-            if (jwtTokenUtils.getRemainingExpiration(token) > 0) {
-                redisService.saveToken(token, jwtTokenUtils.getRemainingExpiration(token));
+            try {
+                if (jwtTokenUtils.getRemainingExpiration(token) > 0)
+                    redisService.saveToken(token, jwtTokenUtils.getRemainingExpiration(token));
+
+            } catch (Exception e) {
+                throw new AppException(ErrorCode.AUTHENTICATION_EXCEPTION);
             }
         }
             Optional.ofNullable(getRefreshTokenFromCookie(request)).ifPresent(tokensService::deleteRefreshToken);
@@ -162,7 +167,7 @@ public class AuthServiceImplement implements AuthService {
     }
 
 
-    //Lấy accset-token bằng
+    //Lấy access-token bằng refreshToken
     @Override
     public RefreshTokenResponse refreshToken(String refreshToken) {
         return tokensService.finByToken(refreshToken)
@@ -244,15 +249,26 @@ public class AuthServiceImplement implements AuthService {
         resetToken.setUsed(true);
 
     }
+//      Trên cùng một service
+//    private void deleteRefreshTokenCookie(HttpServletResponse response) {
+//        Cookie refreshTokenCookie = new Cookie(refreshTokenCookieName, null);
+//        refreshTokenCookie.setPath("/");
+//        refreshTokenCookie.setMaxAge(0);
+//        refreshTokenCookie.setHttpOnly(true);
+//        refreshTokenCookie.setSecure(true);
+//        response.addCookie(refreshTokenCookie);
+//    }
+private void deleteRefreshTokenCookie(HttpServletResponse response) {
+    ResponseCookie refreshTokenCookie = ResponseCookie.from(refreshTokenCookieName, "") // Giá trị rỗng
+            .httpOnly(true)
+            .secure(true)
+            .path("/")
+            .maxAge(0) // Đặt thời gian sống bằng 0 để xóa
+            .sameSite("None") // QUAN TRỌNG: Phải khớp với cookie lúc tạo
+            .build();
 
-    private void deleteRefreshTokenCookie(HttpServletResponse response) {
-        Cookie refreshTokenCookie = new Cookie(refreshTokenCookieName, null);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(0);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(true);
-        response.addCookie(refreshTokenCookie);
-    }
+    response.addHeader("Set-Cookie", refreshTokenCookie.toString());
+}
 
     private String getRefreshTokenFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
@@ -265,13 +281,24 @@ public class AuthServiceImplement implements AuthService {
         }
         return null;
     }
-
-    private void addRefreshTokenCookie(HttpServletResponse response, String token) {
-        Cookie refreshTokenCookie = new Cookie(refreshTokenCookieName, token);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge((int) (refreshTokenExpiration / 1000));
-        response.addCookie(refreshTokenCookie);
-    }
+// Trên cùng một serve
+//    private void addRefreshTokenCookie(HttpServletResponse response, String token) {
+//        Cookie refreshTokenCookie = new Cookie(refreshTokenCookieName, token);
+//        refreshTokenCookie.setHttpOnly(true);
+//        refreshTokenCookie.setSecure(true);
+//
+//        refreshTokenCookie.setPath("/");
+//        refreshTokenCookie.setMaxAge((int) (refreshTokenExpiration / 1000));
+//        response.addCookie(refreshTokenCookie);
+//    }
+private void addRefreshTokenCookie(HttpServletResponse response, String token) {
+    ResponseCookie refreshTokenCookie = ResponseCookie.from(refreshTokenCookieName, token)
+            .httpOnly(true)
+            .secure(true)// SameSite=None yêu cầu kết nối an toàn (HTTPS)
+            .path("/")
+            .maxAge(refreshTokenExpiration / 1000)
+            .sameSite("None") // Cho phép cookie được gửi từ domain của FE sang domain của BE
+            .build();
+    response.addHeader("Set-Cookie", refreshTokenCookie.toString());
+}
 }

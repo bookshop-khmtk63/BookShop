@@ -3,14 +3,20 @@ package com.example.backend.controller;
 import com.example.backend.dto.request.*;
 import com.example.backend.dto.response.*;
 import com.example.backend.exception.AppException;
+import com.example.backend.mapper.CustomerMapper;
+import com.example.backend.model.KhachHang;
 import com.example.backend.service.AuthService;
+import com.example.backend.service.CustomerService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid; // <-- PHIÊN BẢN ĐÚNG CHO SPRING BOOT 3
 import org.springframework.web.servlet.view.RedirectView;
@@ -20,6 +26,8 @@ import org.springframework.web.servlet.view.RedirectView;
 @RequestMapping("/api/auth")
 public class AuthController {
     private final AuthService authService;
+    private final CustomerService customerService;
+    private final CustomerMapper customerMapper;
 
     @Value("${app.frontend.verification-success-url}")
     private String verificationSuccessUrl;
@@ -38,6 +46,13 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpServletResponse response, HttpServletRequest request) {
         authService.logout(request, response);
         return ResponseEntity.ok("Logout successful");
+    }
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ResponseData<CustomerResponse>> getCustomer(@AuthenticationPrincipal UserDetails userDetails) {
+        KhachHang customer = customerService.getCustomerByEmail(userDetails.getUsername());
+        ResponseData<CustomerResponse> responseData = new ResponseData<>(200,"success",customerMapper.toCustomerResponse(customer));
+        return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
 
     //API lấy access-token từ refresh-token được lưu ở cookie

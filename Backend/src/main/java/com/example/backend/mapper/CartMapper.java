@@ -22,13 +22,14 @@ public class CartMapper {
                 .idBook(cartItem.getSach().getIdSach())
                 .idCartItem(cartItem.getId())
                 .quantity(cartItem.getSoLuong())
+                .nameBook(cartItem.getSach().getTenSach())
                 .totalPrice(totalPrice(cartItem))
                 .price(cartItem.getSach().getGia())
+                .quantityBook(cartItem.getSach().getSoLuong())
                 .thumbnail(cartItem.getSach().getAnhSach())
                 .build();
 
     }
-
 
 
     public List<CartItemResponse> toCartItemResponseList(List<GioHangChiTiet> cartItems) {
@@ -43,8 +44,8 @@ public class CartMapper {
         if (cart == null) {
             return null;
         }
-        Set<CartItemResponse> cartItemResponseSet = (cart.getChiTietGioHang()==null)? Collections.emptySet():
-                cart.getChiTietGioHang().stream().map(this::toCartItemResponse).collect(Collectors.toSet());
+        List<CartItemResponse> cartItemResponseSet = (cart.getChiTietGioHang()==null)? Collections.emptyList():
+                cart.getChiTietGioHang().stream().map(this::toCartItemResponse).collect(Collectors.toList());
         BigDecimal totalPrice =totalPriceCart(cartItemResponseSet);
         int totalItems = totalQuantity(cartItemResponseSet);
         return CartResponse.builder()
@@ -63,13 +64,13 @@ public class CartMapper {
         }
         return cartItem.getSach().getGia().multiply(new BigDecimal(cartItem.getSoLuong()));
     }
-    private BigDecimal totalPriceCart(Set<CartItemResponse> cartItems) {
+    private BigDecimal totalPriceCart(List<CartItemResponse> cartItems) {
         if(cartItems == null ) {
             return BigDecimal.ZERO;
         }
         return cartItems.stream().map(CartItemResponse::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
-    private int totalQuantity(Set<CartItemResponse> cartItems) {
+    private int totalQuantity(List<CartItemResponse> cartItems) {
         if(cartItems == null ) {
             return 0;
         }

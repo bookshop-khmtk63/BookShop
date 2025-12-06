@@ -3,6 +3,7 @@ package com.example.backend.dto.response;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -14,6 +15,6 @@ public class CartResponse {
     private Integer idCart;
     private Integer idCustomer;
     private BigDecimal totalPrice;
-    private Set<CartItemResponse> items;
+    private List<CartItemResponse> items;
     private int totalQuantity;
 }

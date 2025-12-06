@@ -11,7 +11,7 @@ import lombok.Data;
 public class UserUpdateRequest {
     @NotBlank
     private String fullName;
-    @Pattern(regexp = "\\d{10}",message = "OTP phải gồm đúng 6 chữ số")
+    @Pattern(regexp = "\\d{10}",message = "Số điện thoại phải gồm 10 số ")
     private String phone;
     @Email
     private String email;

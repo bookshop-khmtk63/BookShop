@@ -2,13 +2,12 @@ package com.example.backend.mapper;
 
 import com.example.backend.dto.response.BookReviewResponse;
 import com.example.backend.model.DanhGiaSach;
-import com.example.backend.model.Sach;
-import com.example.backend.model.TheLoai;
+import com.example.backend.model.Book;
 import org.springframework.stereotype.Component;
 
-import java.awt.print.Book;
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.time.ZoneId;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,7 +27,7 @@ public class BookReviewMapper {
                 .build();
     }
 
-    public Set<BookReviewResponse> BookReviews(Sach sach) {
+    public Set<BookReviewResponse> BookReviews(Book sach) {
         if (sach == null) {
             return null;
         }

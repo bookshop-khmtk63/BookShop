@@ -3,7 +3,7 @@ package com.example.backend.service;
 import com.example.backend.common.SearchOperation;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
-import com.example.backend.model.Sach;
+import com.example.backend.model.Book;
 import com.example.backend.model.SearchCriteria;
 import com.example.backend.model.TheLoai;
 import jakarta.persistence.criteria.Join;
@@ -13,7 +13,6 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +21,7 @@ import java.util.List;
 public class SachSpecification {
 
 
-    public static Specification<Sach> fromCriteria(List<SearchCriteria> criteriaList) {
+    public static Specification<Book> fromCriteria(List<SearchCriteria> criteriaList) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -37,7 +36,7 @@ public class SachSpecification {
                     // Xử lý JOIN với bảng THE_LOAI
                     if ("theLoai".equalsIgnoreCase(key)) {
                         query.distinct(true);
-                        Join<Sach, TheLoai> theLoaiJoin = root.join("danhSachTheLoai");
+                        Join<Book, TheLoai> theLoaiJoin = root.join("danhSachTheLoai");
                         predicates.add(criteriaBuilder.like(
                                 criteriaBuilder.lower(theLoaiJoin.get("tenTheLoai")),
                                 "%" + valueStr.toLowerCase() + "%"
@@ -76,6 +75,7 @@ public class SachSpecification {
                     // Ghi log lỗi chi tiết hơn
                     log.error("Bỏ qua bộ lọc cho key '{}'. Lỗi: {}", key, e.getMessage(), e);
 
+
                 }
             }
 
@@ -89,7 +89,7 @@ public class SachSpecification {
 
     // Các hàm helper giữ nguyên như phiên bản dùng Reflection trước đó
     private static Field getFieldFromSachEntity(String fieldName) throws NoSuchFieldException {
-        return Sach.class.getDeclaredField(fieldName);
+        return Book.class.getDeclaredField(fieldName);
     }
 
     private static Object convertValueForSachEntity(String fieldName, String rawValue) throws NoSuchFieldException {

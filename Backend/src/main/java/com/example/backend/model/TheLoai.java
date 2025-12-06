@@ -30,7 +30,7 @@ public class TheLoai {
     @ManyToMany(mappedBy = "danhSachTheLoai", fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude // Tránh vòng lặp vô hạn
     @ToString.Exclude        // Tránh vòng lặp vô hạn
-    private Set<Sach> danhSachSach = new HashSet<>() ;
+    private Set<Book> danhSachSach = new HashSet<>() ;
 
     @Override
     public final boolean equals(Object o) {

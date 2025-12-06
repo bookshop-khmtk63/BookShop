@@ -8,6 +8,8 @@ import com.example.backend.model.DonHangChiTiet;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,7 +27,7 @@ public class OrderMapper {
                 .totalPrice(order.getTongTien())
                 .quantity(totalItem)
                 .status(order.getTrangThai())
-                .orderDate(order.getNgayDat())
+                .orderDate(LocalDateTime.ofInstant(order.getNgayDat(), ZoneId.of("Asia/Ho_Chi_Minh")))
                 .build();
     }
     public OrderItemResponse toOrderItemResponse(DonHangChiTiet orderItem) {
@@ -52,7 +54,6 @@ public class OrderMapper {
                 .idOrder(order.getIdDonHang())
                 .idCustomer(order.getKhachHang().getIdKhachHang())
                 .totalPrice(order.getTongTien())
-                .orderDate(order.getNgayDat())
                 .status(order.getTrangThai())
                 .address(order.getDiaChiGiaoHang())
                 .items(item)

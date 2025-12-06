@@ -1,45 +1,53 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.common.SearchOperation;
+import com.example.backend.dto.request.CreateBookRequest;
+import com.example.backend.dto.request.UpdateBookRequest;
+import com.example.backend.dto.response.BookAdminResponse;
 import com.example.backend.dto.response.BookDetailResponse;
 import com.example.backend.dto.response.BookResponse;
 import com.example.backend.dto.response.PageResponse;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.mapper.BookMapper;
-import com.example.backend.model.Sach;
-import com.example.backend.model.SearchCriteria;
+import com.example.backend.model.*;
 import com.example.backend.repository.SachRepository;
-import com.example.backend.service.BookService;
-import com.example.backend.service.SachSpecification;
+import com.example.backend.service.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class BookServiceImplement implements BookService {
     private final SachRepository sachRepository;
     private final BookMapper bookMapper;
+    private final CategoryService categoryService;
+    private final CloudinaryService cloudinaryService;
+    private final AuthorService authorService;
     @Override
     public PageResponse<BookResponse> getAllBooks(int page, int size) {
         Pageable pageable = PageRequest.of(page,size);
-        Page<Sach> sach = sachRepository.findAll(pageable);
+        Page<Book> sach = sachRepository.findAll(pageable);
         List<BookResponse> bookResponseList = bookMapper.toBookResponseList(sach.getContent());
         return PageResponse.from(sach,bookResponseList);
     }
 
     @Override
     public BookDetailResponse getBookById(int id) {
-        Sach sach = sachRepository.findById(id).orElseThrow(()->new AppException(ErrorCode.BOOK_NOT_FOUND));
+        Book sach = sachRepository.findById(id).orElseThrow(()->new AppException(ErrorCode.BOOK_NOT_FOUND));
 
         return bookMapper.toBookDetailResponse(sach);
     }
@@ -66,9 +74,9 @@ public class BookServiceImplement implements BookService {
             }
         }
 
-        Specification<Sach> specification = SachSpecification.fromCriteria(criteriaList);
+        Specification<Book> specification = SachSpecification.fromCriteria(criteriaList);
 
-        Page<Sach> sachPage = sachRepository.findAll(specification, pageable);
+        Page<Book> sachPage = sachRepository.findAll(specification, pageable);
 
         List<BookResponse> bookResponses = sachPage.getContent()
                 .stream()
@@ -81,9 +89,115 @@ public class BookServiceImplement implements BookService {
     @Override
     public PageResponse<BookResponse> advancedSearch(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page,size);
-        Page<Sach> sach = sachRepository.searchByKeyWord(keyword,pageable);
+        Page<Book> sach = sachRepository.searchByKeyWord(keyword,pageable);
         return PageResponse.from(sach,bookMapper.toBookResponseList(sach.getContent()));
     }
+
+    @Override
+    public PageResponse<BookAdminResponse> AdmingetAllBook(Pageable pageable) {
+        Page<BookAdminResponse> book  = sachRepository.AdminGetAllBooks(pageable);
+        return PageResponse.from(book,book.getContent());
+    }
+
+    @Override
+    @Transactional
+    public BookDetailResponse createBook(CreateBookRequest createBookRequest, MultipartFile thumbnail) {
+        Set<TheLoai> category =  categoryService.getCategoryById(createBookRequest.getIdsCategory());
+        String thumbnailUrl = null;
+        if(thumbnail != null && !thumbnail.isEmpty()) {
+            try {
+                // Upload ảnh bìa
+                Map thumbnailResult = cloudinaryService.uploadFile(thumbnail, "bookShop/thumbnails");
+                thumbnailUrl = thumbnailResult.get("url").toString();
+            } catch (IOException e) {
+                log.error("Error uploading thumbnail to Cloudinary", e);
+                throw new AppException(ErrorCode.FILE_UPLOAD_ERROR);
+            }
+        }
+        TacGia author = authorService.getAuthorById(createBookRequest.getIdAuthor());
+        Book sach = Book.builder()
+                .tenSach(createBookRequest.getNameBook())
+                .gia(createBookRequest.getPrice())
+                .anhSach(thumbnailUrl)
+                .moTa(createBookRequest.getDescription())
+                .soLuong(createBookRequest.getQuantity())
+                .danhSachTheLoai(category)
+                .tacGia(author)
+                .build();
+        sachRepository.save(sach);
+        return bookMapper.toBookDetailResponse(sach);
+    }
+
+    @Override
+    @Transactional
+    public BookDetailResponse updateBook(UpdateBookRequest updateBookRequest, MultipartFile thumbnail, int id) {
+        Book book = sachRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_FOUND));
+
+        // 2. CẬP NHẬT CÁC TRƯỜNG ĐƠN GIẢN:
+        Optional.ofNullable(updateBookRequest.getNameBook())
+                .ifPresent(name -> { if (!name.isBlank()) book.setTenSach(name); });
+
+        Optional.ofNullable(updateBookRequest.getDescription())
+                .ifPresent(book::setMoTa);
+
+        Optional.ofNullable(updateBookRequest.getPrice())
+                .ifPresent(book::setGia);
+
+        Optional.ofNullable(updateBookRequest.getQuantity())
+                .ifPresent(book::setSoLuong);
+
+        if (updateBookRequest.getIdsCategory() != null) {
+
+            Set<TheLoai> newCategories = categoryService.getCategoryById(updateBookRequest.getIdsCategory());
+
+            book.setDanhSachTheLoai(newCategories);
+        }
+
+        if (updateBookRequest.getIdAuthor() != null) {
+            TacGia newAuthor = authorService.getAuthorById(updateBookRequest.getIdAuthor());
+            book.setTacGia(newAuthor);
+        }
+        if (thumbnail != null && !thumbnail.isEmpty()) {
+            try {
+
+                // cloudinaryService.deleteFile(book.getPublicIdFromUrl());
+
+                Map thumbnailResult = cloudinaryService.uploadFile(thumbnail, "bookShop/thumbnails");
+                String thumbnailUrl = thumbnailResult.get("url").toString();
+                book.setAnhSach(thumbnailUrl);
+            } catch (IOException e) {
+                log.error("Lỗi khi upload ảnh bìa lên Cloudinary", e);
+                throw new AppException(ErrorCode.FILE_UPLOAD_ERROR);
+            }
+        }
+        return bookMapper.toBookDetailResponse(book);
+    }
+
+    @Override
+    public void deleteBook(Integer id) {
+        if(!sachRepository.existsById(id)) {
+            throw new AppException(ErrorCode.BOOK_NOT_FOUND);
+        }
+        sachRepository.deleteById(id);
+    }
+
+    @Override
+    public Book getBookByIds(Integer bookId) {
+        return sachRepository.findById(bookId).orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_FOUND));
+    }
+
+    @Override
+    public void save(Book book) {
+        sachRepository.save(book);
+    }
+
+    @Override
+    public Book getBookByIdForUpdate(Integer idSach) {
+
+        return  sachRepository.findByIdForUpdate(idSach).orElseThrow(()->new AppException(ErrorCode.BOOK_NOT_FOUND));
+    }
+
 
     private SearchOperation mapOperator(String operator) {
         switch (operator) {

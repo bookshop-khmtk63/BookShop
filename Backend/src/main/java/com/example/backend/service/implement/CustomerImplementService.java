@@ -2,7 +2,9 @@ package com.example.backend.service.implement;
 
 import com.example.backend.dto.request.UserUpdateRequest;
 import com.example.backend.dto.response.CustomerResponse;
+import com.example.backend.dto.response.PageResponse;
 import com.example.backend.dto.response.ResponseData;
+import com.example.backend.dto.response.UserResponse;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.mapper.CustomerMapper;
@@ -12,9 +14,14 @@ import com.example.backend.service.CustomerService;
 import com.example.backend.utils.JwtTokenUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -72,5 +79,37 @@ public class CustomerImplementService implements CustomerService {
         String email = jwtTokenUtils.getUsernameFromToken(token);
         KhachHang customer = getCustomerByEmail(email);
         return customerMapper.toCustomerResponse(customer);
+    }
+
+    @Override
+    public PageResponse<UserResponse> getAllUser(Pageable pageable) {
+        Page<KhachHang> listUser = khachHangRepository.findAll(pageable);
+        List<UserResponse> listUserResponse = customerMapper.toUserResponseList(listUser.getContent());
+        return PageResponse.from(listUser,listUserResponse);
+    }
+
+    @Override
+    @Transactional
+    public void lockUser(Integer userId) {
+        KhachHang customer = khachHangRepository.findById(userId)
+                .orElseThrow(()->new AppException(ErrorCode.USER_NOT_FOUND));
+        if(customer.isLocked()){
+           return;
+        }
+        customer.setLocked(true);
+        khachHangRepository.save(customer);
+
+    }
+
+    @Override
+    @Transactional
+    public void unLock(Integer userId) {
+        KhachHang customer = khachHangRepository.findById(userId)
+                .orElseThrow(()->new AppException(ErrorCode.USER_NOT_FOUND));
+        if(!customer.isLocked()){
+            return;
+        }
+        customer.setLocked(false);
+        khachHangRepository.save(customer);
     }
 }
