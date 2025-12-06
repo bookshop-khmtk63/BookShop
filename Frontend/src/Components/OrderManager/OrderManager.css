@@ -1,0 +1,178 @@
+.order-manager {
+    padding: 30px;
+    background: #fff;
+    min-height: 100vh;
+  }
+  
+  .page-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  .table-wrapper {
+    overflow-x: auto;
+    background: #fafafa;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .order-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+  
+  .order-table th {
+    background: #f5f5f5;
+    padding: 12px;
+    text-align: center;
+    font-weight: 600;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .order-table td {
+    text-align: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .detail-btn {
+    background: #e0e0e0;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  
+  .detail-btn:hover {
+    background: #d4d4d4;
+  }
+  
+  .status-select {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  
+  .status-select.pending {
+    background: #fff8e1;
+    color: #e67e22;
+  }
+  
+  .status-select.shipping {
+    background: #e8f4ff;
+    color: #007bff;
+  }
+  
+  .status-select.done {
+    background: #e7f9ed;
+    color: #2ecc71;
+  }
+  
+  /* ================= Modal ================= */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+  }
+  
+  .modal-content {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    width: 600px;
+    max-width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.2s ease-in-out;
+  }
+  
+  .modal-content h3 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .modal-content p {
+    margin: 5px 0;
+    font-size: 15px;
+  }
+  
+  .modal-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  
+  .modal-table th {
+    background: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+    padding: 8px;
+  }
+  
+  .modal-table td {
+    border-bottom: 1px solid #eee;
+    padding: 8px;
+    text-align: center;
+  }
+  
+  .modal-total {
+    text-align: right;
+    margin-top: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .modal-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+  }
+  
+  .close-btn {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  
+  .close-btn:hover {
+    background: #ff4c4c;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  /* 📱 Responsive */
+  @media (max-width: 768px) {
+    .modal-content {
+      width: 95%;
+      padding: 15px;
+    }
+  }
+  
