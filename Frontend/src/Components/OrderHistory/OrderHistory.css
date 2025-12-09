@@ -163,7 +163,7 @@
 /* ==============================
    🔢 PAGINATION
 ============================== */
-.pagination {
+.history-pagination {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -280,7 +280,7 @@
     margin-top: 15px;
   }
 
-  .pagination {
+  .hisory-pagination {
     margin: 25px 0;
   }
 }

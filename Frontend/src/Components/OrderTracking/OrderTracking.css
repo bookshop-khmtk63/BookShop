@@ -102,40 +102,53 @@
   color: #2c3e50;
 }
 
-/* --- Pagination --- */
+/* ------------------------------------------------- */
+/* PHÂN TRANG KIỂU BOOKLIST (THAY CHO NUMBER-PAGINATION) */
+/* ------------------------------------------------- */
+
 .pagination {
+  margin-top: 24px;
   display: flex;
   justify-content: center;
-  align-items: center;
-  gap: 16px;
-  margin: 30px 0;
+  gap: 8px;
 }
 
-.btn-page {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 8px 16px;
+.pagination button {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  background: white;
   cursor: pointer;
-  transition: 0.2s;
-  font-weight: 600;
-}
-
-.btn-page:hover {
-  background-color: #f0f0f0;
-}
-
-.btn-page.inactive {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.page-info {
-  font-weight: 600;
+  border-radius: 6px;
   font-size: 15px;
+  transition: 0.2s;
 }
 
-/* 🌗 Dark Mode tự theo thiết bị */
+.pagination button:hover:not(:disabled):not(.active) {
+  background: #f0f0f0;
+}
+
+.pagination button.active {
+  background: #f9a825;
+  color: white;
+  border-color: #f57c00;
+  font-weight: 600;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination .dots {
+  padding: 0 6px;
+  font-size: 18px;
+  color: #777;
+}
+
+/* ------------------------------------------------- */
+/* DARK MODE */
+/* ------------------------------------------------- */
+
 @media (prefers-color-scheme: dark) {
   .order-tracking-page {
     background-color: #121212;
@@ -165,18 +178,30 @@
     color: #f0f0f0;
   }
 
-  .btn-page {
+  .pagination button {
     background-color: #1c1c1c;
-    color: #eaeaea;
     border-color: #444;
+    color: #eaeaea;
   }
 
-  .btn-page:hover {
+  .pagination button:hover:not(:disabled):not(.active) {
     background-color: #333;
+  }
+
+  .pagination button.active {
+    background-color: #f9a825;
+    color: #fff;
+  }
+
+  .pagination .dots {
+    color: #aaa;
   }
 }
 
-/* 📱 Responsive */
+/* ----------------------------------------------- */
+/* Responsive */
+/* ----------------------------------------------- */
+
 @media (max-width: 768px) {
   .order-header-row {
     display: none;
@@ -196,17 +221,18 @@
     height: 90px;
   }
 
-  .order-name {
+  .pagination {
+    gap: 5px;
+  }
+
+  .pagination button {
+    padding: 5px 10px;
+    min-width: 34px;
+    font-size: 13px;
+  }
+
+  .pagination .dots {
     font-size: 14px;
-  }
-
-  .btn-page {
-    padding: 6px 12px;
-    font-size: 13px;
-  }
-
-  .page-info {
-    font-size: 13px;
   }
 }
 
@@ -220,21 +246,11 @@
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes fadeSlide {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
 }

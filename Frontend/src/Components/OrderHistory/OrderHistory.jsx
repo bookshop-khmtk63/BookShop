@@ -8,69 +8,112 @@ export default function OrderHistory() {
   const { callApiWithToken } = useAuth();
   const API_URL = import.meta.env.VITE_API_URL;
 
-  const [orders, setOrders] = useState([]); // toàn bộ dữ liệu
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [page, setPage] = useState(0); // trang hiện tại
-  const pageSize = 3; // số đơn mỗi trang
+  const [page, setPage] = useState(0);
+  const pageSize = 3;
 
-  // ✅ Lấy dữ liệu lịch sử đơn hàng
-  const fetchOrderHistory = async () => {
+  const [totalPages, setTotalPages] = useState(1);
+
+  // ⭐ GIỮ NGUYÊN CHUẨN HÓA Y NHƯ ORDERTRACKING
+  const normalizeOrdersResponse = (res) => {
+    if (!res) return [];
+    if (Array.isArray(res)) return res;
+
+    const d1 = res?.data;
+    if (Array.isArray(d1)) return d1;
+
+    const d2 = d1?.data;
+    if (Array.isArray(d2)) return d2;
+
+    const d3 = d2?.data;
+    if (Array.isArray(d3)) return d3;
+
+    if (d1 && d1.data && Array.isArray(d1.data)) return d1.data;
+    if (res?.data && res.data.data && Array.isArray(res.data.data))
+      return res.data.data;
+
+    return [];
+  };
+
+  // ⭐ FETCH PHÂN TRANG BACKEND
+  const fetchOrderHistory = async (pageNumber) => {
     setLoading(true);
     setError("");
-    try {
-      const res = await callApiWithToken(`${API_URL}/api/customer/history-order`);
-      console.log("📦 API Response:", res);
 
-      const data = res?.data?.data || res?.data || res;
-      if (Array.isArray(data)) setOrders(data);
-      else setOrders([]);
+    try {
+      const res = await callApiWithToken(
+        `${API_URL}/api/customer/history-order?page=${pageNumber}&size=${pageSize}`
+      );
+
+      console.log("📦 API:", res);
+
+      // backend trả dạng: { code, message, data: { totalPages, data: [] } }
+      const meta = res;
+
+      setTotalPages(meta.totalPages);
+
+      // ⭐ TRUYỀN ĐÚNG FORMAT CHO normalize
+      const normalized = normalizeOrdersResponse({
+        data: { data: meta.data },
+      });
+
+      setOrders(normalized);
     } catch (err) {
-      console.error("❌ Lỗi khi tải lịch sử đơn hàng:", err);
-      setError("Không thể tải lịch sử đơn hàng. Vui lòng thử lại sau.");
+      console.error("❌ Lỗi:", err);
+      setError("Không thể tải lịch sử đơn hàng.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchOrderHistory();
-  }, []);
+    fetchOrderHistory(page);
+  }, [page]);
 
-  // ✅ Tính toán danh sách đơn hàng hiển thị theo trang
-  const startIndex = page * pageSize;
-  const endIndex = startIndex + pageSize;
-  const currentOrders = orders.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(orders.length / pageSize);
+  // ⭐ HÀM TẠO PHÂN TRANG DẠNG SỐ (y như BookList)
+  const getPageNumbers = (current, total, delta = 1) => {
+    const pages = [];
+    const range = [];
 
-  // ✅ Chuyển trang (vòng lặp)
-  const handlePrevPage = () => {
-    if (page > 0) setPage(page - 1);
+    for (let i = 0; i < total; i++) {
+      if (
+        i === 0 ||
+        i === total - 1 ||
+        (i >= current - delta && i <= current + delta)
+      ) {
+        range.push(i);
+      }
+    }
+
+    let last = -1;
+    for (let p of range) {
+      if (p - last > 1) pages.push("dots");
+      pages.push(p);
+      last = p;
+    }
+
+    return pages;
   };
 
-  const handleNextPage = () => {
-    if (page < totalPages - 1) setPage(page + 1);
-  };
-
-  // ✅ Điều hướng sang trang đánh giá
   const handleReview = (item) => {
     navigate(`/review/${item.bookId}`, { state: { product: item } });
   };
 
-  // 🧭 Trạng thái hiển thị
-  if (loading) return <p className="loading">⏳ Đang tải lịch sử đơn hàng...</p>;
+  // ⭐ Loading & Error
+  if (loading) return <p>⏳ Đang tải lịch sử đơn hàng...</p>;
   if (error) return <p className="error">{error}</p>;
   if (!orders || orders.length === 0)
     return <p className="no-orders">Bạn chưa có đơn hàng nào.</p>;
 
-  // ✅ Giao diện chính
+  // ⭐ UI CHÍNH
   return (
     <div className="order-history-page fade-in">
       <h2 className="page-title">Lịch sử đơn hàng</h2>
 
-      {currentOrders.map((order) => (
+      {orders.map((order) => (
         <div key={order.idOrder} className="order-card fade-slide">
-          {/* --- Thông tin đơn hàng --- */}
           <div className="order-header">
             <h3>📦 Mã đơn hàng: {order.idOrder}</h3>
             <span
@@ -90,15 +133,14 @@ export default function OrderHistory() {
             </span>
           </div>
 
-          {/* --- Bảng sản phẩm --- */}
           <div className="order-table">
             <div className="table-header">
-              <div className="col-image">Ảnh</div>
-              <div className="col-name">Tên sách</div>
-              <div className="col-price">Giá tiền</div>
-              <div className="col-quantity">Số lượng</div>
-              <div className="col-actions">Mua lại</div>
-              <div className="col-review">Đánh giá</div>
+              <div>Ảnh</div>
+              <div>Tên sách</div>
+              <div>Giá tiền</div>
+              <div>Số lượng</div>
+              <div>Mua lại</div>
+              <div>Đánh giá</div>
             </div>
 
             {(order.items ?? []).map((item) => (
@@ -106,28 +148,26 @@ export default function OrderHistory() {
                 <div className="col-image">
                   <img src={item.thumbnail} alt={item.bookName} />
                 </div>
+
                 <div className="col-name">{item.bookName}</div>
                 <div className="col-price">
-                  {Number(item.unitPrice ?? 0).toLocaleString("vi-VN")} ₫
+                  {Number(item.unitPrice).toLocaleString("vi-VN")} ₫
                 </div>
                 <div className="col-quantity">{item.quantity}</div>
+
                 <div className="col-actions">
                   <button className="btn-rebuy">Mua lại</button>
                 </div>
+
                 <div className="col-review">
                   {item.review ? (
-                    <button
-                      className="btn-review disabled"
-                      disabled
-                      title="Bạn đã đánh giá sản phẩm này"
-                    >
+                    <button className="btn-review disabled" disabled>
                       Đã đánh giá
                     </button>
                   ) : (
                     <button
                       className="btn-review"
                       onClick={() => handleReview(item)}
-                      title="Đánh giá sản phẩm"
                     >
                       Đánh giá
                     </button>
@@ -137,34 +177,39 @@ export default function OrderHistory() {
             ))}
           </div>
 
-          {/* --- Tổng tiền --- */}
           <div className="order-total">
-            <strong>Tổng tiền:</strong>{" "}
-            {Number(order.totalPrice ?? 0).toLocaleString("vi-VN")} ₫
+            <strong>Tổng tiền: </strong>
+            {Number(order.totalPrice).toLocaleString("vi-VN")} ₫
           </div>
         </div>
       ))}
 
-      {/* --- Phân trang --- */}
-      <div className="pagination">
-        <button
-          onClick={handlePrevPage}
-          className={`btn-page ${page === 0 ? "inactive" : ""}`}
-        >
-          ⬅ Trang trước
-        </button>
+      {/* ⭐ PHÂN TRANG DẠNG SỐ */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button disabled={page === 0} onClick={() => setPage(page - 1)}>
+            &lt;
+          </button>
 
-        <span className="page-info">
-          Trang {page + 1} / {totalPages}
-        </span>
+          {getPageNumbers(page, totalPages).map((p, idx) =>
+            p === "dots" ? (
+              <span key={idx} className="dots">…</span>
+            ) : (
+              <button
+                key={idx}
+                className={page === p ? "active" : ""}
+                onClick={() => setPage(p)}
+              >
+                {p + 1}
+              </button>
+            )
+          )}
 
-        <button
-          onClick={handleNextPage}
-          className={`btn-page ${page >= totalPages - 1 ? "inactive" : ""}`}
-        >
-          Trang sau ➡
-        </button>
-      </div>
+          <button disabled={page === totalPages - 1} onClick={() => setPage(page + 1)}>
+            &gt;
+          </button>
+        </div>
+      )}
     </div>
   );
 }

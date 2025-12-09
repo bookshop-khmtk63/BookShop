@@ -292,7 +292,7 @@ export default function BookUpdate({ id, onBack }) {
           >
             {categories.map((cat, index) => (
               <option key={cat.id || index} value={cat.id}>
-                📚 {cat.name}
+                 {cat.name}
               </option>
             ))}
           </select>
