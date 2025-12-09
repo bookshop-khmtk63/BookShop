@@ -1,62 +1,76 @@
+/* =========================
+   📦 ORDER TRACKING - BASE
+========================= */
 .order-tracking-page {
   padding: 40px 60px;
   background-color: #fff;
   color: #222;
-  min-height: 100vh;
   transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  animation: fadeIn 0.4s ease-in-out;
 }
 
 .page-title {
   font-size: 22px;
   font-weight: 600;
-  margin-bottom: 25px;
+  margin-bottom: 30px;
 }
 
+/* --- Thẻ đơn hàng --- */
 .order-block {
-  background-color: #fafafa;
+  margin-bottom: 40px;
   border: 1px solid #ddd;
   border-radius: 10px;
   padding: 20px 25px;
-  margin-bottom: 35px;
-  transition: 0.3s ease;
+  background: #fafafa;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    transform 0.3s ease;
+  animation: fadeSlide 0.4s ease;
 }
 
 .order-block:hover {
   transform: translateY(-3px);
 }
 
-/* --- Header --- */
+/* --- Tiêu đề đơn hàng --- */
 .order-header {
+  margin-bottom: 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
 }
 
+.order-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
 .order-status {
+  font-size: 13px;
+  font-weight: 600;
   padding: 4px 10px;
   border-radius: 20px;
-  font-weight: 600;
-  font-size: 13px;
 }
 
 .order-status.completed {
-  background-color: #27ae60;
-  color: #fff;
+  background-color: #2ecc71;
+  color: white;
 }
-
 .order-status.shipping {
   background-color: #f1c40f;
-  color: #fff;
+  color: white;
 }
-
 .order-status.pending {
   background-color: #95a5a6;
-  color: #fff;
+  color: white;
 }
 
-/* --- Bảng sản phẩm --- */
+/* --- Bảng hiển thị sản phẩm --- */
 .order-table {
+  width: 100%;
   margin-top: 10px;
 }
 
@@ -71,88 +85,92 @@
 .order-header-row {
   background-color: #e0e0e0;
   font-weight: 600;
-  border-radius: 8px 8px 0 0;
   padding: 10px 0;
+  border-radius: 8px 8px 0 0;
 }
 
 .order-row {
-  border-bottom: 1px solid #eee;
   background-color: #fff;
+  border-bottom: 1px solid #eee;
   padding: 12px 0;
+  transition: background 0.2s;
 }
 
 .order-row:hover {
   background-color: #f9f9f9;
 }
 
-/* --- Hình ảnh --- */
+/* --- Ảnh sản phẩm --- */
 .order-image img {
   width: 80px;
   height: 100px;
-  border-radius: 6px;
   object-fit: cover;
+  border-radius: 6px;
+}
+
+/* --- Cột tên sách --- */
+.order-name {
+  text-align: left;
+  padding-left: 10px;
+  font-size: 15px;
 }
 
 /* --- Tổng tiền --- */
 .order-total {
   text-align: right;
-  margin-top: 10px;
-  font-weight: 600;
   font-size: 16px;
+  font-weight: 600;
+  margin-top: 10px;
   color: #2c3e50;
 }
 
-/* ------------------------------------------------- */
-/* PHÂN TRANG KIỂU BOOKLIST (THAY CHO NUMBER-PAGINATION) */
-/* ------------------------------------------------- */
-
-.pagination {
-  margin-top: 24px;
+/* ==============================
+   🔢 PAGINATION — GIỐNG ORDER HISTORY
+============================== */
+.tracking-pagination {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  align-items: center;
+  gap: 16px;
+  margin: 40px 0;
+  font-family: "Inter", sans-serif;
 }
 
-.pagination button {
-  padding: 6px 10px;
-  border: 1px solid #ccc;
-  background: white;
-  cursor: pointer;
+.nav-btn {
+  background-color: #ffffff;
+  color: #222;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
-  font-size: 15px;
-  transition: 0.2s;
-}
-
-.pagination button:hover:not(:disabled):not(.active) {
-  background: #f0f0f0;
-}
-
-.pagination button.active {
-  background: #f9a825;
-  color: white;
-  border-color: #f57c00;
+  padding: 8px 16px;
+  font-size: 14px;
   font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }
 
-.pagination button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+.nav-btn:hover:not(.disabled) {
+  background-color: #f5f5f5;
+  border-color: #cfcfcf;
 }
 
-.pagination .dots {
-  padding: 0 6px;
-  font-size: 18px;
-  color: #777;
+.nav-btn.disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
-/* ------------------------------------------------- */
-/* DARK MODE */
-/* ------------------------------------------------- */
+.page-label {
+  font-weight: 700;
+  color: #333;
+  font-size: 15px;
+}
 
+/* ==============================
+   🌗 DARK MODE (TỰ THEO THIẾT BỊ)
+============================== */
 @media (prefers-color-scheme: dark) {
   .order-tracking-page {
     background-color: #121212;
-    color: #eee;
+    color: #eaeaea;
   }
 
   .order-block {
@@ -171,48 +189,70 @@
   }
 
   .order-row:hover {
-    background-color: #222;
+    background-color: #242424;
   }
 
   .order-total {
     color: #f0f0f0;
   }
 
-  .pagination button {
+  .nav-btn {
     background-color: #1c1c1c;
-    border-color: #444;
     color: #eaeaea;
+    border-color: #444;
   }
 
-  .pagination button:hover:not(:disabled):not(.active) {
+  .nav-btn:hover {
     background-color: #333;
+    border-color: #555;
   }
 
-  .pagination button.active {
-    background-color: #f9a825;
-    color: #fff;
+  .nav-btn.disabled {
+    opacity: 0.4;
   }
 
-  .pagination .dots {
-    color: #aaa;
+  .page-label {
+    color: #eaeaea;
   }
 }
 
-/* ----------------------------------------------- */
-/* Responsive */
-/* ----------------------------------------------- */
+/* ==============================
+   📱 RESPONSIVE DESIGN
+============================== */
 
-@media (max-width: 768px) {
+/* Tablet */
+@media (max-width: 1024px) {
+  .order-tracking-page {
+    padding: 30px 20px;
+  }
+
   .order-header-row {
     display: none;
   }
 
   .order-row {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 100px 2fr;
     grid-template-areas:
       "image name"
       "price quantity";
     text-align: left;
+    gap: 8px;
+  }
+
+  .order-total {
+    text-align: left;
+    margin-top: 15px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .order-block {
+    padding: 15px;
+  }
+
+  .order-row {
+    grid-template-columns: 1fr 1fr;
     gap: 6px;
   }
 
@@ -221,36 +261,35 @@
     height: 90px;
   }
 
-  .pagination {
-    gap: 5px;
-  }
-
-  .pagination button {
-    padding: 5px 10px;
-    min-width: 34px;
+  .page-label {
     font-size: 13px;
   }
 
-  .pagination .dots {
-    font-size: 14px;
+  .nav-btn {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 }
 
-/* ✨ Hiệu ứng */
-.fade-in {
-  animation: fadeIn 0.4s ease;
-}
-
-.fade-slide {
-  animation: fadeSlide 0.4s ease;
-}
-
+/* ==============================
+   ✨ Hiệu ứng mượt khi chuyển trang
+============================== */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeSlide {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

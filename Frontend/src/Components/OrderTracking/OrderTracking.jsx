@@ -155,32 +155,28 @@ export default function OrderTracking() {
 
       {/* --- PHÂN TRANG BOOKLIST --- */}
       {totalPages > 1 && (
-        <div className="pagination">
-          <button disabled={page === 0} onClick={() => setPage(page - 1)}>
-            &lt;
-          </button>
-
-          {getPageNumbers(page, totalPages).map((p, i) =>
-            p === "dots" ? (
-              <span key={i} className="dots">…</span>
-            ) : (
-              <button
-                key={i}
-                className={page === p ? "active" : ""}
-                onClick={() => setPage(p)}
-              >
-                {p + 1}
-              </button>
-            )
-          )}
-
-          <button
-            disabled={page === totalPages - 1}
-            onClick={() => setPage(page + 1)}
-          >
-            &gt;
-          </button>
-        </div>
+        <div className="tracking-pagination">
+        <button
+          className={`btn-page ${page === 0 ? "inactive" : ""}`}
+          onClick={() => setPage(page - 1)}
+          disabled={page === 0}
+        >
+          ⬅ Trang trước
+        </button>
+      
+        <span className="page-info">
+          Trang {page + 1} / {totalPages}
+        </span>
+      
+        <button
+          className={`btn-page ${page >= totalPages - 1 ? "inactive" : ""}`}
+          onClick={() => setPage(page + 1)}
+          disabled={page >= totalPages - 1}
+        >
+          Trang sau ➡
+        </button>
+      </div>
+      
       )}
     </div>
   );

@@ -13,10 +13,9 @@ export default function OrderHistory() {
   const [error, setError] = useState("");
   const [page, setPage] = useState(0);
   const pageSize = 3;
-
   const [totalPages, setTotalPages] = useState(1);
 
-  // ⭐ GIỮ NGUYÊN CHUẨN HÓA Y NHƯ ORDERTRACKING
+  // ⭐ CHUẨN HÓA GIỐNG ORDERTRACKING
   const normalizeOrdersResponse = (res) => {
     if (!res) return [];
     if (Array.isArray(res)) return res;
@@ -30,14 +29,13 @@ export default function OrderHistory() {
     const d3 = d2?.data;
     if (Array.isArray(d3)) return d3;
 
-    if (d1 && d1.data && Array.isArray(d1.data)) return d1.data;
-    if (res?.data && res.data.data && Array.isArray(res.data.data))
-      return res.data.data;
+    if (d1?.data && Array.isArray(d1.data)) return d1.data;
+    if (res?.data?.data && Array.isArray(res.data.data)) return res.data.data;
 
     return [];
   };
 
-  // ⭐ FETCH PHÂN TRANG BACKEND
+  // ⭐ FETCH API HISTORY CÓ PHÂN TRANG
   const fetchOrderHistory = async (pageNumber) => {
     setLoading(true);
     setError("");
@@ -47,16 +45,18 @@ export default function OrderHistory() {
         `${API_URL}/api/customer/history-order?page=${pageNumber}&size=${pageSize}`
       );
 
-      console.log("📦 API:", res);
+      console.log("📦 API HISTORY:", res);
 
-      // backend trả dạng: { code, message, data: { totalPages, data: [] } }
-      const meta = res;
+      const meta = res; // backend trả { code, message, data: {...} }
+      const pagination = meta;
 
-      setTotalPages(meta.totalPages);
+      console.log("📌 META:", pagination);
 
-      // ⭐ TRUYỀN ĐÚNG FORMAT CHO normalize
+      setTotalPages(pagination?.totalPages || 1);
+
+      // ⭐ normalize giống format OrderTracking
       const normalized = normalizeOrdersResponse({
-        data: { data: meta.data },
+        data: pagination,
       });
 
       setOrders(normalized);
@@ -72,7 +72,7 @@ export default function OrderHistory() {
     fetchOrderHistory(page);
   }, [page]);
 
-  // ⭐ HÀM TẠO PHÂN TRANG DẠNG SỐ (y như BookList)
+  // ⭐ PHÂN TRANG DẠNG SỐ (y như BookList / OrderTracking)
   const getPageNumbers = (current, total, delta = 1) => {
     const pages = [];
     const range = [];
@@ -93,7 +93,6 @@ export default function OrderHistory() {
       pages.push(p);
       last = p;
     }
-
     return pages;
   };
 
@@ -101,13 +100,12 @@ export default function OrderHistory() {
     navigate(`/review/${item.bookId}`, { state: { product: item } });
   };
 
-  // ⭐ Loading & Error
+  // ⭐ UI
   if (loading) return <p>⏳ Đang tải lịch sử đơn hàng...</p>;
   if (error) return <p className="error">{error}</p>;
   if (!orders || orders.length === 0)
     return <p className="no-orders">Bạn chưa có đơn hàng nào.</p>;
 
-  // ⭐ UI CHÍNH
   return (
     <div className="order-history-page fade-in">
       <h2 className="page-title">Lịch sử đơn hàng</h2>
@@ -148,17 +146,14 @@ export default function OrderHistory() {
                 <div className="col-image">
                   <img src={item.thumbnail} alt={item.bookName} />
                 </div>
-
                 <div className="col-name">{item.bookName}</div>
                 <div className="col-price">
                   {Number(item.unitPrice).toLocaleString("vi-VN")} ₫
                 </div>
                 <div className="col-quantity">{item.quantity}</div>
-
                 <div className="col-actions">
                   <button className="btn-rebuy">Mua lại</button>
                 </div>
-
                 <div className="col-review">
                   {item.review ? (
                     <button className="btn-review disabled" disabled>
@@ -186,29 +181,28 @@ export default function OrderHistory() {
 
       {/* ⭐ PHÂN TRANG DẠNG SỐ */}
       {totalPages > 1 && (
-        <div className="pagination">
-          <button disabled={page === 0} onClick={() => setPage(page - 1)}>
-            &lt;
-          </button>
-
-          {getPageNumbers(page, totalPages).map((p, idx) =>
-            p === "dots" ? (
-              <span key={idx} className="dots">…</span>
-            ) : (
-              <button
-                key={idx}
-                className={page === p ? "active" : ""}
-                onClick={() => setPage(p)}
-              >
-                {p + 1}
-              </button>
-            )
-          )}
-
-          <button disabled={page === totalPages - 1} onClick={() => setPage(page + 1)}>
-            &gt;
-          </button>
-        </div>
+        <div className="history-pagination">
+        <button
+          className={`btn-page ${page === 0 ? "inactive" : ""}`}
+          onClick={() => setPage(page - 1)}
+          disabled={page === 0}
+        >
+          ⬅ Trang trước
+        </button>
+      
+        <span className="page-info">
+          Trang {page + 1} / {totalPages}
+        </span>
+      
+        <button
+          className={`btn-page ${page >= totalPages - 1 ? "inactive" : ""}`}
+          onClick={() => setPage(page + 1)}
+          disabled={page >= totalPages - 1}
+        >
+          Trang sau ➡
+        </button>
+      </div>
+      
       )}
     </div>
   );
