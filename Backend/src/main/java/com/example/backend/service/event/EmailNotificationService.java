@@ -97,7 +97,7 @@ public class EmailNotificationService {
 //            // Sau đó mới throw lại exception để luồng xử lý bên ngoài biết là đã có lỗi
 //            throw new RuntimeException("Gửi gmail thất bại đến " + recipientEmail, e);
 //        }
-        Email from = new Email("xuanquang260604@gmail.com"); // Email người gửi ĐÃ XÁC THỰC trên SendGrid
+        Email from = new Email("jinrecatdolz@gmail.com"); // Email người gửi ĐÃ XÁC THỰC trên SendGrid
         Email to = new Email(recipientEmail);
         Content content = new Content("text/plain", messageText);
         Mail mail = new Mail(from, subject, to, content);
