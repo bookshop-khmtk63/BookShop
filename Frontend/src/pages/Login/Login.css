@@ -1,0 +1,375 @@
+/* ===========================
+   BỐ CỤC CHÍNH
+=========================== */
+.login-container {
+  display: flex;
+  height: 100vh;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f9fafb;
+  overflow: hidden;
+  transition: background 0.3s ease;
+}
+
+/* ===========================
+   LOGO BÊN TRÁI
+=========================== */
+.logo-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: #fff;
+}
+
+.logo-section::before {
+  content: "";
+  position: absolute;
+  width: 450px;
+  height: 450px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  filter: blur(120px);
+}
+
+.logo img {
+  width: 420px;
+  height: auto;
+  z-index: 2;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.logo img:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.35));
+}
+
+/* ===========================
+   FORM LOGIN
+=========================== */
+.form-section {
+  flex: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-box {
+  background: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  width: 360px;
+  text-align: center;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.login-box h2 {
+  margin-bottom: 20px;
+  color: #1e293b;
+}
+
+.login-box form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.login-box input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border 0.3s, background 0.3s;
+}
+
+.login-box input:focus {
+  border: 1px solid #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+/* ===========================
+   PASSWORD FIELD
+=========================== */
+.password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 35px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  color: #555;
+  transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: #2563eb;
+}
+
+/* ===========================
+   BUTTON LOGIN
+=========================== */
+.login-box button {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 15px;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.login-box button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+/* ===========================
+   LINK - FORGOT & REGISTER
+=========================== */
+.login-box a.forgot {
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+  text-decoration: none;
+  text-align: right;
+  color: #2563eb;
+  transition: color 0.2s ease;
+}
+
+.login-box a.forgot:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.divider {
+  margin: 20px 0;
+  position: relative;
+  text-align: center;
+}
+
+.divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: #e5e7eb;
+  z-index: 0;
+}
+
+.divider span {
+  background: #fff;
+  padding: 0 10px;
+  color: #6b7280;
+  font-size: 13px;
+  position: relative;
+  z-index: 1;
+}
+
+.login-box p {
+  font-size: 14px;
+  color: #374151;
+}
+
+.login-box p a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.login-box p a:hover {
+  text-decoration: underline;
+}
+
+/* ===========================
+   RESPONSIVE DESIGN
+=========================== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .logo-section::before {
+    width: 350px;
+    height: 350px;
+    filter: blur(100px);
+  }
+
+  .logo img {
+    width: 300px;
+  }
+
+  .login-box {
+    width: 320px;
+    padding: 35px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .logo-section {
+    flex: none;
+    padding: 30px 0;
+  }
+
+  .logo img {
+    width: 240px;
+  }
+
+  .form-section {
+    flex: none;
+    padding: 20px 0 40px;
+  }
+
+  .login-box {
+    width: 90%;
+    max-width: 350px;
+    padding: 30px 20px;
+  }
+}
+
+/* Mobile nhỏ */
+@media (max-width: 480px) {
+  .logo img {
+    width: 200px;
+  }
+
+  .login-box {
+    width: 92%;
+    padding: 25px 18px;
+  }
+
+  .login-box h2 {
+    font-size: 18px;
+  }
+}
+
+/* ===========================
+   DARK MODE
+=========================== */
+
+
+@media (prefers-color-scheme: dark) {
+  /* Nền trang vẫn sáng, chỉ hơi ngả xám để dịu mắt */
+  .login-container {
+    background: linear-gradient(135deg, #f5f5f5, #fafafa);
+    color: #222;
+  }
+
+  /* Hiệu ứng mờ quanh logo */
+  .logo-section::before {
+    background: rgba(180, 180, 180, 0.15);
+    filter: blur(100px);
+  }
+
+  /* Form đăng nhập */
+  .login-box {
+    background: #ffffffcc; /* trắng mờ nhẹ */
+    border: 1px solid #e5e7eb;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  .login-box h2 {
+    color: #111827;
+  }
+
+  /* Ô nhập liệu */
+  .login-box input {
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    color: #111;
+  }
+
+  .login-box input::placeholder {
+    color: #6b7280;
+  }
+
+  .login-box input:focus {
+    border-color: #a855f7; /* tím nhạt nhẹ */
+    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
+  }
+
+  /* Icon ẩn/hiện mật khẩu */
+  .password-toggle {
+    color: #6b7280;
+  }
+  .password-toggle:hover {
+    color: #a855f7;
+  }
+
+  /* Nút đăng nhập (sáng nhẹ, không xanh) */
+  .login-box button {
+    background: linear-gradient(90deg, #a855f7, #c084fc);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(168, 85, 247, 0.25);
+  }
+  .login-box button:hover {
+    background: linear-gradient(90deg, #c084fc, #d8b4fe);
+    transform: translateY(-1px);
+  }
+
+  /* Gạch chia */
+  .divider::before {
+    background: #e5e7eb;
+  }
+
+  .divider span {
+    background: #ffffffcc;
+    color: #6b7280;
+  }
+
+  /* Link và chữ phụ */
+  .login-box p {
+    color: #374151;
+  }
+
+  .login-box p a,
+  .login-box a.forgot {
+    color: #9333ea;
+  }
+
+  .login-box p a:hover,
+  .login-box a.forgot:hover {
+    color: #a855f7;
+  }
+}
+/* ===========================
+   KHẮC PHỤC LỖI AUTOFILL (Chrome, Safari, Cốc Cốc)
+=========================== */
+
+input:-webkit-autofill {
+  background-color: #f4f3f8 !important; /* giữ nền sáng nhẹ */
+  color: #1f1b50 !important; /* chữ đậm dễ đọc */
+  -webkit-text-fill-color: #1f1b50 !important; /* đảm bảo text màu tím đậm */
+  transition: background-color 5000s ease-in-out 0s; /* chống flash vàng */
+}
+
+/* Khi autofill trong dark mode */
+@media (prefers-color-scheme: dark) {
+  input:-webkit-autofill {
+    background-color: #f3e8ff !important;
+    -webkit-text-fill-color: #2d1b69 !important;
+    box-shadow: 0 0 0px 1000px #f3e8ff inset !important;
+  }
+}
